@@ -16,6 +16,15 @@ type ProfileField struct {
 	UpdatedAt  pgtype.Timestamp
 }
 
+type ProfileFieldText struct {
+	ProfileFieldID pgtype.UUID
+	Lang           string
+	Content        string
+	IsSource       bool
+	ModelVersion   pgtype.Text
+	UpdatedAt      pgtype.Timestamp
+}
+
 type User struct {
 	ID            pgtype.UUID
 	Phone         pgtype.Text
