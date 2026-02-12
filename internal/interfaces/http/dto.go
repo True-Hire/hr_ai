@@ -114,23 +114,33 @@ type UserResponse struct {
 type UserProfileResponse struct {
 	Title          string                   `json:"title,omitempty"`
 	About          string                   `json:"about,omitempty"`
-	Skills         string                   `json:"skills,omitempty"`
-	Languages      string                   `json:"languages,omitempty"`
-	Certifications string                   `json:"certifications,omitempty"`
+	Skills         []string                 `json:"skills,omitempty"`
+	Languages      []LanguageItemResponse   `json:"languages,omitempty"`
+	Certifications []string                 `json:"certifications,omitempty"`
 	Achievements   string                   `json:"achievements,omitempty"`
 	Experience     []ExperienceItemResponse `json:"experience,omitempty"`
 	Education      []EducationItemResponse  `json:"education,omitempty"`
 }
 
+type LanguageItemResponse struct {
+	Name  string `json:"name"`
+	Level string `json:"level"`
+}
+
+type ProjectResponse struct {
+	Project string   `json:"project"`
+	Items   []string `json:"items"`
+}
+
 type ExperienceItemResponse struct {
-	ID          string `json:"id"`
-	Company     string `json:"company"`
-	Position    string `json:"position"`
-	StartDate   string `json:"start_date,omitempty"`
-	EndDate     string `json:"end_date,omitempty"`
-	Projects    string `json:"projects,omitempty"`
-	WebSite     string `json:"web_site,omitempty"`
-	Description string `json:"description,omitempty"`
+	ID          string            `json:"id"`
+	Company     string            `json:"company"`
+	Position    string            `json:"position"`
+	StartDate   string            `json:"start_date,omitempty"`
+	EndDate     string            `json:"end_date,omitempty"`
+	Projects    []ProjectResponse `json:"projects,omitempty"`
+	WebSite     string            `json:"web_site,omitempty"`
+	Description string            `json:"description,omitempty"`
 }
 
 type EducationItemResponse struct {

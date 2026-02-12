@@ -42,6 +42,9 @@ type ProfileParseExperienceResponse struct {
 	Texts     []ProfileParseItemTextResponse  `json:"texts"`
 }
 
+// Note: Projects in parse response is raw JSON string as stored in DB.
+// The GET /users/:id endpoint resolves it to structured ProjectResponse per language.
+
 type ProfileParseEducationResponse struct {
 	ID           string                          `json:"id"`
 	Institution  string                          `json:"institution"`

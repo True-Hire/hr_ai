@@ -1,6 +1,7 @@
 package http
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
@@ -175,13 +176,34 @@ func (h *UserHandler) buildUserProfile(c *gin.Context, userID uuid.UUID, lang st
 
 	var experience []ExperienceItemResponse
 	for _, item := range expItems {
+		// Parse projects from JSON, resolving translated items for requested lang
+		var projects []ProjectResponse
+		if item.Projects != "" {
+			var rawProjects []struct {
+				Project string              `json:"project"`
+				Items   map[string][]string `json:"items"`
+			}
+			if json.Unmarshal([]byte(item.Projects), &rawProjects) == nil {
+				for _, p := range rawProjects {
+					items := p.Items[lang]
+					if len(items) == 0 {
+						items = p.Items["en"]
+					}
+					projects = append(projects, ProjectResponse{
+						Project: p.Project,
+						Items:   items,
+					})
+				}
+			}
+		}
+
 		resp := ExperienceItemResponse{
 			ID:        item.ID.String(),
 			Company:   item.Company,
 			Position:  item.Position,
 			StartDate: item.StartDate,
 			EndDate:   item.EndDate,
-			Projects:  item.Projects,
+			Projects:  projects,
 			WebSite:   item.WebSite,
 		}
 		texts, err := h.itemTextSvc.ListItemTextsByItem(ctx, item.ID, "experience")
@@ -229,12 +251,30 @@ func (h *UserHandler) buildUserProfile(c *gin.Context, userID uuid.UUID, lang st
 		return nil
 	}
 
+	// Parse skills from JSON array
+	var skills []string
+	if raw, ok := fieldMap["skills"]; ok && raw != "" {
+		_ = json.Unmarshal([]byte(raw), &skills)
+	}
+
+	// Parse certifications from JSON array
+	var certifications []string
+	if raw, ok := fieldMap["certifications"]; ok && raw != "" {
+		_ = json.Unmarshal([]byte(raw), &certifications)
+	}
+
+	// Parse languages from JSON array of objects
+	var languages []LanguageItemResponse
+	if raw, ok := fieldMap["languages"]; ok && raw != "" {
+		_ = json.Unmarshal([]byte(raw), &languages)
+	}
+
 	return &UserProfileResponse{
 		Title:          fieldMap["title"],
 		About:          fieldMap["about"],
-		Skills:         fieldMap["skills"],
-		Languages:      fieldMap["languages"],
-		Certifications: fieldMap["certifications"],
+		Skills:         skills,
+		Certifications: certifications,
+		Languages:      languages,
 		Achievements:   fieldMap["achievements"],
 		Experience:     experience,
 		Education:      education,

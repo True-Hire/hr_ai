@@ -36,20 +36,33 @@ func (c *Client) ModelVersion() string {
 
 // ParsedProfile is the structured result from Gemini profile parsing.
 type ParsedProfile struct {
-	SourceLang string                       `json:"source_lang"`
-	Fields     map[string]map[string]string `json:"fields"`
-	Experience []ParsedExperienceItem       `json:"experience"`
-	Education  []ParsedEducationItem        `json:"education"`
+	SourceLang     string                       `json:"source_lang"`
+	Fields         map[string]map[string]string `json:"fields"`
+	Skills         map[string][]string          `json:"skills"`
+	Certifications map[string][]string          `json:"certifications"`
+	Languages      []ParsedLanguageItem         `json:"languages"`
+	Experience     []ParsedExperienceItem       `json:"experience"`
+	Education      []ParsedEducationItem        `json:"education"`
+}
+
+type ParsedLanguageItem struct {
+	Name  map[string]string `json:"name"`
+	Level string            `json:"level"`
+}
+
+type ParsedProjectItem struct {
+	Project string              `json:"project"`
+	Items   map[string][]string `json:"items"`
 }
 
 type ParsedExperienceItem struct {
-	Company     string            `json:"company"`
-	Position    map[string]string `json:"position"`
-	StartDate   string            `json:"start_date"`
-	EndDate     string            `json:"end_date"`
-	Projects    string            `json:"projects"`
-	WebSite     string            `json:"web_site"`
-	Description map[string]string `json:"description"`
+	Company     string              `json:"company"`
+	Position    map[string]string   `json:"position"`
+	StartDate   string              `json:"start_date"`
+	EndDate     string              `json:"end_date"`
+	Projects    []ParsedProjectItem `json:"projects"`
+	WebSite     string              `json:"web_site"`
+	Description map[string]string   `json:"description"`
 }
 
 type ParsedEducationItem struct {

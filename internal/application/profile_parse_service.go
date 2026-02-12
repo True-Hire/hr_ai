@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -141,6 +142,121 @@ func (s *ProfileParseService) storeResults(ctx context.Context, userID uuid.UUID
 		result.Fields = append(result.Fields, fieldResult)
 	}
 
+	// Store skills as JSON array per language
+	if len(parsed.Skills) > 0 {
+		field, err := s.profileFieldSvc.CreateProfileField(ctx, &domain.ProfileField{
+			UserID:     userID,
+			FieldName:  "skills",
+			SourceLang: parsed.SourceLang,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("create profile field skills: %w", err)
+		}
+		fieldResult := ParsedFieldResult{
+			Field: field,
+			Texts: make([]domain.ProfileFieldText, 0, 3),
+		}
+		for _, lang := range langs {
+			skills, ok := parsed.Skills[lang]
+			if !ok || len(skills) == 0 {
+				continue
+			}
+			jsonBytes, _ := json.Marshal(skills)
+			text, err := s.profileTextSvc.CreateProfileFieldText(ctx, &domain.ProfileFieldText{
+				ProfileFieldID: field.ID,
+				Lang:           lang,
+				Content:        string(jsonBytes),
+				IsSource:       lang == parsed.SourceLang,
+				ModelVersion:   modelVer,
+			})
+			if err != nil {
+				return nil, fmt.Errorf("create profile field text skills/%s: %w", lang, err)
+			}
+			fieldResult.Texts = append(fieldResult.Texts, *text)
+		}
+		result.Fields = append(result.Fields, fieldResult)
+	}
+
+	// Store certifications as JSON array per language
+	if len(parsed.Certifications) > 0 {
+		field, err := s.profileFieldSvc.CreateProfileField(ctx, &domain.ProfileField{
+			UserID:     userID,
+			FieldName:  "certifications",
+			SourceLang: parsed.SourceLang,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("create profile field certifications: %w", err)
+		}
+		fieldResult := ParsedFieldResult{
+			Field: field,
+			Texts: make([]domain.ProfileFieldText, 0, 3),
+		}
+		for _, lang := range langs {
+			certs, ok := parsed.Certifications[lang]
+			if !ok || len(certs) == 0 {
+				continue
+			}
+			jsonBytes, _ := json.Marshal(certs)
+			text, err := s.profileTextSvc.CreateProfileFieldText(ctx, &domain.ProfileFieldText{
+				ProfileFieldID: field.ID,
+				Lang:           lang,
+				Content:        string(jsonBytes),
+				IsSource:       lang == parsed.SourceLang,
+				ModelVersion:   modelVer,
+			})
+			if err != nil {
+				return nil, fmt.Errorf("create profile field text certifications/%s: %w", lang, err)
+			}
+			fieldResult.Texts = append(fieldResult.Texts, *text)
+		}
+		result.Fields = append(result.Fields, fieldResult)
+	}
+
+	// Store languages as JSON array per language
+	if len(parsed.Languages) > 0 {
+		field, err := s.profileFieldSvc.CreateProfileField(ctx, &domain.ProfileField{
+			UserID:     userID,
+			FieldName:  "languages",
+			SourceLang: parsed.SourceLang,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("create profile field languages: %w", err)
+		}
+		fieldResult := ParsedFieldResult{
+			Field: field,
+			Texts: make([]domain.ProfileFieldText, 0, 3),
+		}
+		for _, lang := range langs {
+			var items []map[string]string
+			for _, l := range parsed.Languages {
+				name, ok := l.Name[lang]
+				if !ok || name == "" {
+					continue
+				}
+				items = append(items, map[string]string{
+					"name":  name,
+					"level": l.Level,
+				})
+			}
+			if len(items) == 0 {
+				continue
+			}
+			jsonBytes, _ := json.Marshal(items)
+			text, err := s.profileTextSvc.CreateProfileFieldText(ctx, &domain.ProfileFieldText{
+				ProfileFieldID: field.ID,
+				Lang:           lang,
+				Content:        string(jsonBytes),
+				IsSource:       lang == parsed.SourceLang,
+				ModelVersion:   modelVer,
+			})
+			if err != nil {
+				return nil, fmt.Errorf("create profile field text languages/%s: %w", lang, err)
+			}
+			fieldResult.Texts = append(fieldResult.Texts, *text)
+		}
+		result.Fields = append(result.Fields, fieldResult)
+	}
+
 	// Store experience items
 	for i, exp := range parsed.Experience {
 		// Use source lang for the position value stored in the item row
@@ -149,13 +265,19 @@ func (s *ProfileParseService) storeResults(ctx context.Context, userID uuid.UUID
 			position = v
 		}
 
+		projectsJSON := ""
+		if len(exp.Projects) > 0 {
+			b, _ := json.Marshal(exp.Projects)
+			projectsJSON = string(b)
+		}
+
 		item, err := s.experienceSvc.CreateExperienceItem(ctx, &domain.ExperienceItem{
 			UserID:    userID,
 			Company:   exp.Company,
 			Position:  position,
 			StartDate: exp.StartDate,
 			EndDate:   exp.EndDate,
-			Projects:  exp.Projects,
+			Projects:  projectsJSON,
 			WebSite:   exp.WebSite,
 			ItemOrder: int32(i),
 		})
