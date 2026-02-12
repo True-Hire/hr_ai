@@ -26,9 +26,22 @@ type ProfileFieldText struct {
 }
 
 type User struct {
-	ID            pgtype.UUID
-	Phone         pgtype.Text
-	Email         pgtype.Text
-	ProfilePicUrl pgtype.Text
-	CreatedAt     pgtype.Timestamp
+	ID              pgtype.UUID
+	FirstName       string
+	LastName        string
+	Patronymic      pgtype.Text
+	Phone           pgtype.Text
+	Telegram        pgtype.Text
+	Email           pgtype.Text
+	Gender          pgtype.Text
+	Country         pgtype.Text
+	Region          pgtype.Text
+	Nationality     pgtype.Text
+	ProfilePicUrl   pgtype.Text
+	Status          string
+	TariffType      string
+	JobStatus       pgtype.Text
+	ActivityType    pgtype.Text
+	Specializations []string
+	CreatedAt       pgtype.Timestamp
 }

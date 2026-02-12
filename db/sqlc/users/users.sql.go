@@ -23,31 +23,79 @@ func (q *Queries) CountUsers(ctx context.Context) (int64, error) {
 }
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (id, phone, email, profile_pic_url, created_at)
-VALUES ($1, $2, $3, $4, now())
-RETURNING id, phone, email, profile_pic_url, created_at
+INSERT INTO users (
+    id, first_name, last_name, patronymic, phone, telegram, email,
+    gender, country, region, nationality, profile_pic_url,
+    status, tariff_type, job_status, activity_type, specializations, created_at
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7,
+    $8, $9, $10, $11, $12,
+    $13, $14, $15, $16, $17, now()
+)
+RETURNING id, first_name, last_name, patronymic, phone, telegram, email,
+    gender, country, region, nationality, profile_pic_url,
+    status, tariff_type, job_status, activity_type, specializations, created_at
 `
 
 type CreateUserParams struct {
-	ID            pgtype.UUID
-	Phone         pgtype.Text
-	Email         pgtype.Text
-	ProfilePicUrl pgtype.Text
+	ID              pgtype.UUID
+	FirstName       string
+	LastName        string
+	Patronymic      pgtype.Text
+	Phone           pgtype.Text
+	Telegram        pgtype.Text
+	Email           pgtype.Text
+	Gender          pgtype.Text
+	Country         pgtype.Text
+	Region          pgtype.Text
+	Nationality     pgtype.Text
+	ProfilePicUrl   pgtype.Text
+	Status          string
+	TariffType      string
+	JobStatus       pgtype.Text
+	ActivityType    pgtype.Text
+	Specializations []string
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
 	row := q.db.QueryRow(ctx, createUser,
 		arg.ID,
+		arg.FirstName,
+		arg.LastName,
+		arg.Patronymic,
 		arg.Phone,
+		arg.Telegram,
 		arg.Email,
+		arg.Gender,
+		arg.Country,
+		arg.Region,
+		arg.Nationality,
 		arg.ProfilePicUrl,
+		arg.Status,
+		arg.TariffType,
+		arg.JobStatus,
+		arg.ActivityType,
+		arg.Specializations,
 	)
 	var i User
 	err := row.Scan(
 		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.Patronymic,
 		&i.Phone,
+		&i.Telegram,
 		&i.Email,
+		&i.Gender,
+		&i.Country,
+		&i.Region,
+		&i.Nationality,
 		&i.ProfilePicUrl,
+		&i.Status,
+		&i.TariffType,
+		&i.JobStatus,
+		&i.ActivityType,
+		&i.Specializations,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -64,7 +112,9 @@ func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, phone, email, profile_pic_url, created_at
+SELECT id, first_name, last_name, patronymic, phone, telegram, email,
+    gender, country, region, nationality, profile_pic_url,
+    status, tariff_type, job_status, activity_type, specializations, created_at
 FROM users
 WHERE id = $1
 `
@@ -74,16 +124,31 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error)
 	var i User
 	err := row.Scan(
 		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.Patronymic,
 		&i.Phone,
+		&i.Telegram,
 		&i.Email,
+		&i.Gender,
+		&i.Country,
+		&i.Region,
+		&i.Nationality,
 		&i.ProfilePicUrl,
+		&i.Status,
+		&i.TariffType,
+		&i.JobStatus,
+		&i.ActivityType,
+		&i.Specializations,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, phone, email, profile_pic_url, created_at
+SELECT id, first_name, last_name, patronymic, phone, telegram, email,
+    gender, country, region, nationality, profile_pic_url,
+    status, tariff_type, job_status, activity_type, specializations, created_at
 FROM users
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2
@@ -105,9 +170,22 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 		var i User
 		if err := rows.Scan(
 			&i.ID,
+			&i.FirstName,
+			&i.LastName,
+			&i.Patronymic,
 			&i.Phone,
+			&i.Telegram,
 			&i.Email,
+			&i.Gender,
+			&i.Country,
+			&i.Region,
+			&i.Nationality,
 			&i.ProfilePicUrl,
+			&i.Status,
+			&i.TariffType,
+			&i.JobStatus,
+			&i.ActivityType,
+			&i.Specializations,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -122,33 +200,87 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 
 const updateUser = `-- name: UpdateUser :one
 UPDATE users
-SET phone = COALESCE(NULLIF($1, ''), phone),
-    email = COALESCE(NULLIF($2, ''), email),
-    profile_pic_url = COALESCE(NULLIF($3, ''), profile_pic_url)
-WHERE id = $4
-RETURNING id, phone, email, profile_pic_url, created_at
+SET first_name = COALESCE(NULLIF($1, ''), first_name),
+    last_name = COALESCE(NULLIF($2, ''), last_name),
+    patronymic = COALESCE(NULLIF($3, ''), patronymic),
+    phone = COALESCE(NULLIF($4, ''), phone),
+    telegram = COALESCE(NULLIF($5, ''), telegram),
+    email = COALESCE(NULLIF($6, ''), email),
+    gender = COALESCE(NULLIF($7, ''), gender),
+    country = COALESCE(NULLIF($8, ''), country),
+    region = COALESCE(NULLIF($9, ''), region),
+    nationality = COALESCE(NULLIF($10, ''), nationality),
+    profile_pic_url = COALESCE(NULLIF($11, ''), profile_pic_url),
+    status = COALESCE(NULLIF($12, ''), status),
+    tariff_type = COALESCE(NULLIF($13, ''), tariff_type),
+    job_status = COALESCE(NULLIF($14, ''), job_status),
+    activity_type = COALESCE(NULLIF($15, ''), activity_type),
+    specializations = CASE WHEN $16::TEXT[] = '{}' THEN specializations ELSE $16 END
+WHERE id = $17
+RETURNING id, first_name, last_name, patronymic, phone, telegram, email,
+    gender, country, region, nationality, profile_pic_url,
+    status, tariff_type, job_status, activity_type, specializations, created_at
 `
 
 type UpdateUserParams struct {
-	Phone         interface{}
-	Email         interface{}
-	ProfilePicUrl interface{}
-	ID            pgtype.UUID
+	FirstName       interface{}
+	LastName        interface{}
+	Patronymic      interface{}
+	Phone           interface{}
+	Telegram        interface{}
+	Email           interface{}
+	Gender          interface{}
+	Country         interface{}
+	Region          interface{}
+	Nationality     interface{}
+	ProfilePicUrl   interface{}
+	Status          interface{}
+	TariffType      interface{}
+	JobStatus       interface{}
+	ActivityType    interface{}
+	Specializations []string
+	ID              pgtype.UUID
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
 	row := q.db.QueryRow(ctx, updateUser,
+		arg.FirstName,
+		arg.LastName,
+		arg.Patronymic,
 		arg.Phone,
+		arg.Telegram,
 		arg.Email,
+		arg.Gender,
+		arg.Country,
+		arg.Region,
+		arg.Nationality,
 		arg.ProfilePicUrl,
+		arg.Status,
+		arg.TariffType,
+		arg.JobStatus,
+		arg.ActivityType,
+		arg.Specializations,
 		arg.ID,
 	)
 	var i User
 	err := row.Scan(
 		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.Patronymic,
 		&i.Phone,
+		&i.Telegram,
 		&i.Email,
+		&i.Gender,
+		&i.Country,
+		&i.Region,
+		&i.Nationality,
 		&i.ProfilePicUrl,
+		&i.Status,
+		&i.TariffType,
+		&i.JobStatus,
+		&i.ActivityType,
+		&i.Specializations,
 		&i.CreatedAt,
 	)
 	return i, err

@@ -1,15 +1,28 @@
 -- name: CreateUser :one
-INSERT INTO users (id, phone, email, profile_pic_url, created_at)
-VALUES ($1, $2, $3, $4, now())
-RETURNING id, phone, email, profile_pic_url, created_at;
+INSERT INTO users (
+    id, first_name, last_name, patronymic, phone, telegram, email,
+    gender, country, region, nationality, profile_pic_url,
+    status, tariff_type, job_status, activity_type, specializations, created_at
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7,
+    $8, $9, $10, $11, $12,
+    $13, $14, $15, $16, $17, now()
+)
+RETURNING id, first_name, last_name, patronymic, phone, telegram, email,
+    gender, country, region, nationality, profile_pic_url,
+    status, tariff_type, job_status, activity_type, specializations, created_at;
 
 -- name: GetUserByID :one
-SELECT id, phone, email, profile_pic_url, created_at
+SELECT id, first_name, last_name, patronymic, phone, telegram, email,
+    gender, country, region, nationality, profile_pic_url,
+    status, tariff_type, job_status, activity_type, specializations, created_at
 FROM users
 WHERE id = $1;
 
 -- name: ListUsers :many
-SELECT id, phone, email, profile_pic_url, created_at
+SELECT id, first_name, last_name, patronymic, phone, telegram, email,
+    gender, country, region, nationality, profile_pic_url,
+    status, tariff_type, job_status, activity_type, specializations, created_at
 FROM users
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2;
@@ -19,11 +32,26 @@ SELECT count(*) FROM users;
 
 -- name: UpdateUser :one
 UPDATE users
-SET phone = COALESCE(NULLIF(sqlc.arg(phone), ''), phone),
+SET first_name = COALESCE(NULLIF(sqlc.arg(first_name), ''), first_name),
+    last_name = COALESCE(NULLIF(sqlc.arg(last_name), ''), last_name),
+    patronymic = COALESCE(NULLIF(sqlc.arg(patronymic), ''), patronymic),
+    phone = COALESCE(NULLIF(sqlc.arg(phone), ''), phone),
+    telegram = COALESCE(NULLIF(sqlc.arg(telegram), ''), telegram),
     email = COALESCE(NULLIF(sqlc.arg(email), ''), email),
-    profile_pic_url = COALESCE(NULLIF(sqlc.arg(profile_pic_url), ''), profile_pic_url)
+    gender = COALESCE(NULLIF(sqlc.arg(gender), ''), gender),
+    country = COALESCE(NULLIF(sqlc.arg(country), ''), country),
+    region = COALESCE(NULLIF(sqlc.arg(region), ''), region),
+    nationality = COALESCE(NULLIF(sqlc.arg(nationality), ''), nationality),
+    profile_pic_url = COALESCE(NULLIF(sqlc.arg(profile_pic_url), ''), profile_pic_url),
+    status = COALESCE(NULLIF(sqlc.arg(status), ''), status),
+    tariff_type = COALESCE(NULLIF(sqlc.arg(tariff_type), ''), tariff_type),
+    job_status = COALESCE(NULLIF(sqlc.arg(job_status), ''), job_status),
+    activity_type = COALESCE(NULLIF(sqlc.arg(activity_type), ''), activity_type),
+    specializations = CASE WHEN sqlc.arg(specializations)::TEXT[] = '{}' THEN specializations ELSE sqlc.arg(specializations) END
 WHERE id = sqlc.arg(id)
-RETURNING id, phone, email, profile_pic_url, created_at;
+RETURNING id, first_name, last_name, patronymic, phone, telegram, email,
+    gender, country, region, nationality, profile_pic_url,
+    status, tariff_type, job_status, activity_type, specializations, created_at;
 
 -- name: DeleteUser :exec
 DELETE FROM users

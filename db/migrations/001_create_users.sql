@@ -1,7 +1,20 @@
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    patronymic TEXT,
     phone TEXT UNIQUE,
+    telegram TEXT,
     email TEXT UNIQUE,
+    gender TEXT,
+    country TEXT,
+    region TEXT,
+    nationality TEXT,
     profile_pic_url TEXT,
+    status TEXT NOT NULL DEFAULT 'active',
+    tariff_type TEXT NOT NULL DEFAULT 'free',
+    job_status TEXT,
+    activity_type TEXT,
+    specializations TEXT[] DEFAULT '{}',
     created_at TIMESTAMP NOT NULL DEFAULT now()
 );
