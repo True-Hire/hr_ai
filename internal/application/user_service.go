@@ -17,12 +17,13 @@ func NewUserService(repo domain.UserRepository) *UserService {
 	return &UserService{repo: repo}
 }
 
-func (s *UserService) CreateUser(ctx context.Context, phone, email, profilePicURL string) (*domain.User, error) {
-	user := &domain.User{
-		ID:            uuid.New(),
-		Phone:         phone,
-		Email:         email,
-		ProfilePicURL: profilePicURL,
+func (s *UserService) CreateUser(ctx context.Context, user *domain.User) (*domain.User, error) {
+	user.ID = uuid.New()
+	if user.Status == "" {
+		user.Status = "active"
+	}
+	if user.TariffType == "" {
+		user.TariffType = "free"
 	}
 	created, err := s.repo.Create(ctx, user)
 	if err != nil {
@@ -62,13 +63,7 @@ func (s *UserService) ListUsers(ctx context.Context, page, pageSize int32) (*Lis
 	return &ListUsersResult{Users: users, Total: total}, nil
 }
 
-func (s *UserService) UpdateUser(ctx context.Context, id uuid.UUID, phone, email, profilePicURL string) (*domain.User, error) {
-	user := &domain.User{
-		ID:            id,
-		Phone:         phone,
-		Email:         email,
-		ProfilePicURL: profilePicURL,
-	}
+func (s *UserService) UpdateUser(ctx context.Context, user *domain.User) (*domain.User, error) {
 	return s.repo.Update(ctx, user)
 }
 

@@ -27,13 +27,32 @@ func (h *UserHandler) Create(c *gin.Context) {
 		return
 	}
 
-	user, err := h.service.CreateUser(c.Request.Context(), req.Phone, req.Email, req.ProfilePicURL)
+	user := &domain.User{
+		FirstName:       req.FirstName,
+		LastName:        req.LastName,
+		Patronymic:      req.Patronymic,
+		Phone:           req.Phone,
+		Telegram:        req.Telegram,
+		Email:           req.Email,
+		Gender:          req.Gender,
+		Country:         req.Country,
+		Region:          req.Region,
+		Nationality:     req.Nationality,
+		ProfilePicURL:   req.ProfilePicURL,
+		Status:          req.Status,
+		TariffType:      req.TariffType,
+		JobStatus:       req.JobStatus,
+		ActivityType:    req.ActivityType,
+		Specializations: req.Specializations,
+	}
+
+	created, err := h.service.CreateUser(c.Request.Context(), user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to create user"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, toUserResponse(user))
+	c.JSON(http.StatusCreated, toUserResponse(created))
 }
 
 func (h *UserHandler) GetByID(c *gin.Context) {
@@ -92,7 +111,27 @@ func (h *UserHandler) Update(c *gin.Context) {
 		return
 	}
 
-	user, err := h.service.UpdateUser(c.Request.Context(), id, req.Phone, req.Email, req.ProfilePicURL)
+	user := &domain.User{
+		ID:              id,
+		FirstName:       req.FirstName,
+		LastName:        req.LastName,
+		Patronymic:      req.Patronymic,
+		Phone:           req.Phone,
+		Telegram:        req.Telegram,
+		Email:           req.Email,
+		Gender:          req.Gender,
+		Country:         req.Country,
+		Region:          req.Region,
+		Nationality:     req.Nationality,
+		ProfilePicURL:   req.ProfilePicURL,
+		Status:          req.Status,
+		TariffType:      req.TariffType,
+		JobStatus:       req.JobStatus,
+		ActivityType:    req.ActivityType,
+		Specializations: req.Specializations,
+	}
+
+	updated, err := h.service.UpdateUser(c.Request.Context(), user)
 	if err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) {
 			c.JSON(http.StatusNotFound, ErrorResponse{Error: "user not found"})
@@ -102,7 +141,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, toUserResponse(user))
+	c.JSON(http.StatusOK, toUserResponse(updated))
 }
 
 func (h *UserHandler) Delete(c *gin.Context) {

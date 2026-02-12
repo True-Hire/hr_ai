@@ -11,11 +11,24 @@ import (
 var ErrUserNotFound = errors.New("user not found")
 
 type User struct {
-	ID            uuid.UUID
-	Phone         string
-	Email         string
-	ProfilePicURL string
-	CreatedAt     time.Time
+	ID              uuid.UUID
+	FirstName       string
+	LastName        string
+	Patronymic      string
+	Phone           string
+	Telegram        string
+	Email           string
+	Gender          string
+	Country         string
+	Region          string
+	Nationality     string
+	ProfilePicURL   string
+	Status          string
+	TariffType      string
+	JobStatus       string
+	ActivityType    string
+	Specializations []string
+	CreatedAt       time.Time
 }
 
 type UserRepository interface {

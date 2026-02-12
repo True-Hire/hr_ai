@@ -25,10 +25,23 @@ func NewUserRepository(pool *pgxpool.Pool) *UserRepository {
 
 func (r *UserRepository) Create(ctx context.Context, user *domain.User) (*domain.User, error) {
 	row, err := r.q.CreateUser(ctx, usersdb.CreateUserParams{
-		ID:            uuidToPgtype(user.ID),
-		Phone:         textToPgtype(user.Phone),
-		Email:         textToPgtype(user.Email),
-		ProfilePicUrl: textToPgtype(user.ProfilePicURL),
+		ID:              uuidToPgtype(user.ID),
+		FirstName:       user.FirstName,
+		LastName:        user.LastName,
+		Patronymic:      textToPgtype(user.Patronymic),
+		Phone:           textToPgtype(user.Phone),
+		Telegram:        textToPgtype(user.Telegram),
+		Email:           textToPgtype(user.Email),
+		Gender:          textToPgtype(user.Gender),
+		Country:         textToPgtype(user.Country),
+		Region:          textToPgtype(user.Region),
+		Nationality:     textToPgtype(user.Nationality),
+		ProfilePicUrl:   textToPgtype(user.ProfilePicURL),
+		Status:          user.Status,
+		TariffType:      user.TariffType,
+		JobStatus:       textToPgtype(user.JobStatus),
+		ActivityType:    textToPgtype(user.ActivityType),
+		Specializations: user.Specializations,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("create user: %w", err)
@@ -72,10 +85,23 @@ func (r *UserRepository) Count(ctx context.Context) (int64, error) {
 
 func (r *UserRepository) Update(ctx context.Context, user *domain.User) (*domain.User, error) {
 	row, err := r.q.UpdateUser(ctx, usersdb.UpdateUserParams{
-		ID:            uuidToPgtype(user.ID),
-		Phone:         user.Phone,
-		Email:         user.Email,
-		ProfilePicUrl: user.ProfilePicURL,
+		ID:              uuidToPgtype(user.ID),
+		FirstName:       user.FirstName,
+		LastName:        user.LastName,
+		Patronymic:      user.Patronymic,
+		Phone:           user.Phone,
+		Telegram:        user.Telegram,
+		Email:           user.Email,
+		Gender:          user.Gender,
+		Country:         user.Country,
+		Region:          user.Region,
+		Nationality:     user.Nationality,
+		ProfilePicUrl:   user.ProfilePicURL,
+		Status:          user.Status,
+		TariffType:      user.TariffType,
+		JobStatus:       user.JobStatus,
+		ActivityType:    user.ActivityType,
+		Specializations: user.Specializations,
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -96,10 +122,23 @@ func (r *UserRepository) Delete(ctx context.Context, id uuid.UUID) error {
 
 func userToDomain(row usersdb.User) *domain.User {
 	return &domain.User{
-		ID:            pgtypeToUUID(row.ID),
-		Phone:         pgtypeToString(row.Phone),
-		Email:         pgtypeToString(row.Email),
-		ProfilePicURL: pgtypeToString(row.ProfilePicUrl),
-		CreatedAt:     row.CreatedAt.Time,
+		ID:              pgtypeToUUID(row.ID),
+		FirstName:       row.FirstName,
+		LastName:        row.LastName,
+		Patronymic:      pgtypeToString(row.Patronymic),
+		Phone:           pgtypeToString(row.Phone),
+		Telegram:        pgtypeToString(row.Telegram),
+		Email:           pgtypeToString(row.Email),
+		Gender:          pgtypeToString(row.Gender),
+		Country:         pgtypeToString(row.Country),
+		Region:          pgtypeToString(row.Region),
+		Nationality:     pgtypeToString(row.Nationality),
+		ProfilePicURL:   pgtypeToString(row.ProfilePicUrl),
+		Status:          row.Status,
+		TariffType:      row.TariffType,
+		JobStatus:       pgtypeToString(row.JobStatus),
+		ActivityType:    pgtypeToString(row.ActivityType),
+		Specializations: row.Specializations,
+		CreatedAt:       row.CreatedAt.Time,
 	}
 }

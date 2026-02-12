@@ -7,23 +7,62 @@ import (
 )
 
 type CreateUserRequest struct {
-	Phone         string `json:"phone" binding:"required"`
-	Email         string `json:"email" binding:"required,email"`
-	ProfilePicURL string `json:"profile_pic_url"`
+	FirstName       string   `json:"first_name" binding:"required"`
+	LastName        string   `json:"last_name" binding:"required"`
+	Patronymic      string   `json:"patronymic"`
+	Phone           string   `json:"phone"`
+	Telegram        string   `json:"telegram"`
+	Email           string   `json:"email" binding:"omitempty,email"`
+	Gender          string   `json:"gender"`
+	Country         string   `json:"country"`
+	Region          string   `json:"region"`
+	Nationality     string   `json:"nationality"`
+	ProfilePicURL   string   `json:"profile_pic_url"`
+	Status          string   `json:"status"`
+	TariffType      string   `json:"tariff_type"`
+	JobStatus       string   `json:"job_status"`
+	ActivityType    string   `json:"activity_type"`
+	Specializations []string `json:"specializations"`
 }
 
 type UpdateUserRequest struct {
-	Phone         string `json:"phone"`
-	Email         string `json:"email" binding:"omitempty,email"`
-	ProfilePicURL string `json:"profile_pic_url"`
+	FirstName       string   `json:"first_name"`
+	LastName        string   `json:"last_name"`
+	Patronymic      string   `json:"patronymic"`
+	Phone           string   `json:"phone"`
+	Telegram        string   `json:"telegram"`
+	Email           string   `json:"email" binding:"omitempty,email"`
+	Gender          string   `json:"gender"`
+	Country         string   `json:"country"`
+	Region          string   `json:"region"`
+	Nationality     string   `json:"nationality"`
+	ProfilePicURL   string   `json:"profile_pic_url"`
+	Status          string   `json:"status"`
+	TariffType      string   `json:"tariff_type"`
+	JobStatus       string   `json:"job_status"`
+	ActivityType    string   `json:"activity_type"`
+	Specializations []string `json:"specializations"`
 }
 
 type UserResponse struct {
-	ID            string `json:"id"`
-	Phone         string `json:"phone"`
-	Email         string `json:"email"`
-	ProfilePicURL string `json:"profile_pic_url,omitempty"`
-	CreatedAt     string `json:"created_at"`
+	ID              string   `json:"id"`
+	FirstName       string   `json:"first_name"`
+	LastName        string   `json:"last_name"`
+	Patronymic      string   `json:"patronymic,omitempty"`
+	Phone           string   `json:"phone,omitempty"`
+	Telegram        string   `json:"telegram,omitempty"`
+	Email           string   `json:"email,omitempty"`
+	Gender          string   `json:"gender,omitempty"`
+	Country         string   `json:"country,omitempty"`
+	Region          string   `json:"region,omitempty"`
+	Nationality     string   `json:"nationality,omitempty"`
+	ProfilePicURL   string   `json:"profile_pic_url,omitempty"`
+	Status          string   `json:"status"`
+	TariffType      string   `json:"tariff_type"`
+	JobStatus       string   `json:"job_status,omitempty"`
+	ActivityType    string   `json:"activity_type,omitempty"`
+	Specializations []string `json:"specializations"`
+	CreatedAt       string   `json:"created_at"`
 }
 
 type PaginatedUsersResponse struct {
@@ -38,11 +77,28 @@ type ErrorResponse struct {
 }
 
 func toUserResponse(u *domain.User) UserResponse {
+	specs := u.Specializations
+	if specs == nil {
+		specs = []string{}
+	}
 	return UserResponse{
-		ID:            u.ID.String(),
-		Phone:         u.Phone,
-		Email:         u.Email,
-		ProfilePicURL: u.ProfilePicURL,
-		CreatedAt:     u.CreatedAt.Format(time.RFC3339),
+		ID:              u.ID.String(),
+		FirstName:       u.FirstName,
+		LastName:        u.LastName,
+		Patronymic:      u.Patronymic,
+		Phone:           u.Phone,
+		Telegram:        u.Telegram,
+		Email:           u.Email,
+		Gender:          u.Gender,
+		Country:         u.Country,
+		Region:          u.Region,
+		Nationality:     u.Nationality,
+		ProfilePicURL:   u.ProfilePicURL,
+		Status:          u.Status,
+		TariffType:      u.TariffType,
+		JobStatus:       u.JobStatus,
+		ActivityType:    u.ActivityType,
+		Specializations: specs,
+		CreatedAt:       u.CreatedAt.Format(time.RFC3339),
 	}
 }
