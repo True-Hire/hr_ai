@@ -20,7 +20,7 @@ func NewProfileFieldHandler(service *application.ProfileFieldService) *ProfileFi
 }
 
 func (h *ProfileFieldHandler) Create(c *gin.Context) {
-	userID, err := uuid.Parse(c.Param("user_id"))
+	userID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid user id"})
 		return
@@ -62,7 +62,7 @@ func (h *ProfileFieldHandler) GetByID(c *gin.Context) {
 }
 
 func (h *ProfileFieldHandler) ListByUser(c *gin.Context) {
-	userID, err := uuid.Parse(c.Param("user_id"))
+	userID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid user id"})
 		return

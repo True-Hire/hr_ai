@@ -20,7 +20,7 @@ func NewProfileFieldTextHandler(service *application.ProfileFieldTextService) *P
 }
 
 func (h *ProfileFieldTextHandler) Create(c *gin.Context) {
-	fieldID, err := uuid.Parse(c.Param("field_id"))
+	fieldID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid profile field id"})
 		return
@@ -42,7 +42,7 @@ func (h *ProfileFieldTextHandler) Create(c *gin.Context) {
 }
 
 func (h *ProfileFieldTextHandler) Get(c *gin.Context) {
-	fieldID, err := uuid.Parse(c.Param("field_id"))
+	fieldID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid profile field id"})
 		return
@@ -68,7 +68,7 @@ func (h *ProfileFieldTextHandler) Get(c *gin.Context) {
 }
 
 func (h *ProfileFieldTextHandler) ListByField(c *gin.Context) {
-	fieldID, err := uuid.Parse(c.Param("field_id"))
+	fieldID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid profile field id"})
 		return
@@ -89,7 +89,7 @@ func (h *ProfileFieldTextHandler) ListByField(c *gin.Context) {
 }
 
 func (h *ProfileFieldTextHandler) Update(c *gin.Context) {
-	fieldID, err := uuid.Parse(c.Param("field_id"))
+	fieldID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid profile field id"})
 		return
@@ -121,7 +121,7 @@ func (h *ProfileFieldTextHandler) Update(c *gin.Context) {
 }
 
 func (h *ProfileFieldTextHandler) Delete(c *gin.Context) {
-	fieldID, err := uuid.Parse(c.Param("field_id"))
+	fieldID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid profile field id"})
 		return
