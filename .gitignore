@@ -2,3 +2,5 @@
 *.exe
 *.out
 /tmp
+
+project_overview.txt
