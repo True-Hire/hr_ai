@@ -12,6 +12,9 @@ type Services struct {
 	User             *application.UserService
 	ProfileField     *application.ProfileFieldService
 	ProfileFieldText *application.ProfileFieldTextService
+	ExperienceItem   *application.ExperienceItemService
+	EducationItem    *application.EducationItemService
+	ItemText         *application.ItemTextService
 	ProfileParse     *application.ProfileParseService
 }
 
@@ -19,6 +22,9 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey string) *Services {
 	userSvc := application.NewUserService(repository.NewUserRepository(pool))
 	pfSvc := application.NewProfileFieldService(repository.NewProfileFieldRepository(pool))
 	pftSvc := application.NewProfileFieldTextService(repository.NewProfileFieldTextRepository(pool))
+	expSvc := application.NewExperienceItemService(repository.NewExperienceItemRepository(pool))
+	eduSvc := application.NewEducationItemService(repository.NewEducationItemRepository(pool))
+	itSvc := application.NewItemTextService(repository.NewItemTextRepository(pool))
 
 	geminiClient := gemini.NewClient(geminiAPIKey)
 
@@ -26,6 +32,9 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey string) *Services {
 		User:             userSvc,
 		ProfileField:     pfSvc,
 		ProfileFieldText: pftSvc,
-		ProfileParse:     application.NewProfileParseService(geminiClient, pfSvc, pftSvc, userSvc),
+		ExperienceItem:   expSvc,
+		EducationItem:    eduSvc,
+		ItemText:         itSvc,
+		ProfileParse:     application.NewProfileParseService(geminiClient, pfSvc, pftSvc, expSvc, eduSvc, itSvc, userSvc),
 	}
 }

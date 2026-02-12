@@ -8,6 +8,42 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type EducationItem struct {
+	ID           pgtype.UUID
+	UserID       pgtype.UUID
+	Institution  string
+	Degree       string
+	FieldOfStudy pgtype.Text
+	StartDate    pgtype.Text
+	EndDate      pgtype.Text
+	Location     pgtype.Text
+	ItemOrder    int32
+	UpdatedAt    pgtype.Timestamp
+}
+
+type ExperienceItem struct {
+	ID        pgtype.UUID
+	UserID    pgtype.UUID
+	Company   string
+	Position  string
+	StartDate pgtype.Text
+	EndDate   pgtype.Text
+	Projects  pgtype.Text
+	WebSite   pgtype.Text
+	ItemOrder int32
+	UpdatedAt pgtype.Timestamp
+}
+
+type ItemText struct {
+	ItemID       pgtype.UUID
+	ItemType     string
+	Lang         string
+	Description  string
+	IsSource     bool
+	ModelVersion pgtype.Text
+	UpdatedAt    pgtype.Timestamp
+}
+
 type ProfileField struct {
 	ID         pgtype.UUID
 	UserID     pgtype.UUID

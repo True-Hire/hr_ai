@@ -9,7 +9,7 @@ import (
 func NewRouter(svc *app.Services) *gin.Engine {
 	router := gin.Default()
 
-	userHandler := NewUserHandler(svc.User, svc.ProfileField, svc.ProfileFieldText)
+	userHandler := NewUserHandler(svc.User, svc.ProfileField, svc.ProfileFieldText, svc.ExperienceItem, svc.EducationItem, svc.ItemText)
 	profileFieldHandler := NewProfileFieldHandler(svc.ProfileField)
 	profileFieldTextHandler := NewProfileFieldTextHandler(svc.ProfileFieldText)
 	profileParseHandler := NewProfileParseHandler(svc.ProfileParse)

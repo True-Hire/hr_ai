@@ -90,25 +90,58 @@ func (r *UpdateUserRequest) ToDomain(id uuid.UUID) *domain.User {
 }
 
 type UserResponse struct {
-	ID              string            `json:"id"`
-	FirstName       string            `json:"first_name"`
-	LastName        string            `json:"last_name"`
-	Patronymic      string            `json:"patronymic,omitempty"`
-	Phone           string            `json:"phone,omitempty"`
-	Telegram        string            `json:"telegram,omitempty"`
-	Email           string            `json:"email,omitempty"`
-	Gender          string            `json:"gender,omitempty"`
-	Country         string            `json:"country,omitempty"`
-	Region          string            `json:"region,omitempty"`
-	Nationality     string            `json:"nationality,omitempty"`
-	ProfilePicURL   string            `json:"profile_pic_url,omitempty"`
-	Status          string            `json:"status"`
-	TariffType      string            `json:"tariff_type"`
-	JobStatus       string            `json:"job_status,omitempty"`
-	ActivityType    string            `json:"activity_type,omitempty"`
-	Specializations []string          `json:"specializations"`
-	CreatedAt       string            `json:"created_at"`
-	Profile         map[string]string `json:"profile,omitempty"`
+	ID              string               `json:"id"`
+	FirstName       string               `json:"first_name"`
+	LastName        string               `json:"last_name"`
+	Patronymic      string               `json:"patronymic,omitempty"`
+	Phone           string               `json:"phone,omitempty"`
+	Telegram        string               `json:"telegram,omitempty"`
+	Email           string               `json:"email,omitempty"`
+	Gender          string               `json:"gender,omitempty"`
+	Country         string               `json:"country,omitempty"`
+	Region          string               `json:"region,omitempty"`
+	Nationality     string               `json:"nationality,omitempty"`
+	ProfilePicURL   string               `json:"profile_pic_url,omitempty"`
+	Status          string               `json:"status"`
+	TariffType      string               `json:"tariff_type"`
+	JobStatus       string               `json:"job_status,omitempty"`
+	ActivityType    string               `json:"activity_type,omitempty"`
+	Specializations []string             `json:"specializations"`
+	CreatedAt       string               `json:"created_at"`
+	Profile         *UserProfileResponse `json:"profile,omitempty"`
+}
+
+type UserProfileResponse struct {
+	Title          string                   `json:"title,omitempty"`
+	About          string                   `json:"about,omitempty"`
+	Skills         string                   `json:"skills,omitempty"`
+	Languages      string                   `json:"languages,omitempty"`
+	Certifications string                   `json:"certifications,omitempty"`
+	Achievements   string                   `json:"achievements,omitempty"`
+	Experience     []ExperienceItemResponse `json:"experience,omitempty"`
+	Education      []EducationItemResponse  `json:"education,omitempty"`
+}
+
+type ExperienceItemResponse struct {
+	ID          string `json:"id"`
+	Company     string `json:"company"`
+	Position    string `json:"position"`
+	StartDate   string `json:"start_date,omitempty"`
+	EndDate     string `json:"end_date,omitempty"`
+	Projects    string `json:"projects,omitempty"`
+	WebSite     string `json:"web_site,omitempty"`
+	Description string `json:"description,omitempty"`
+}
+
+type EducationItemResponse struct {
+	ID           string `json:"id"`
+	Institution  string `json:"institution"`
+	Degree       string `json:"degree"`
+	FieldOfStudy string `json:"field_of_study,omitempty"`
+	StartDate    string `json:"start_date,omitempty"`
+	EndDate      string `json:"end_date,omitempty"`
+	Location     string `json:"location,omitempty"`
+	Description  string `json:"description,omitempty"`
 }
 
 type PaginatedUsersResponse struct {
@@ -126,7 +159,7 @@ func toUserResponse(u *domain.User) UserResponse {
 	return toUserResponseWithProfile(u, nil)
 }
 
-func toUserResponseWithProfile(u *domain.User, profile map[string]string) UserResponse {
+func toUserResponseWithProfile(u *domain.User, profile *UserProfileResponse) UserResponse {
 	specs := u.Specializations
 	if specs == nil {
 		specs = []string{}

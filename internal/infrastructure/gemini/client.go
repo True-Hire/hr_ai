@@ -38,6 +38,28 @@ func (c *Client) ModelVersion() string {
 type ParsedProfile struct {
 	SourceLang string                       `json:"source_lang"`
 	Fields     map[string]map[string]string `json:"fields"`
+	Experience []ParsedExperienceItem       `json:"experience"`
+	Education  []ParsedEducationItem        `json:"education"`
+}
+
+type ParsedExperienceItem struct {
+	Company     string            `json:"company"`
+	Position    map[string]string `json:"position"`
+	StartDate   string            `json:"start_date"`
+	EndDate     string            `json:"end_date"`
+	Projects    string            `json:"projects"`
+	WebSite     string            `json:"web_site"`
+	Description map[string]string `json:"description"`
+}
+
+type ParsedEducationItem struct {
+	Institution  string            `json:"institution"`
+	Degree       map[string]string `json:"degree"`
+	FieldOfStudy map[string]string `json:"field_of_study"`
+	StartDate    string            `json:"start_date"`
+	EndDate      string            `json:"end_date"`
+	Location     string            `json:"location"`
+	Description  map[string]string `json:"description"`
 }
 
 func (c *Client) ParseProfileFromText(ctx context.Context, userInput string) (*ParsedProfile, error) {

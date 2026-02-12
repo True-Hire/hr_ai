@@ -30,3 +30,33 @@ sql:
         package: "profilefieldtexts"
         out: "db/sqlc/profile_field_texts"
         sql_package: "pgx/v5"
+
+# EXPERIENCE_ITEMS
+  - engine: "postgresql"
+    queries: "db/queries/experience_items/"
+    schema: "db/migrations/"
+    gen:
+      go:
+        package: "experienceitems"
+        out: "db/sqlc/experience_items"
+        sql_package: "pgx/v5"
+
+# EDUCATION_ITEMS
+  - engine: "postgresql"
+    queries: "db/queries/education_items/"
+    schema: "db/migrations/"
+    gen:
+      go:
+        package: "educationitems"
+        out: "db/sqlc/education_items"
+        sql_package: "pgx/v5"
+
+# ITEM_TEXTS
+  - engine: "postgresql"
+    queries: "db/queries/item_texts/"
+    schema: "db/migrations/"
+    gen:
+      go:
+        package: "itemtexts"
+        out: "db/sqlc/item_texts"
+        sql_package: "pgx/v5"

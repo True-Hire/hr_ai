@@ -14,6 +14,9 @@ type ProfileParseService struct {
 	geminiClient    *gemini.Client
 	profileFieldSvc *ProfileFieldService
 	profileTextSvc  *ProfileFieldTextService
+	experienceSvc   *ExperienceItemService
+	educationSvc    *EducationItemService
+	itemTextSvc     *ItemTextService
 	userSvc         *UserService
 }
 
@@ -21,12 +24,18 @@ func NewProfileParseService(
 	geminiClient *gemini.Client,
 	profileFieldSvc *ProfileFieldService,
 	profileTextSvc *ProfileFieldTextService,
+	experienceSvc *ExperienceItemService,
+	educationSvc *EducationItemService,
+	itemTextSvc *ItemTextService,
 	userSvc *UserService,
 ) *ProfileParseService {
 	return &ProfileParseService{
 		geminiClient:    geminiClient,
 		profileFieldSvc: profileFieldSvc,
 		profileTextSvc:  profileTextSvc,
+		experienceSvc:   experienceSvc,
+		educationSvc:    educationSvc,
+		itemTextSvc:     itemTextSvc,
 		userSvc:         userSvc,
 	}
 }
@@ -34,11 +43,23 @@ func NewProfileParseService(
 type ParseResult struct {
 	SourceLang string
 	Fields     []ParsedFieldResult
+	Experience []ParsedExperienceResult
+	Education  []ParsedEducationResult
 }
 
 type ParsedFieldResult struct {
 	Field *domain.ProfileField
 	Texts []domain.ProfileFieldText
+}
+
+type ParsedExperienceResult struct {
+	Item  *domain.ExperienceItem
+	Texts []domain.ItemText
+}
+
+type ParsedEducationResult struct {
+	Item  *domain.EducationItem
+	Texts []domain.ItemText
 }
 
 func (s *ProfileParseService) ParseFromText(ctx context.Context, userID uuid.UUID, userInput string) (*ParseResult, error) {
@@ -68,18 +89,21 @@ func (s *ProfileParseService) ParseFromFile(ctx context.Context, userID uuid.UUI
 }
 
 func (s *ProfileParseService) storeResults(ctx context.Context, userID uuid.UUID, parsed *gemini.ParsedProfile) (*ParseResult, error) {
-	if err := s.deleteExistingFields(ctx, userID); err != nil {
-		return nil, fmt.Errorf("delete existing fields: %w", err)
-	}
-
-	result := &ParseResult{
-		SourceLang: parsed.SourceLang,
-		Fields:     make([]ParsedFieldResult, 0, len(parsed.Fields)),
+	if err := s.deleteExistingData(ctx, userID); err != nil {
+		return nil, fmt.Errorf("delete existing data: %w", err)
 	}
 
 	langs := []string{"uz", "ru", "en"}
 	modelVer := s.geminiClient.ModelVersion()
 
+	result := &ParseResult{
+		SourceLang: parsed.SourceLang,
+		Fields:     make([]ParsedFieldResult, 0, len(parsed.Fields)),
+		Experience: make([]ParsedExperienceResult, 0, len(parsed.Experience)),
+		Education:  make([]ParsedEducationResult, 0, len(parsed.Education)),
+	}
+
+	// Store text fields
 	for fieldName, translations := range parsed.Fields {
 		field, err := s.profileFieldSvc.CreateProfileField(ctx, &domain.ProfileField{
 			UserID:     userID,
@@ -117,23 +141,154 @@ func (s *ProfileParseService) storeResults(ctx context.Context, userID uuid.UUID
 		result.Fields = append(result.Fields, fieldResult)
 	}
 
+	// Store experience items
+	for i, exp := range parsed.Experience {
+		// Use source lang for the position value stored in the item row
+		position := exp.Position["en"]
+		if v, ok := exp.Position[parsed.SourceLang]; ok && v != "" {
+			position = v
+		}
+
+		item, err := s.experienceSvc.CreateExperienceItem(ctx, &domain.ExperienceItem{
+			UserID:    userID,
+			Company:   exp.Company,
+			Position:  position,
+			StartDate: exp.StartDate,
+			EndDate:   exp.EndDate,
+			Projects:  exp.Projects,
+			WebSite:   exp.WebSite,
+			ItemOrder: int32(i),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("create experience item %d: %w", i, err)
+		}
+
+		expResult := ParsedExperienceResult{
+			Item:  item,
+			Texts: make([]domain.ItemText, 0, 3),
+		}
+
+		// Create description texts for each language
+		for _, lang := range langs {
+			desc, ok := exp.Description[lang]
+			if !ok || desc == "" {
+				continue
+			}
+
+			text, err := s.itemTextSvc.CreateItemText(ctx, &domain.ItemText{
+				ItemID:       item.ID,
+				ItemType:     "experience",
+				Lang:         lang,
+				Description:  desc,
+				IsSource:     lang == parsed.SourceLang,
+				ModelVersion: modelVer,
+			})
+			if err != nil {
+				return nil, fmt.Errorf("create experience text %d/%s: %w", i, lang, err)
+			}
+			expResult.Texts = append(expResult.Texts, *text)
+		}
+
+		result.Experience = append(result.Experience, expResult)
+	}
+
+	// Store education items
+	for i, edu := range parsed.Education {
+		degree := edu.Degree["en"]
+		if v, ok := edu.Degree[parsed.SourceLang]; ok && v != "" {
+			degree = v
+		}
+		fieldOfStudy := edu.FieldOfStudy["en"]
+		if v, ok := edu.FieldOfStudy[parsed.SourceLang]; ok && v != "" {
+			fieldOfStudy = v
+		}
+
+		item, err := s.educationSvc.CreateEducationItem(ctx, &domain.EducationItem{
+			UserID:       userID,
+			Institution:  edu.Institution,
+			Degree:       degree,
+			FieldOfStudy: fieldOfStudy,
+			StartDate:    edu.StartDate,
+			EndDate:      edu.EndDate,
+			Location:     edu.Location,
+			ItemOrder:    int32(i),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("create education item %d: %w", i, err)
+		}
+
+		eduResult := ParsedEducationResult{
+			Item:  item,
+			Texts: make([]domain.ItemText, 0, 3),
+		}
+
+		for _, lang := range langs {
+			desc, ok := edu.Description[lang]
+			if !ok || desc == "" {
+				continue
+			}
+
+			text, err := s.itemTextSvc.CreateItemText(ctx, &domain.ItemText{
+				ItemID:       item.ID,
+				ItemType:     "education",
+				Lang:         lang,
+				Description:  desc,
+				IsSource:     lang == parsed.SourceLang,
+				ModelVersion: modelVer,
+			})
+			if err != nil {
+				return nil, fmt.Errorf("create education text %d/%s: %w", i, lang, err)
+			}
+			eduResult.Texts = append(eduResult.Texts, *text)
+		}
+
+		result.Education = append(result.Education, eduResult)
+	}
+
 	return result, nil
 }
 
-func (s *ProfileParseService) deleteExistingFields(ctx context.Context, userID uuid.UUID) error {
+func (s *ProfileParseService) deleteExistingData(ctx context.Context, userID uuid.UUID) error {
+	// Delete profile field texts, then fields
 	existingFields, err := s.profileFieldSvc.ListProfileFieldsByUser(ctx, userID)
 	if err != nil {
 		return fmt.Errorf("list existing fields: %w", err)
 	}
-
 	for _, f := range existingFields {
 		if err := s.profileTextSvc.DeleteProfileFieldTextsByField(ctx, f.ID); err != nil {
 			return fmt.Errorf("delete texts for field %s: %w", f.ID, err)
 		}
 	}
-
 	if err := s.profileFieldSvc.DeleteProfileFieldsByUser(ctx, userID); err != nil {
 		return fmt.Errorf("delete fields for user: %w", err)
+	}
+
+	// Delete experience item texts, then items
+	existingExp, err := s.experienceSvc.ListExperienceItemsByUser(ctx, userID)
+	if err != nil {
+		return fmt.Errorf("list existing experience items: %w", err)
+	}
+	for _, e := range existingExp {
+		if err := s.itemTextSvc.DeleteItemTextsByItemID(ctx, e.ID); err != nil {
+			return fmt.Errorf("delete texts for experience %s: %w", e.ID, err)
+		}
+	}
+	if err := s.experienceSvc.DeleteExperienceItemsByUser(ctx, userID); err != nil {
+		return fmt.Errorf("delete experience items for user: %w", err)
+	}
+
+	// Delete education item texts, then items
+	existingEdu, err := s.educationSvc.ListEducationItemsByUser(ctx, userID)
+	if err != nil {
+		return fmt.Errorf("list existing education items: %w", err)
+	}
+	for _, e := range existingEdu {
+		if err := s.itemTextSvc.DeleteItemTextsByItemID(ctx, e.ID); err != nil {
+			return fmt.Errorf("delete texts for education %s: %w", e.ID, err)
+		}
+	}
+	if err := s.educationSvc.DeleteEducationItemsByUser(ctx, userID); err != nil {
+		return fmt.Errorf("delete education items for user: %w", err)
 	}
 
 	return nil

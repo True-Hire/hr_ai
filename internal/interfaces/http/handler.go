@@ -13,20 +13,29 @@ import (
 )
 
 type UserHandler struct {
-	service        *application.UserService
+	service         *application.UserService
 	profileFieldSvc *application.ProfileFieldService
 	profileTextSvc  *application.ProfileFieldTextService
+	experienceSvc   *application.ExperienceItemService
+	educationSvc    *application.EducationItemService
+	itemTextSvc     *application.ItemTextService
 }
 
 func NewUserHandler(
 	service *application.UserService,
 	profileFieldSvc *application.ProfileFieldService,
 	profileTextSvc *application.ProfileFieldTextService,
+	experienceSvc *application.ExperienceItemService,
+	educationSvc *application.EducationItemService,
+	itemTextSvc *application.ItemTextService,
 ) *UserHandler {
 	return &UserHandler{
-		service:        service,
+		service:         service,
 		profileFieldSvc: profileFieldSvc,
 		profileTextSvc:  profileTextSvc,
+		experienceSvc:   experienceSvc,
+		educationSvc:    educationSvc,
+		itemTextSvc:     itemTextSvc,
 	}
 }
 
@@ -140,25 +149,96 @@ func (h *UserHandler) Delete(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func (h *UserHandler) buildUserProfile(c *gin.Context, userID uuid.UUID, lang string) map[string]string {
-	fields, err := h.profileFieldSvc.ListProfileFieldsByUser(c.Request.Context(), userID)
-	if err != nil || len(fields) == 0 {
-		return nil
+func (h *UserHandler) buildUserProfile(c *gin.Context, userID uuid.UUID, lang string) *UserProfileResponse {
+	ctx := c.Request.Context()
+
+	// Fetch text fields
+	fields, err := h.profileFieldSvc.ListProfileFieldsByUser(ctx, userID)
+	if err != nil {
+		fields = nil
 	}
 
-	profile := make(map[string]string, len(fields))
+	fieldMap := make(map[string]string, len(fields))
 	for _, f := range fields {
-		text, err := h.profileTextSvc.GetProfileFieldText(c.Request.Context(), f.ID, lang)
+		text, err := h.profileTextSvc.GetProfileFieldText(ctx, f.ID, lang)
 		if err != nil {
 			continue
 		}
-		profile[f.FieldName] = text.Content
+		fieldMap[f.FieldName] = text.Content
 	}
 
-	if len(profile) == 0 {
+	// Fetch experience items
+	expItems, err := h.experienceSvc.ListExperienceItemsByUser(ctx, userID)
+	if err != nil {
+		expItems = nil
+	}
+
+	var experience []ExperienceItemResponse
+	for _, item := range expItems {
+		resp := ExperienceItemResponse{
+			ID:        item.ID.String(),
+			Company:   item.Company,
+			Position:  item.Position,
+			StartDate: item.StartDate,
+			EndDate:   item.EndDate,
+			Projects:  item.Projects,
+			WebSite:   item.WebSite,
+		}
+		texts, err := h.itemTextSvc.ListItemTextsByItem(ctx, item.ID, "experience")
+		if err == nil {
+			for _, t := range texts {
+				if t.Lang == lang {
+					resp.Description = t.Description
+					break
+				}
+			}
+		}
+		experience = append(experience, resp)
+	}
+
+	// Fetch education items
+	eduItems, err := h.educationSvc.ListEducationItemsByUser(ctx, userID)
+	if err != nil {
+		eduItems = nil
+	}
+
+	var education []EducationItemResponse
+	for _, item := range eduItems {
+		resp := EducationItemResponse{
+			ID:           item.ID.String(),
+			Institution:  item.Institution,
+			Degree:       item.Degree,
+			FieldOfStudy: item.FieldOfStudy,
+			StartDate:    item.StartDate,
+			EndDate:      item.EndDate,
+			Location:     item.Location,
+		}
+		texts, err := h.itemTextSvc.ListItemTextsByItem(ctx, item.ID, "education")
+		if err == nil {
+			for _, t := range texts {
+				if t.Lang == lang {
+					resp.Description = t.Description
+					break
+				}
+			}
+		}
+		education = append(education, resp)
+	}
+
+	if len(fieldMap) == 0 && len(experience) == 0 && len(education) == 0 {
 		return nil
 	}
-	return profile
+
+	return &UserProfileResponse{
+		Title:          fieldMap["title"],
+		About:          fieldMap["about"],
+		Skills:         fieldMap["skills"],
+		Languages:      fieldMap["languages"],
+		Certifications: fieldMap["certifications"],
+		Achievements:   fieldMap["achievements"],
+		Experience:     experience,
+		Education:      education,
+	}
 }
 
 func parseQueryInt32(c *gin.Context, key string, defaultVal int32) int32 {
