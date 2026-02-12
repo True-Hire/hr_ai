@@ -13,11 +13,21 @@ import (
 )
 
 type UserHandler struct {
-	service *application.UserService
+	service        *application.UserService
+	profileFieldSvc *application.ProfileFieldService
+	profileTextSvc  *application.ProfileFieldTextService
 }
 
-func NewUserHandler(service *application.UserService) *UserHandler {
-	return &UserHandler{service: service}
+func NewUserHandler(
+	service *application.UserService,
+	profileFieldSvc *application.ProfileFieldService,
+	profileTextSvc *application.ProfileFieldTextService,
+) *UserHandler {
+	return &UserHandler{
+		service:        service,
+		profileFieldSvc: profileFieldSvc,
+		profileTextSvc:  profileTextSvc,
+	}
 }
 
 func (h *UserHandler) Create(c *gin.Context) {
@@ -53,7 +63,10 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, toUserResponse(user))
+	lang := c.DefaultQuery("lang", "en")
+	profile := h.buildUserProfile(c, user.ID, lang)
+
+	c.JSON(http.StatusOK, toUserResponseWithProfile(user, profile))
 }
 
 func (h *UserHandler) List(c *gin.Context) {
@@ -66,6 +79,8 @@ func (h *UserHandler) List(c *gin.Context) {
 		return
 	}
 
+	lang := c.DefaultQuery("lang", "en")
+
 	resp := PaginatedUsersResponse{
 		Users:    make([]UserResponse, 0, len(result.Users)),
 		Total:    result.Total,
@@ -73,7 +88,8 @@ func (h *UserHandler) List(c *gin.Context) {
 		PageSize: pageSize,
 	}
 	for _, u := range result.Users {
-		resp.Users = append(resp.Users, toUserResponse(&u))
+		profile := h.buildUserProfile(c, u.ID, lang)
+		resp.Users = append(resp.Users, toUserResponseWithProfile(&u, profile))
 	}
 
 	c.JSON(http.StatusOK, resp)
@@ -122,6 +138,27 @@ func (h *UserHandler) Delete(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+func (h *UserHandler) buildUserProfile(c *gin.Context, userID uuid.UUID, lang string) map[string]string {
+	fields, err := h.profileFieldSvc.ListProfileFieldsByUser(c.Request.Context(), userID)
+	if err != nil || len(fields) == 0 {
+		return nil
+	}
+
+	profile := make(map[string]string, len(fields))
+	for _, f := range fields {
+		text, err := h.profileTextSvc.GetProfileFieldText(c.Request.Context(), f.ID, lang)
+		if err != nil {
+			continue
+		}
+		profile[f.FieldName] = text.Content
+	}
+
+	if len(profile) == 0 {
+		return nil
+	}
+	return profile
 }
 
 func parseQueryInt32(c *gin.Context, key string, defaultVal int32) int32 {

@@ -8,8 +8,9 @@ import (
 )
 
 type Config struct {
-	DatabaseURL string
-	ServerPort  string
+	DatabaseURL  string
+	ServerPort   string
+	GeminiAPIKey string
 }
 
 func Load() (*Config, error) {
@@ -25,8 +26,14 @@ func Load() (*Config, error) {
 		port = "8080"
 	}
 
+	geminiKey := os.Getenv("GEMINI_API_KEY")
+	if geminiKey == "" {
+		return nil, fmt.Errorf("GEMINI_API_KEY is required")
+	}
+
 	return &Config{
-		DatabaseURL: dbURL,
-		ServerPort:  port,
+		DatabaseURL:  dbURL,
+		ServerPort:   port,
+		GeminiAPIKey: geminiKey,
 	}, nil
 }

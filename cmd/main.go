@@ -28,7 +28,7 @@ func main() {
 	}
 	defer pool.Close()
 
-	services := app.NewServices(pool)
+	services := app.NewServices(pool, cfg.GeminiAPIKey)
 
 	router := httphandler.NewRouter(services)
 
