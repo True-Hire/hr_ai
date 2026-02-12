@@ -1,0 +1,77 @@
+package application
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/google/uuid"
+
+	"github.com/ruziba3vich/hr-ai/internal/domain"
+)
+
+type UserService struct {
+	repo domain.UserRepository
+}
+
+func NewUserService(repo domain.UserRepository) *UserService {
+	return &UserService{repo: repo}
+}
+
+func (s *UserService) CreateUser(ctx context.Context, phone, email, profilePicURL string) (*domain.User, error) {
+	user := &domain.User{
+		ID:            uuid.New(),
+		Phone:         phone,
+		Email:         email,
+		ProfilePicURL: profilePicURL,
+	}
+	created, err := s.repo.Create(ctx, user)
+	if err != nil {
+		return nil, fmt.Errorf("service create user: %w", err)
+	}
+	return created, nil
+}
+
+func (s *UserService) GetUser(ctx context.Context, id uuid.UUID) (*domain.User, error) {
+	return s.repo.GetByID(ctx, id)
+}
+
+type ListUsersResult struct {
+	Users []domain.User
+	Total int64
+}
+
+func (s *UserService) ListUsers(ctx context.Context, page, pageSize int32) (*ListUsersResult, error) {
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 20
+	}
+	offset := (page - 1) * pageSize
+
+	total, err := s.repo.Count(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("service count users: %w", err)
+	}
+
+	users, err := s.repo.List(ctx, pageSize, offset)
+	if err != nil {
+		return nil, fmt.Errorf("service list users: %w", err)
+	}
+
+	return &ListUsersResult{Users: users, Total: total}, nil
+}
+
+func (s *UserService) UpdateUser(ctx context.Context, id uuid.UUID, phone, email, profilePicURL string) (*domain.User, error) {
+	user := &domain.User{
+		ID:            id,
+		Phone:         phone,
+		Email:         email,
+		ProfilePicURL: profilePicURL,
+	}
+	return s.repo.Update(ctx, user)
+}
+
+func (s *UserService) DeleteUser(ctx context.Context, id uuid.UUID) error {
+	return s.repo.Delete(ctx, id)
+}
