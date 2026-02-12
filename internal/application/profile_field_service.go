@@ -17,13 +17,8 @@ func NewProfileFieldService(repo domain.ProfileFieldRepository) *ProfileFieldSer
 	return &ProfileFieldService{repo: repo}
 }
 
-func (s *ProfileFieldService) CreateProfileField(ctx context.Context, userID uuid.UUID, fieldName, sourceLang string) (*domain.ProfileField, error) {
-	field := &domain.ProfileField{
-		ID:         uuid.New(),
-		UserID:     userID,
-		FieldName:  fieldName,
-		SourceLang: sourceLang,
-	}
+func (s *ProfileFieldService) CreateProfileField(ctx context.Context, field *domain.ProfileField) (*domain.ProfileField, error) {
+	field.ID = uuid.New()
 	created, err := s.repo.Create(ctx, field)
 	if err != nil {
 		return nil, fmt.Errorf("service create profile field: %w", err)
@@ -43,12 +38,7 @@ func (s *ProfileFieldService) ListProfileFieldsByUser(ctx context.Context, userI
 	return s.repo.ListByUser(ctx, userID)
 }
 
-func (s *ProfileFieldService) UpdateProfileField(ctx context.Context, id uuid.UUID, fieldName, sourceLang string) (*domain.ProfileField, error) {
-	field := &domain.ProfileField{
-		ID:         id,
-		FieldName:  fieldName,
-		SourceLang: sourceLang,
-	}
+func (s *ProfileFieldService) UpdateProfileField(ctx context.Context, field *domain.ProfileField) (*domain.ProfileField, error) {
 	return s.repo.Update(ctx, field)
 }
 

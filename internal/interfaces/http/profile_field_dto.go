@@ -3,6 +3,8 @@ package http
 import (
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/ruziba3vich/hr-ai/internal/domain"
 )
 
@@ -14,6 +16,22 @@ type CreateProfileFieldRequest struct {
 type UpdateProfileFieldRequest struct {
 	FieldName  string `json:"field_name"`
 	SourceLang string `json:"source_lang"`
+}
+
+func (r *CreateProfileFieldRequest) ToDomain(userID uuid.UUID) *domain.ProfileField {
+	return &domain.ProfileField{
+		UserID:     userID,
+		FieldName:  r.FieldName,
+		SourceLang: r.SourceLang,
+	}
+}
+
+func (r *UpdateProfileFieldRequest) ToDomain(id uuid.UUID) *domain.ProfileField {
+	return &domain.ProfileField{
+		ID:         id,
+		FieldName:  r.FieldName,
+		SourceLang: r.SourceLang,
+	}
 }
 
 type ProfileFieldResponse struct {

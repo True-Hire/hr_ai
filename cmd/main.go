@@ -9,10 +9,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ruziba3vich/hr-ai/internal/application"
+	"github.com/ruziba3vich/hr-ai/internal/app"
 	"github.com/ruziba3vich/hr-ai/internal/config"
 	"github.com/ruziba3vich/hr-ai/internal/infrastructure/postgres"
-	"github.com/ruziba3vich/hr-ai/internal/infrastructure/repository"
 	httphandler "github.com/ruziba3vich/hr-ai/internal/interfaces/http"
 )
 
@@ -29,16 +28,9 @@ func main() {
 	}
 	defer pool.Close()
 
-	userRepo := repository.NewUserRepository(pool)
-	userService := application.NewUserService(userRepo)
+	services := app.NewServices(pool)
 
-	profileFieldRepo := repository.NewProfileFieldRepository(pool)
-	profileFieldService := application.NewProfileFieldService(profileFieldRepo)
-
-	profileFieldTextRepo := repository.NewProfileFieldTextRepository(pool)
-	profileFieldTextService := application.NewProfileFieldTextService(profileFieldTextRepo)
-
-	router := httphandler.NewRouter(userService, profileFieldService, profileFieldTextService)
+	router := httphandler.NewRouter(services)
 
 	srv := &http.Server{
 		Addr:    ":" + cfg.ServerPort,

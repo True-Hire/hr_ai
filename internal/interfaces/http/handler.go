@@ -27,26 +27,7 @@ func (h *UserHandler) Create(c *gin.Context) {
 		return
 	}
 
-	user := &domain.User{
-		FirstName:       req.FirstName,
-		LastName:        req.LastName,
-		Patronymic:      req.Patronymic,
-		Phone:           req.Phone,
-		Telegram:        req.Telegram,
-		Email:           req.Email,
-		Gender:          req.Gender,
-		Country:         req.Country,
-		Region:          req.Region,
-		Nationality:     req.Nationality,
-		ProfilePicURL:   req.ProfilePicURL,
-		Status:          req.Status,
-		TariffType:      req.TariffType,
-		JobStatus:       req.JobStatus,
-		ActivityType:    req.ActivityType,
-		Specializations: req.Specializations,
-	}
-
-	created, err := h.service.CreateUser(c.Request.Context(), user)
+	created, err := h.service.CreateUser(c.Request.Context(), req.ToDomain())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to create user"})
 		return
@@ -111,27 +92,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 		return
 	}
 
-	user := &domain.User{
-		ID:              id,
-		FirstName:       req.FirstName,
-		LastName:        req.LastName,
-		Patronymic:      req.Patronymic,
-		Phone:           req.Phone,
-		Telegram:        req.Telegram,
-		Email:           req.Email,
-		Gender:          req.Gender,
-		Country:         req.Country,
-		Region:          req.Region,
-		Nationality:     req.Nationality,
-		ProfilePicURL:   req.ProfilePicURL,
-		Status:          req.Status,
-		TariffType:      req.TariffType,
-		JobStatus:       req.JobStatus,
-		ActivityType:    req.ActivityType,
-		Specializations: req.Specializations,
-	}
-
-	updated, err := h.service.UpdateUser(c.Request.Context(), user)
+	updated, err := h.service.UpdateUser(c.Request.Context(), req.ToDomain(id))
 	if err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) {
 			c.JSON(http.StatusNotFound, ErrorResponse{Error: "user not found"})

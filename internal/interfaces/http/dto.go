@@ -3,6 +3,8 @@ package http
 import (
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/ruziba3vich/hr-ai/internal/domain"
 )
 
@@ -42,6 +44,49 @@ type UpdateUserRequest struct {
 	JobStatus       string   `json:"job_status"`
 	ActivityType    string   `json:"activity_type"`
 	Specializations []string `json:"specializations"`
+}
+
+func (r *CreateUserRequest) ToDomain() *domain.User {
+	return &domain.User{
+		FirstName:       r.FirstName,
+		LastName:        r.LastName,
+		Patronymic:      r.Patronymic,
+		Phone:           r.Phone,
+		Telegram:        r.Telegram,
+		Email:           r.Email,
+		Gender:          r.Gender,
+		Country:         r.Country,
+		Region:          r.Region,
+		Nationality:     r.Nationality,
+		ProfilePicURL:   r.ProfilePicURL,
+		Status:          r.Status,
+		TariffType:      r.TariffType,
+		JobStatus:       r.JobStatus,
+		ActivityType:    r.ActivityType,
+		Specializations: r.Specializations,
+	}
+}
+
+func (r *UpdateUserRequest) ToDomain(id uuid.UUID) *domain.User {
+	return &domain.User{
+		ID:              id,
+		FirstName:       r.FirstName,
+		LastName:        r.LastName,
+		Patronymic:      r.Patronymic,
+		Phone:           r.Phone,
+		Telegram:        r.Telegram,
+		Email:           r.Email,
+		Gender:          r.Gender,
+		Country:         r.Country,
+		Region:          r.Region,
+		Nationality:     r.Nationality,
+		ProfilePicURL:   r.ProfilePicURL,
+		Status:          r.Status,
+		TariffType:      r.TariffType,
+		JobStatus:       r.JobStatus,
+		ActivityType:    r.ActivityType,
+		Specializations: r.Specializations,
+	}
 }
 
 type UserResponse struct {

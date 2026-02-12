@@ -32,7 +32,7 @@ func (h *ProfileFieldTextHandler) Create(c *gin.Context) {
 		return
 	}
 
-	text, err := h.service.CreateProfileFieldText(c.Request.Context(), fieldID, req.Lang, req.Content, req.IsSource, req.ModelVersion)
+	text, err := h.service.CreateProfileFieldText(c.Request.Context(), req.ToDomain(fieldID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to create profile field text"})
 		return
@@ -107,7 +107,7 @@ func (h *ProfileFieldTextHandler) Update(c *gin.Context) {
 		return
 	}
 
-	text, err := h.service.UpdateProfileFieldText(c.Request.Context(), fieldID, lang, req.Content, req.ModelVersion)
+	text, err := h.service.UpdateProfileFieldText(c.Request.Context(), req.ToDomain(fieldID, lang))
 	if err != nil {
 		if errors.Is(err, domain.ErrProfileFieldTextNotFound) {
 			c.JSON(http.StatusNotFound, ErrorResponse{Error: "profile field text not found"})

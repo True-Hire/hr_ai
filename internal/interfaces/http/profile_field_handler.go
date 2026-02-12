@@ -32,7 +32,7 @@ func (h *ProfileFieldHandler) Create(c *gin.Context) {
 		return
 	}
 
-	field, err := h.service.CreateProfileField(c.Request.Context(), userID, req.FieldName, req.SourceLang)
+	field, err := h.service.CreateProfileField(c.Request.Context(), req.ToDomain(userID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to create profile field"})
 		return
@@ -95,7 +95,7 @@ func (h *ProfileFieldHandler) Update(c *gin.Context) {
 		return
 	}
 
-	field, err := h.service.UpdateProfileField(c.Request.Context(), id, req.FieldName, req.SourceLang)
+	field, err := h.service.UpdateProfileField(c.Request.Context(), req.ToDomain(id))
 	if err != nil {
 		if errors.Is(err, domain.ErrProfileFieldNotFound) {
 			c.JSON(http.StatusNotFound, ErrorResponse{Error: "profile field not found"})

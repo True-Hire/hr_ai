@@ -3,19 +3,15 @@ package http
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/ruziba3vich/hr-ai/internal/application"
+	"github.com/ruziba3vich/hr-ai/internal/app"
 )
 
-func NewRouter(
-	userService *application.UserService,
-	profileFieldService *application.ProfileFieldService,
-	profileFieldTextService *application.ProfileFieldTextService,
-) *gin.Engine {
+func NewRouter(svc *app.Services) *gin.Engine {
 	router := gin.Default()
 
-	userHandler := NewUserHandler(userService)
-	profileFieldHandler := NewProfileFieldHandler(profileFieldService)
-	profileFieldTextHandler := NewProfileFieldTextHandler(profileFieldTextService)
+	userHandler := NewUserHandler(svc.User)
+	profileFieldHandler := NewProfileFieldHandler(svc.ProfileField)
+	profileFieldTextHandler := NewProfileFieldTextHandler(svc.ProfileFieldText)
 
 	v1 := router.Group("/api/v1")
 	{

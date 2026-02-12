@@ -16,14 +16,7 @@ func NewProfileFieldTextService(repo domain.ProfileFieldTextRepository) *Profile
 	return &ProfileFieldTextService{repo: repo}
 }
 
-func (s *ProfileFieldTextService) CreateProfileFieldText(ctx context.Context, profileFieldID uuid.UUID, lang, content string, isSource bool, modelVersion string) (*domain.ProfileFieldText, error) {
-	text := &domain.ProfileFieldText{
-		ProfileFieldID: profileFieldID,
-		Lang:           lang,
-		Content:        content,
-		IsSource:       isSource,
-		ModelVersion:   modelVersion,
-	}
+func (s *ProfileFieldTextService) CreateProfileFieldText(ctx context.Context, text *domain.ProfileFieldText) (*domain.ProfileFieldText, error) {
 	return s.repo.Create(ctx, text)
 }
 
@@ -35,13 +28,7 @@ func (s *ProfileFieldTextService) ListProfileFieldTexts(ctx context.Context, pro
 	return s.repo.ListByField(ctx, profileFieldID)
 }
 
-func (s *ProfileFieldTextService) UpdateProfileFieldText(ctx context.Context, profileFieldID uuid.UUID, lang, content, modelVersion string) (*domain.ProfileFieldText, error) {
-	text := &domain.ProfileFieldText{
-		ProfileFieldID: profileFieldID,
-		Lang:           lang,
-		Content:        content,
-		ModelVersion:   modelVersion,
-	}
+func (s *ProfileFieldTextService) UpdateProfileFieldText(ctx context.Context, text *domain.ProfileFieldText) (*domain.ProfileFieldText, error) {
 	return s.repo.Update(ctx, text)
 }
 
