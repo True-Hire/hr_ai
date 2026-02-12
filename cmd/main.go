@@ -35,7 +35,10 @@ func main() {
 	profileFieldRepo := repository.NewProfileFieldRepository(pool)
 	profileFieldService := application.NewProfileFieldService(profileFieldRepo)
 
-	router := httphandler.NewRouter(userService, profileFieldService)
+	profileFieldTextRepo := repository.NewProfileFieldTextRepository(pool)
+	profileFieldTextService := application.NewProfileFieldTextService(profileFieldTextRepo)
+
+	router := httphandler.NewRouter(userService, profileFieldService, profileFieldTextService)
 
 	srv := &http.Server{
 		Addr:    ":" + cfg.ServerPort,
