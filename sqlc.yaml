@@ -1,0 +1,19 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "db/queries/users/"
+    schema: "db/migrations/"
+    gen:
+      go:
+        package: "users"
+        out: "db/sqlc/users"
+        sql_package: "pgx/v5"
+
+  - engine: "postgresql"
+    queries: "db/queries/profile_fields/"
+    schema: "db/migrations/"
+    gen:
+      go:
+        package: "profilefields"
+        out: "db/sqlc/profile_fields"
+        sql_package: "pgx/v5"
