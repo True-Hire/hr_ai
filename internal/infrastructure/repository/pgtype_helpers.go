@@ -26,3 +26,17 @@ func pgtypeToString(t pgtype.Text) string {
 	}
 	return t.String
 }
+
+func int4ToPgtype(v int32) pgtype.Int4 {
+	if v == 0 {
+		return pgtype.Int4{Valid: false}
+	}
+	return pgtype.Int4{Int32: v, Valid: true}
+}
+
+func pgtypeToInt32(v pgtype.Int4) int32 {
+	if !v.Valid {
+		return 0
+	}
+	return v.Int32
+}

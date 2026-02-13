@@ -8,6 +8,31 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type CompanyHr struct {
+	ID            pgtype.UUID
+	FirstName     string
+	LastName      string
+	Patronymic    pgtype.Text
+	Phone         pgtype.Text
+	Telegram      pgtype.Text
+	TelegramID    pgtype.Text
+	Email         pgtype.Text
+	Position      pgtype.Text
+	Status        string
+	PasswordHash  pgtype.Text
+	CompanyName   pgtype.Text
+	ActivityType  pgtype.Text
+	CompanyType   pgtype.Text
+	EmployeeCount pgtype.Int4
+	Country       pgtype.Text
+	Market        pgtype.Text
+	WebSite       pgtype.Text
+	About         pgtype.Text
+	LogoUrl       pgtype.Text
+	Instagram     pgtype.Text
+	CreatedAt     pgtype.Timestamp
+}
+
 type EducationItem struct {
 	ID           pgtype.UUID
 	UserID       pgtype.UUID
@@ -32,6 +57,17 @@ type ExperienceItem struct {
 	WebSite   pgtype.Text
 	ItemOrder int32
 	UpdatedAt pgtype.Timestamp
+}
+
+type HrSession struct {
+	ID               pgtype.UUID
+	HrID             pgtype.UUID
+	DeviceID         string
+	RefreshTokenHash string
+	FcmToken         pgtype.Text
+	IpAddress        pgtype.Text
+	CreatedAt        pgtype.Timestamp
+	Deleted          bool
 }
 
 type ItemText struct {

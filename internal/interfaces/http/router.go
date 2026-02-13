@@ -19,6 +19,8 @@ func NewRouter(svc *app.Services) *gin.Engine {
 	profileParseHandler := NewProfileParseHandler(svc.ProfileParse)
 	skillHandler := NewSkillHandler(svc.Skill)
 	authHandler := NewAuthHandler(svc.Auth)
+	companyHRHandler := NewCompanyHRHandler(svc.CompanyHR, svc.HRAuth)
+	hrAuthHandler := NewHRAuthHandler(svc.HRAuth)
 
 	v1 := router.Group("/api/v1")
 	{
@@ -44,6 +46,24 @@ func NewRouter(svc *app.Services) *gin.Engine {
 		}
 
 		v1.GET("/skills", skillHandler.Search)
+
+		hrAuth := v1.Group("/hr/auth")
+		{
+			hrAuth.POST("/set-password", hrAuthHandler.SetPassword)
+			hrAuth.POST("/login", hrAuthHandler.Login)
+			hrAuth.POST("/refresh", hrAuthHandler.Refresh)
+			hrAuth.POST("/logout", HRAuthMiddleware(svc.JWTSecret), hrAuthHandler.Logout)
+		}
+
+		hrs := v1.Group("/hrs")
+		{
+			hrs.POST("", companyHRHandler.Create)
+			hrs.GET("", companyHRHandler.List)
+			hrs.GET("/me", HRAuthMiddleware(svc.JWTSecret), companyHRHandler.Me)
+			hrs.GET("/:id", companyHRHandler.GetByID)
+			hrs.PUT("/:id", companyHRHandler.Update)
+			hrs.DELETE("/:id", companyHRHandler.Delete)
+		}
 
 		profileFields := v1.Group("/profile-fields")
 		{
