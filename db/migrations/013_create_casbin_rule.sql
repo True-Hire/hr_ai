@@ -1,0 +1,8 @@
+-- casbin_rule table is auto-created by the pckhoi/casbin-pgx-adapter.
+-- Policies are seeded programmatically in casbin/enforcer.go.
+-- This migration is kept as documentation of the RBAC policies:
+--
+-- hr   -> vacancies: create, read, update, delete
+-- user -> vacancies: read
+-- hr   -> companies: create, read, update, delete
+-- user -> companies: read
