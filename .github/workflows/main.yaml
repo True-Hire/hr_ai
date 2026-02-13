@@ -42,9 +42,20 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script_stop: true
+          envs: DATABASE_URL,SERVER_PORT,GEMINI_API_KEY,JWT_SECRET,GHCR_TOKEN
           script: |
             echo "Logging in to GHCR..."
-            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u ruziba3vich --password-stdin
+
+            echo "Writing .env file..."
+            mkdir -p /opt/hr-ai
+            cat > /opt/hr-ai/.env << EOF
+            DATABASE_URL=$DATABASE_URL
+            SERVER_PORT=$SERVER_PORT
+            GEMINI_API_KEY=$GEMINI_API_KEY
+            JWT_SECRET=$JWT_SECRET
+            EOF
+            chmod 600 /opt/hr-ai/.env
 
             echo "Stopping old container (if exists)..."
             docker stop hr-ai || true
@@ -60,7 +71,14 @@ jobs:
             docker run -d \
               --restart always \
               --name hr-ai \
-              -p 11911:11911 \
+              --network host \
+              --env-file /opt/hr-ai/.env \
               ghcr.io/ruziba3vich/hr-ai:latest
 
             echo "Deployment successful!"
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
