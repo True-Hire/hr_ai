@@ -100,3 +100,23 @@ sql:
         package: "hrsessions"
         out: "db/sqlc/hr_sessions"
         sql_package: "pgx/v5"
+
+# COMPANIES
+  - engine: "postgresql"
+    queries: "db/queries/companies/"
+    schema: "db/migrations/"
+    gen:
+      go:
+        package: "companies"
+        out: "db/sqlc/companies"
+        sql_package: "pgx/v5"
+
+# COMPANY_TEXTS
+  - engine: "postgresql"
+    queries: "db/queries/company_texts/"
+    schema: "db/migrations/"
+    gen:
+      go:
+        package: "companytexts"
+        out: "db/sqlc/company_texts"
+        sql_package: "pgx/v5"

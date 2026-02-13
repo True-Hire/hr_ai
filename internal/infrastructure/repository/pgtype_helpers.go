@@ -27,6 +27,13 @@ func pgtypeToString(t pgtype.Text) string {
 	return t.String
 }
 
+func uuidToPgtypeNullable(id uuid.UUID) pgtype.UUID {
+	if id == uuid.Nil {
+		return pgtype.UUID{Valid: false}
+	}
+	return pgtype.UUID{Bytes: id, Valid: true}
+}
+
 func int4ToPgtype(v int32) pgtype.Int4 {
 	if v == 0 {
 		return pgtype.Int4{Valid: false}
