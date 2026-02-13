@@ -80,3 +80,23 @@ sql:
         package: "sessions"
         out: "db/sqlc/sessions"
         sql_package: "pgx/v5"
+
+# COMPANY_HRS
+  - engine: "postgresql"
+    queries: "db/queries/company_hrs/"
+    schema: "db/migrations/"
+    gen:
+      go:
+        package: "companyhrs"
+        out: "db/sqlc/company_hrs"
+        sql_package: "pgx/v5"
+
+# HR_SESSIONS
+  - engine: "postgresql"
+    queries: "db/queries/hr_sessions/"
+    schema: "db/migrations/"
+    gen:
+      go:
+        package: "hrsessions"
+        out: "db/sqlc/hr_sessions"
+        sql_package: "pgx/v5"
