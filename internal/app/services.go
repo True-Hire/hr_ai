@@ -17,10 +17,14 @@ type Services struct {
 	ItemText         *application.ItemTextService
 	Skill            *application.SkillService
 	ProfileParse     *application.ProfileParseService
+	Auth             *application.AuthService
+	JWTSecret        string
 }
 
-func NewServices(pool *pgxpool.Pool, geminiAPIKey string) *Services {
-	userSvc := application.NewUserService(repository.NewUserRepository(pool))
+func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret string) *Services {
+	userRepo := repository.NewUserRepository(pool)
+	sessionRepo := repository.NewSessionRepository(pool)
+	userSvc := application.NewUserService(userRepo)
 	pfSvc := application.NewProfileFieldService(repository.NewProfileFieldRepository(pool))
 	pftSvc := application.NewProfileFieldTextService(repository.NewProfileFieldTextRepository(pool))
 	expSvc := application.NewExperienceItemService(repository.NewExperienceItemRepository(pool))
@@ -39,5 +43,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey string) *Services {
 		ItemText:         itSvc,
 		Skill:            skillSvc,
 		ProfileParse:     application.NewProfileParseService(geminiClient, pfSvc, pftSvc, expSvc, eduSvc, itSvc, skillSvc, userSvc),
+		Auth:             application.NewAuthService(userRepo, sessionRepo, jwtSecret),
+		JWTSecret:        jwtSecret,
 	}
 }

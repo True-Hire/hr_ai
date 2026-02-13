@@ -11,6 +11,7 @@ type Config struct {
 	DatabaseURL  string
 	ServerPort   string
 	GeminiAPIKey string
+	JWTSecret    string
 }
 
 func Load() (*Config, error) {
@@ -31,9 +32,15 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("GEMINI_API_KEY is required")
 	}
 
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		return nil, fmt.Errorf("JWT_SECRET is required")
+	}
+
 	return &Config{
 		DatabaseURL:  dbURL,
 		ServerPort:   port,
 		GeminiAPIKey: geminiKey,
+		JWTSecret:    jwtSecret,
 	}, nil
 }

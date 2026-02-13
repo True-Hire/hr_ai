@@ -86,6 +86,18 @@ type User struct {
 	ActivityType    pgtype.Text
 	Specializations []string
 	CreatedAt       pgtype.Timestamp
+	PasswordHash    pgtype.Text
+}
+
+type UserSession struct {
+	ID               pgtype.UUID
+	UserID           pgtype.UUID
+	DeviceID         string
+	RefreshTokenHash string
+	FcmToken         pgtype.Text
+	IpAddress        pgtype.Text
+	CreatedAt        pgtype.Timestamp
+	Deleted          bool
 }
 
 type UserSkill struct {

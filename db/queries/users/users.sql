@@ -10,19 +10,19 @@ INSERT INTO users (
 )
 RETURNING id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at;
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash;
 
 -- name: GetUserByID :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash
 FROM users
 WHERE id = $1;
 
 -- name: ListUsers :many
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash
 FROM users
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2;
@@ -51,8 +51,25 @@ SET first_name = COALESCE(NULLIF(sqlc.arg(first_name), ''), first_name),
 WHERE id = sqlc.arg(id)
 RETURNING id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at;
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash;
 
 -- name: DeleteUser :exec
 DELETE FROM users
 WHERE id = $1;
+
+-- name: GetUserByPhone :one
+SELECT id, first_name, last_name, patronymic, phone, telegram, email,
+    gender, country, region, nationality, profile_pic_url,
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash
+FROM users
+WHERE phone = $1;
+
+-- name: GetUserByEmail :one
+SELECT id, first_name, last_name, patronymic, phone, telegram, email,
+    gender, country, region, nationality, profile_pic_url,
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash
+FROM users
+WHERE email = $1;
+
+-- name: SetUserPassword :exec
+UPDATE users SET password_hash = $2 WHERE id = $1;

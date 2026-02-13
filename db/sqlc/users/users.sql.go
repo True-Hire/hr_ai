@@ -34,7 +34,7 @@ INSERT INTO users (
 )
 RETURNING id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash
 `
 
 type CreateUserParams struct {
@@ -97,6 +97,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.ActivityType,
 		&i.Specializations,
 		&i.CreatedAt,
+		&i.PasswordHash,
 	)
 	return i, err
 }
@@ -111,10 +112,45 @@ func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
 	return err
 }
 
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT id, first_name, last_name, patronymic, phone, telegram, email,
+    gender, country, region, nationality, profile_pic_url,
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash
+FROM users
+WHERE email = $1
+`
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email pgtype.Text) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByEmail, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.Patronymic,
+		&i.Phone,
+		&i.Telegram,
+		&i.Email,
+		&i.Gender,
+		&i.Country,
+		&i.Region,
+		&i.Nationality,
+		&i.ProfilePicUrl,
+		&i.Status,
+		&i.TariffType,
+		&i.JobStatus,
+		&i.ActivityType,
+		&i.Specializations,
+		&i.CreatedAt,
+		&i.PasswordHash,
+	)
+	return i, err
+}
+
 const getUserByID = `-- name: GetUserByID :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash
 FROM users
 WHERE id = $1
 `
@@ -141,6 +177,42 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error)
 		&i.ActivityType,
 		&i.Specializations,
 		&i.CreatedAt,
+		&i.PasswordHash,
+	)
+	return i, err
+}
+
+const getUserByPhone = `-- name: GetUserByPhone :one
+SELECT id, first_name, last_name, patronymic, phone, telegram, email,
+    gender, country, region, nationality, profile_pic_url,
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash
+FROM users
+WHERE phone = $1
+`
+
+func (q *Queries) GetUserByPhone(ctx context.Context, phone pgtype.Text) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByPhone, phone)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.Patronymic,
+		&i.Phone,
+		&i.Telegram,
+		&i.Email,
+		&i.Gender,
+		&i.Country,
+		&i.Region,
+		&i.Nationality,
+		&i.ProfilePicUrl,
+		&i.Status,
+		&i.TariffType,
+		&i.JobStatus,
+		&i.ActivityType,
+		&i.Specializations,
+		&i.CreatedAt,
+		&i.PasswordHash,
 	)
 	return i, err
 }
@@ -148,7 +220,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error)
 const listUsers = `-- name: ListUsers :many
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash
 FROM users
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2
@@ -187,6 +259,7 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 			&i.ActivityType,
 			&i.Specializations,
 			&i.CreatedAt,
+			&i.PasswordHash,
 		); err != nil {
 			return nil, err
 		}
@@ -196,6 +269,20 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 		return nil, err
 	}
 	return items, nil
+}
+
+const setUserPassword = `-- name: SetUserPassword :exec
+UPDATE users SET password_hash = $2 WHERE id = $1
+`
+
+type SetUserPasswordParams struct {
+	ID           pgtype.UUID
+	PasswordHash pgtype.Text
+}
+
+func (q *Queries) SetUserPassword(ctx context.Context, arg SetUserPasswordParams) error {
+	_, err := q.db.Exec(ctx, setUserPassword, arg.ID, arg.PasswordHash)
+	return err
 }
 
 const updateUser = `-- name: UpdateUser :one
@@ -219,7 +306,7 @@ SET first_name = COALESCE(NULLIF($1, ''), first_name),
 WHERE id = $17
 RETURNING id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash
 `
 
 type UpdateUserParams struct {
@@ -282,6 +369,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.ActivityType,
 		&i.Specializations,
 		&i.CreatedAt,
+		&i.PasswordHash,
 	)
 	return i, err
 }
