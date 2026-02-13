@@ -22,6 +22,7 @@ type UserHandler struct {
 	itemTextSvc     *application.ItemTextService
 	skillSvc        *application.SkillService
 	authSvc         *application.AuthService
+	searchSvc       *application.SearchService
 }
 
 func NewUserHandler(
@@ -33,6 +34,7 @@ func NewUserHandler(
 	itemTextSvc *application.ItemTextService,
 	skillSvc *application.SkillService,
 	authSvc *application.AuthService,
+	searchSvc *application.SearchService,
 ) *UserHandler {
 	return &UserHandler{
 		service:         service,
@@ -43,6 +45,7 @@ func NewUserHandler(
 		itemTextSvc:     itemTextSvc,
 		skillSvc:        skillSvc,
 		authSvc:         authSvc,
+		searchSvc:       searchSvc,
 	}
 }
 
@@ -147,16 +150,26 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 }
 
 // List godoc
-// @Summary List users with pagination
+// @Summary List users with pagination or semantic search
 // @Tags users
 // @Produce json
-// @Param page query int false "Page number" default(1)
+// @Param q query string false "Search query (any language). When provided, returns semantically ranked results"
+// @Param page query int false "Page number (pagination mode)" default(1)
 // @Param page_size query int false "Page size" default(20)
 // @Param lang query string false "Language code (uz, ru, en)" default(en)
 // @Success 200 {object} PaginatedUsersResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /users [get]
 func (h *UserHandler) List(c *gin.Context) {
+	lang := c.DefaultQuery("lang", "en")
+
+	// If search query provided, use semantic search
+	if q := c.Query("q"); q != "" {
+		h.listBySearch(c, q, lang)
+		return
+	}
+
+	// Otherwise, regular pagination
 	page := parseQueryInt32(c, "page", 1)
 	pageSize := parseQueryInt32(c, "page_size", 20)
 
@@ -165,8 +178,6 @@ func (h *UserHandler) List(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to list users"})
 		return
 	}
-
-	lang := c.DefaultQuery("lang", "en")
 
 	resp := PaginatedUsersResponse{
 		Users:    make([]UserResponse, 0, len(result.Users)),
@@ -180,6 +191,35 @@ func (h *UserHandler) List(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, resp)
+}
+
+func (h *UserHandler) listBySearch(c *gin.Context, query, lang string) {
+	pageSize := parseQueryInt32(c, "page_size", 20)
+
+	results, err := h.searchSvc.SearchUsers(c.Request.Context(), query, int(pageSize))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "search failed"})
+		return
+	}
+
+	users := make([]UserResponse, 0, len(results))
+	for _, r := range results {
+		user, err := h.service.GetUser(c.Request.Context(), r.UserID)
+		if err != nil {
+			continue
+		}
+		profile := h.buildUserProfile(c, user.ID, lang)
+		resp := toUserResponseWithProfile(user, profile)
+		resp.SearchScore = &r.Score
+		users = append(users, resp)
+	}
+
+	c.JSON(http.StatusOK, PaginatedUsersResponse{
+		Users:    users,
+		Total:    int64(len(users)),
+		Page:     1,
+		PageSize: pageSize,
+	})
 }
 
 // Update godoc
