@@ -18,9 +18,18 @@ func NewRouter(svc *app.Services) *gin.Engine {
 	profileFieldTextHandler := NewProfileFieldTextHandler(svc.ProfileFieldText)
 	profileParseHandler := NewProfileParseHandler(svc.ProfileParse)
 	skillHandler := NewSkillHandler(svc.Skill)
+	authHandler := NewAuthHandler(svc.Auth)
 
 	v1 := router.Group("/api/v1")
 	{
+		auth := v1.Group("/auth")
+		{
+			auth.POST("/set-password", authHandler.SetPassword)
+			auth.POST("/login", authHandler.Login)
+			auth.POST("/refresh", authHandler.Refresh)
+			auth.POST("/logout", AuthMiddleware(svc.JWTSecret), authHandler.Logout)
+		}
+
 		users := v1.Group("/users")
 		{
 			users.POST("", userHandler.Create)

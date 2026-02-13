@@ -120,6 +120,39 @@ func (r *UserRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
+func (r *UserRepository) GetByPhone(ctx context.Context, phone string) (*domain.User, error) {
+	row, err := r.q.GetUserByPhone(ctx, textToPgtype(phone))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrUserNotFound
+		}
+		return nil, fmt.Errorf("get user by phone: %w", err)
+	}
+	return userToDomain(row), nil
+}
+
+func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
+	row, err := r.q.GetUserByEmail(ctx, textToPgtype(email))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrUserNotFound
+		}
+		return nil, fmt.Errorf("get user by email: %w", err)
+	}
+	return userToDomain(row), nil
+}
+
+func (r *UserRepository) SetPassword(ctx context.Context, id uuid.UUID, hash string) error {
+	err := r.q.SetUserPassword(ctx, usersdb.SetUserPasswordParams{
+		ID:           uuidToPgtype(id),
+		PasswordHash: textToPgtype(hash),
+	})
+	if err != nil {
+		return fmt.Errorf("set user password: %w", err)
+	}
+	return nil
+}
+
 func userToDomain(row usersdb.User) *domain.User {
 	return &domain.User{
 		ID:              pgtypeToUUID(row.ID),
@@ -139,6 +172,7 @@ func userToDomain(row usersdb.User) *domain.User {
 		JobStatus:       pgtypeToString(row.JobStatus),
 		ActivityType:    pgtypeToString(row.ActivityType),
 		Specializations: row.Specializations,
+		PasswordHash:    pgtypeToString(row.PasswordHash),
 		CreatedAt:       row.CreatedAt.Time,
 	}
 }
