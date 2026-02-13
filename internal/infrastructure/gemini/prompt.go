@@ -246,6 +246,16 @@ HR's job posting text:
 %s`, userInput)
 }
 
+func buildTranslateToEnglishPrompt(text string) string {
+	return fmt.Sprintf(`You are a translator. Translate the following text to English. If the text is already in English, return it as-is.
+
+Return ONLY valid JSON in this exact format:
+{"text": "translated english text here"}
+
+Text to translate:
+%s`, text)
+}
+
 func buildFilePrompt() string {
 	return `You are an AI that extracts structured profile information from uploaded documents (resumes, CVs, profiles) for a job platform.
 
