@@ -25,39 +25,27 @@ func (q *Queries) CountCompanyHRs(ctx context.Context) (int64, error) {
 const createCompanyHR = `-- name: CreateCompanyHR :one
 INSERT INTO company_hrs (
     id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
-    position, status, company_name, activity_type, company_type, employee_count,
-    country, market, web_site, about, logo_url, instagram, created_at
+    position, status, company_id, created_at
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8,
-    $9, $10, $11, $12, $13, $14,
-    $15, $16, $17, $18, $19, $20, now()
+    $9, $10, $11, now()
 )
 RETURNING id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
-    position, status, password_hash, company_name, activity_type, company_type, employee_count,
-    country, market, web_site, about, logo_url, instagram, created_at
+    position, status, password_hash, created_at, company_id
 `
 
 type CreateCompanyHRParams struct {
-	ID            pgtype.UUID
-	FirstName     string
-	LastName      string
-	Patronymic    pgtype.Text
-	Phone         pgtype.Text
-	Telegram      pgtype.Text
-	TelegramID    pgtype.Text
-	Email         pgtype.Text
-	Position      pgtype.Text
-	Status        string
-	CompanyName   pgtype.Text
-	ActivityType  pgtype.Text
-	CompanyType   pgtype.Text
-	EmployeeCount pgtype.Int4
-	Country       pgtype.Text
-	Market        pgtype.Text
-	WebSite       pgtype.Text
-	About         pgtype.Text
-	LogoUrl       pgtype.Text
-	Instagram     pgtype.Text
+	ID         pgtype.UUID
+	FirstName  string
+	LastName   string
+	Patronymic pgtype.Text
+	Phone      pgtype.Text
+	Telegram   pgtype.Text
+	TelegramID pgtype.Text
+	Email      pgtype.Text
+	Position   pgtype.Text
+	Status     string
+	CompanyID  pgtype.UUID
 }
 
 func (q *Queries) CreateCompanyHR(ctx context.Context, arg CreateCompanyHRParams) (CompanyHr, error) {
@@ -72,16 +60,7 @@ func (q *Queries) CreateCompanyHR(ctx context.Context, arg CreateCompanyHRParams
 		arg.Email,
 		arg.Position,
 		arg.Status,
-		arg.CompanyName,
-		arg.ActivityType,
-		arg.CompanyType,
-		arg.EmployeeCount,
-		arg.Country,
-		arg.Market,
-		arg.WebSite,
-		arg.About,
-		arg.LogoUrl,
-		arg.Instagram,
+		arg.CompanyID,
 	)
 	var i CompanyHr
 	err := row.Scan(
@@ -96,17 +75,8 @@ func (q *Queries) CreateCompanyHR(ctx context.Context, arg CreateCompanyHRParams
 		&i.Position,
 		&i.Status,
 		&i.PasswordHash,
-		&i.CompanyName,
-		&i.ActivityType,
-		&i.CompanyType,
-		&i.EmployeeCount,
-		&i.Country,
-		&i.Market,
-		&i.WebSite,
-		&i.About,
-		&i.LogoUrl,
-		&i.Instagram,
 		&i.CreatedAt,
+		&i.CompanyID,
 	)
 	return i, err
 }
@@ -123,8 +93,7 @@ func (q *Queries) DeleteCompanyHR(ctx context.Context, id pgtype.UUID) error {
 
 const getCompanyHRByEmail = `-- name: GetCompanyHRByEmail :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
-    position, status, password_hash, company_name, activity_type, company_type, employee_count,
-    country, market, web_site, about, logo_url, instagram, created_at
+    position, status, password_hash, created_at, company_id
 FROM company_hrs
 WHERE email = $1
 `
@@ -144,25 +113,15 @@ func (q *Queries) GetCompanyHRByEmail(ctx context.Context, email pgtype.Text) (C
 		&i.Position,
 		&i.Status,
 		&i.PasswordHash,
-		&i.CompanyName,
-		&i.ActivityType,
-		&i.CompanyType,
-		&i.EmployeeCount,
-		&i.Country,
-		&i.Market,
-		&i.WebSite,
-		&i.About,
-		&i.LogoUrl,
-		&i.Instagram,
 		&i.CreatedAt,
+		&i.CompanyID,
 	)
 	return i, err
 }
 
 const getCompanyHRByID = `-- name: GetCompanyHRByID :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
-    position, status, password_hash, company_name, activity_type, company_type, employee_count,
-    country, market, web_site, about, logo_url, instagram, created_at
+    position, status, password_hash, created_at, company_id
 FROM company_hrs
 WHERE id = $1
 `
@@ -182,25 +141,15 @@ func (q *Queries) GetCompanyHRByID(ctx context.Context, id pgtype.UUID) (Company
 		&i.Position,
 		&i.Status,
 		&i.PasswordHash,
-		&i.CompanyName,
-		&i.ActivityType,
-		&i.CompanyType,
-		&i.EmployeeCount,
-		&i.Country,
-		&i.Market,
-		&i.WebSite,
-		&i.About,
-		&i.LogoUrl,
-		&i.Instagram,
 		&i.CreatedAt,
+		&i.CompanyID,
 	)
 	return i, err
 }
 
 const getCompanyHRByPhone = `-- name: GetCompanyHRByPhone :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
-    position, status, password_hash, company_name, activity_type, company_type, employee_count,
-    country, market, web_site, about, logo_url, instagram, created_at
+    position, status, password_hash, created_at, company_id
 FROM company_hrs
 WHERE phone = $1
 `
@@ -220,25 +169,15 @@ func (q *Queries) GetCompanyHRByPhone(ctx context.Context, phone pgtype.Text) (C
 		&i.Position,
 		&i.Status,
 		&i.PasswordHash,
-		&i.CompanyName,
-		&i.ActivityType,
-		&i.CompanyType,
-		&i.EmployeeCount,
-		&i.Country,
-		&i.Market,
-		&i.WebSite,
-		&i.About,
-		&i.LogoUrl,
-		&i.Instagram,
 		&i.CreatedAt,
+		&i.CompanyID,
 	)
 	return i, err
 }
 
 const listCompanyHRs = `-- name: ListCompanyHRs :many
 SELECT id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
-    position, status, password_hash, company_name, activity_type, company_type, employee_count,
-    country, market, web_site, about, logo_url, instagram, created_at
+    position, status, password_hash, created_at, company_id
 FROM company_hrs
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2
@@ -270,17 +209,8 @@ func (q *Queries) ListCompanyHRs(ctx context.Context, arg ListCompanyHRsParams) 
 			&i.Position,
 			&i.Status,
 			&i.PasswordHash,
-			&i.CompanyName,
-			&i.ActivityType,
-			&i.CompanyType,
-			&i.EmployeeCount,
-			&i.Country,
-			&i.Market,
-			&i.WebSite,
-			&i.About,
-			&i.LogoUrl,
-			&i.Instagram,
 			&i.CreatedAt,
+			&i.CompanyID,
 		); err != nil {
 			return nil, err
 		}
@@ -317,43 +247,24 @@ SET first_name = COALESCE(NULLIF($1, ''), first_name),
     email = COALESCE(NULLIF($7, ''), email),
     position = COALESCE(NULLIF($8, ''), position),
     status = COALESCE(NULLIF($9, ''), status),
-    company_name = COALESCE(NULLIF($10, ''), company_name),
-    activity_type = COALESCE(NULLIF($11, ''), activity_type),
-    company_type = COALESCE(NULLIF($12, ''), company_type),
-    employee_count = CASE WHEN $13::INT = 0 THEN employee_count ELSE $13 END,
-    country = COALESCE(NULLIF($14, ''), country),
-    market = COALESCE(NULLIF($15, ''), market),
-    web_site = COALESCE(NULLIF($16, ''), web_site),
-    about = COALESCE(NULLIF($17, ''), about),
-    logo_url = COALESCE(NULLIF($18, ''), logo_url),
-    instagram = COALESCE(NULLIF($19, ''), instagram)
-WHERE id = $20
+    company_id = CASE WHEN $10::UUID IS NOT NULL THEN $10 ELSE company_id END
+WHERE id = $11
 RETURNING id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
-    position, status, password_hash, company_name, activity_type, company_type, employee_count,
-    country, market, web_site, about, logo_url, instagram, created_at
+    position, status, password_hash, created_at, company_id
 `
 
 type UpdateCompanyHRParams struct {
-	FirstName     interface{}
-	LastName      interface{}
-	Patronymic    interface{}
-	Phone         interface{}
-	Telegram      interface{}
-	TelegramID    interface{}
-	Email         interface{}
-	Position      interface{}
-	Status        interface{}
-	CompanyName   interface{}
-	ActivityType  interface{}
-	CompanyType   interface{}
-	EmployeeCount int32
-	Country       interface{}
-	Market        interface{}
-	WebSite       interface{}
-	About         interface{}
-	LogoUrl       interface{}
-	Instagram     interface{}
-	ID            pgtype.UUID
+	FirstName  interface{}
+	LastName   interface{}
+	Patronymic interface{}
+	Phone      interface{}
+	Telegram   interface{}
+	TelegramID interface{}
+	Email      interface{}
+	Position   interface{}
+	Status     interface{}
+	CompanyID  pgtype.UUID
+	ID         pgtype.UUID
 }
 
 func (q *Queries) UpdateCompanyHR(ctx context.Context, arg UpdateCompanyHRParams) (CompanyHr, error) {
@@ -367,16 +278,7 @@ func (q *Queries) UpdateCompanyHR(ctx context.Context, arg UpdateCompanyHRParams
 		arg.Email,
 		arg.Position,
 		arg.Status,
-		arg.CompanyName,
-		arg.ActivityType,
-		arg.CompanyType,
-		arg.EmployeeCount,
-		arg.Country,
-		arg.Market,
-		arg.WebSite,
-		arg.About,
-		arg.LogoUrl,
-		arg.Instagram,
+		arg.CompanyID,
 		arg.ID,
 	)
 	var i CompanyHr
@@ -392,17 +294,8 @@ func (q *Queries) UpdateCompanyHR(ctx context.Context, arg UpdateCompanyHRParams
 		&i.Position,
 		&i.Status,
 		&i.PasswordHash,
-		&i.CompanyName,
-		&i.ActivityType,
-		&i.CompanyType,
-		&i.EmployeeCount,
-		&i.Country,
-		&i.Market,
-		&i.WebSite,
-		&i.About,
-		&i.LogoUrl,
-		&i.Instagram,
 		&i.CreatedAt,
+		&i.CompanyID,
 	)
 	return i, err
 }
