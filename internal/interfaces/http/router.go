@@ -13,18 +13,28 @@ func NewRouter(svc *app.Services) *gin.Engine {
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	userHandler := NewUserHandler(svc.User, svc.ProfileField, svc.ProfileFieldText, svc.ExperienceItem, svc.EducationItem, svc.ItemText, svc.Skill)
+	userHandler := NewUserHandler(svc.User, svc.ProfileField, svc.ProfileFieldText, svc.ExperienceItem, svc.EducationItem, svc.ItemText, svc.Skill, svc.Auth)
 	profileFieldHandler := NewProfileFieldHandler(svc.ProfileField)
 	profileFieldTextHandler := NewProfileFieldTextHandler(svc.ProfileFieldText)
 	profileParseHandler := NewProfileParseHandler(svc.ProfileParse)
 	skillHandler := NewSkillHandler(svc.Skill)
+	authHandler := NewAuthHandler(svc.Auth)
 
 	v1 := router.Group("/api/v1")
 	{
+		auth := v1.Group("/auth")
+		{
+			auth.POST("/set-password", authHandler.SetPassword)
+			auth.POST("/login", authHandler.Login)
+			auth.POST("/refresh", authHandler.Refresh)
+			auth.POST("/logout", AuthMiddleware(svc.JWTSecret), authHandler.Logout)
+		}
+
 		users := v1.Group("/users")
 		{
 			users.POST("", userHandler.Create)
 			users.GET("", userHandler.List)
+			users.GET("/me", AuthMiddleware(svc.JWTSecret), userHandler.Me)
 			users.GET("/:id", userHandler.GetByID)
 			users.PUT("/:id", userHandler.Update)
 			users.DELETE("/:id", userHandler.Delete)

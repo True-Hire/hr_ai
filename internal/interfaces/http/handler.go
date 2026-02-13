@@ -21,6 +21,7 @@ type UserHandler struct {
 	educationSvc    *application.EducationItemService
 	itemTextSvc     *application.ItemTextService
 	skillSvc        *application.SkillService
+	authSvc         *application.AuthService
 }
 
 func NewUserHandler(
@@ -31,6 +32,7 @@ func NewUserHandler(
 	educationSvc *application.EducationItemService,
 	itemTextSvc *application.ItemTextService,
 	skillSvc *application.SkillService,
+	authSvc *application.AuthService,
 ) *UserHandler {
 	return &UserHandler{
 		service:         service,
@@ -40,6 +42,7 @@ func NewUserHandler(
 		educationSvc:    educationSvc,
 		itemTextSvc:     itemTextSvc,
 		skillSvc:        skillSvc,
+		authSvc:         authSvc,
 	}
 }
 
@@ -66,7 +69,47 @@ func (h *UserHandler) Create(c *gin.Context) {
 		return
 	}
 
+	if err := h.authSvc.SetPassword(c.Request.Context(), created.ID, req.Password); err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "user created but failed to set password"})
+		return
+	}
+
 	c.JSON(http.StatusCreated, toUserResponse(created))
+}
+
+// Me godoc
+// @Summary Get current authenticated user with full profile
+// @Tags users
+// @Produce json
+// @Param lang query string false "Language code (uz, ru, en)" default(en)
+// @Success 200 {object} UserResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Security BearerAuth
+// @Router /users/me [get]
+func (h *UserHandler) Me(c *gin.Context) {
+	userID, _ := c.Get("user_id")
+	id, err := uuid.Parse(userID.(string))
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "invalid token"})
+		return
+	}
+
+	user, err := h.service.GetUser(c.Request.Context(), id)
+	if err != nil {
+		if errors.Is(err, domain.ErrUserNotFound) {
+			c.JSON(http.StatusNotFound, ErrorResponse{Error: "user not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to get user"})
+		return
+	}
+
+	lang := c.DefaultQuery("lang", "en")
+	profile := h.buildUserProfile(c, user.ID, lang)
+
+	c.JSON(http.StatusOK, toUserResponseWithProfile(user, profile))
 }
 
 // GetByID godoc

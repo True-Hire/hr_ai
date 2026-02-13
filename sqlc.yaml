@@ -70,3 +70,13 @@ sql:
         package: "skills"
         out: "db/sqlc/skills"
         sql_package: "pgx/v5"
+
+# SESSIONS
+  - engine: "postgresql"
+    queries: "db/queries/sessions/"
+    schema: "db/migrations/"
+    gen:
+      go:
+        package: "sessions"
+        out: "db/sqlc/sessions"
+        sql_package: "pgx/v5"
