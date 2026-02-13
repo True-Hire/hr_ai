@@ -35,12 +35,12 @@ func NewRouter(svc *app.Services) *gin.Engine {
 			users.POST("", userHandler.Create)
 			users.GET("", userHandler.List)
 			users.GET("/me", AuthMiddleware(svc.JWTSecret), userHandler.Me)
+			users.POST("/me/profile/parse", AuthMiddleware(svc.JWTSecret), profileParseHandler.Parse)
 			users.GET("/:id", userHandler.GetByID)
 			users.PUT("/:id", userHandler.Update)
 			users.DELETE("/:id", userHandler.Delete)
 			users.POST("/:id/profile-fields", profileFieldHandler.Create)
 			users.GET("/:id/profile-fields", profileFieldHandler.ListByUser)
-			users.POST("/:id/profile/parse", profileParseHandler.Parse)
 		}
 
 		v1.GET("/skills", skillHandler.Search)
