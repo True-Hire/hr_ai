@@ -9,10 +9,11 @@ import (
 func NewRouter(svc *app.Services) *gin.Engine {
 	router := gin.Default()
 
-	userHandler := NewUserHandler(svc.User, svc.ProfileField, svc.ProfileFieldText, svc.ExperienceItem, svc.EducationItem, svc.ItemText)
+	userHandler := NewUserHandler(svc.User, svc.ProfileField, svc.ProfileFieldText, svc.ExperienceItem, svc.EducationItem, svc.ItemText, svc.Skill)
 	profileFieldHandler := NewProfileFieldHandler(svc.ProfileField)
 	profileFieldTextHandler := NewProfileFieldTextHandler(svc.ProfileFieldText)
 	profileParseHandler := NewProfileParseHandler(svc.ProfileParse)
+	skillHandler := NewSkillHandler(svc.Skill)
 
 	v1 := router.Group("/api/v1")
 	{
@@ -27,6 +28,8 @@ func NewRouter(svc *app.Services) *gin.Engine {
 			users.GET("/:id/profile-fields", profileFieldHandler.ListByUser)
 			users.POST("/:id/profile/parse", profileParseHandler.Parse)
 		}
+
+		v1.GET("/skills", skillHandler.Search)
 
 		profileFields := v1.Group("/profile-fields")
 		{

@@ -15,6 +15,7 @@ type Services struct {
 	ExperienceItem   *application.ExperienceItemService
 	EducationItem    *application.EducationItemService
 	ItemText         *application.ItemTextService
+	Skill            *application.SkillService
 	ProfileParse     *application.ProfileParseService
 }
 
@@ -25,6 +26,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey string) *Services {
 	expSvc := application.NewExperienceItemService(repository.NewExperienceItemRepository(pool))
 	eduSvc := application.NewEducationItemService(repository.NewEducationItemRepository(pool))
 	itSvc := application.NewItemTextService(repository.NewItemTextRepository(pool))
+	skillSvc := application.NewSkillService(repository.NewSkillRepository(pool))
 
 	geminiClient := gemini.NewClient(geminiAPIKey)
 
@@ -35,6 +37,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey string) *Services {
 		ExperienceItem:   expSvc,
 		EducationItem:    eduSvc,
 		ItemText:         itSvc,
-		ProfileParse:     application.NewProfileParseService(geminiClient, pfSvc, pftSvc, expSvc, eduSvc, itSvc, userSvc),
+		Skill:            skillSvc,
+		ProfileParse:     application.NewProfileParseService(geminiClient, pfSvc, pftSvc, expSvc, eduSvc, itSvc, skillSvc, userSvc),
 	}
 }

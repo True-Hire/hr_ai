@@ -61,6 +61,12 @@ type ProfileFieldText struct {
 	UpdatedAt      pgtype.Timestamp
 }
 
+type Skill struct {
+	ID        pgtype.UUID
+	Name      string
+	CreatedAt pgtype.Timestamp
+}
+
 type User struct {
 	ID              pgtype.UUID
 	FirstName       string
@@ -80,4 +86,9 @@ type User struct {
 	ActivityType    pgtype.Text
 	Specializations []string
 	CreatedAt       pgtype.Timestamp
+}
+
+type UserSkill struct {
+	UserID  pgtype.UUID
+	SkillID pgtype.UUID
 }

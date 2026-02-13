@@ -20,6 +20,7 @@ type UserHandler struct {
 	experienceSvc   *application.ExperienceItemService
 	educationSvc    *application.EducationItemService
 	itemTextSvc     *application.ItemTextService
+	skillSvc        *application.SkillService
 }
 
 func NewUserHandler(
@@ -29,6 +30,7 @@ func NewUserHandler(
 	experienceSvc *application.ExperienceItemService,
 	educationSvc *application.EducationItemService,
 	itemTextSvc *application.ItemTextService,
+	skillSvc *application.SkillService,
 ) *UserHandler {
 	return &UserHandler{
 		service:         service,
@@ -37,6 +39,7 @@ func NewUserHandler(
 		experienceSvc:   experienceSvc,
 		educationSvc:    educationSvc,
 		itemTextSvc:     itemTextSvc,
+		skillSvc:        skillSvc,
 	}
 }
 
@@ -251,10 +254,12 @@ func (h *UserHandler) buildUserProfile(c *gin.Context, userID uuid.UUID, lang st
 		return nil
 	}
 
-	// Parse skills from JSON array
+	// Fetch skills from skills/user_skills tables
 	var skills []string
-	if raw, ok := fieldMap["skills"]; ok && raw != "" {
-		_ = json.Unmarshal([]byte(raw), &skills)
+	if userSkills, err := h.skillSvc.ListUserSkills(ctx, userID); err == nil {
+		for _, s := range userSkills {
+			skills = append(skills, s.Name)
+		}
 	}
 
 	// Parse certifications from JSON array

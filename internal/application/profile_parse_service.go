@@ -18,6 +18,7 @@ type ProfileParseService struct {
 	experienceSvc   *ExperienceItemService
 	educationSvc    *EducationItemService
 	itemTextSvc     *ItemTextService
+	skillSvc        *SkillService
 	userSvc         *UserService
 }
 
@@ -28,6 +29,7 @@ func NewProfileParseService(
 	experienceSvc *ExperienceItemService,
 	educationSvc *EducationItemService,
 	itemTextSvc *ItemTextService,
+	skillSvc *SkillService,
 	userSvc *UserService,
 ) *ProfileParseService {
 	return &ProfileParseService{
@@ -37,6 +39,7 @@ func NewProfileParseService(
 		experienceSvc:   experienceSvc,
 		educationSvc:    educationSvc,
 		itemTextSvc:     itemTextSvc,
+		skillSvc:        skillSvc,
 		userSvc:         userSvc,
 	}
 }
@@ -142,39 +145,11 @@ func (s *ProfileParseService) storeResults(ctx context.Context, userID uuid.UUID
 		result.Fields = append(result.Fields, fieldResult)
 	}
 
-	// Store skills as JSON array per language
-	if len(parsed.Skills) > 0 {
-		field, err := s.profileFieldSvc.CreateProfileField(ctx, &domain.ProfileField{
-			UserID:     userID,
-			FieldName:  "skills",
-			SourceLang: parsed.SourceLang,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("create profile field skills: %w", err)
+	// Store skills as unique set in skills/user_skills tables
+	if skillNames, ok := parsed.Skills["en"]; ok && len(skillNames) > 0 {
+		if _, err := s.skillSvc.SetUserSkills(ctx, userID, skillNames); err != nil {
+			return nil, fmt.Errorf("set user skills: %w", err)
 		}
-		fieldResult := ParsedFieldResult{
-			Field: field,
-			Texts: make([]domain.ProfileFieldText, 0, 3),
-		}
-		for _, lang := range langs {
-			skills, ok := parsed.Skills[lang]
-			if !ok || len(skills) == 0 {
-				continue
-			}
-			jsonBytes, _ := json.Marshal(skills)
-			text, err := s.profileTextSvc.CreateProfileFieldText(ctx, &domain.ProfileFieldText{
-				ProfileFieldID: field.ID,
-				Lang:           lang,
-				Content:        string(jsonBytes),
-				IsSource:       lang == parsed.SourceLang,
-				ModelVersion:   modelVer,
-			})
-			if err != nil {
-				return nil, fmt.Errorf("create profile field text skills/%s: %w", lang, err)
-			}
-			fieldResult.Texts = append(fieldResult.Texts, *text)
-		}
-		result.Fields = append(result.Fields, fieldResult)
 	}
 
 	// Store certifications as JSON array per language
