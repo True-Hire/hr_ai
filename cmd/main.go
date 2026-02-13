@@ -34,7 +34,10 @@ func main() {
 	}
 	defer pool.Close()
 
-	services := app.NewServices(pool, cfg.GeminiAPIKey, cfg.JWTSecret)
+	services, err := app.NewServices(pool, cfg.GeminiAPIKey, cfg.JWTSecret, cfg.DatabaseURL)
+	if err != nil {
+		log.Fatalf("failed to init services: %v", err)
+	}
 
 	router := httphandler.NewRouter(services)
 

@@ -103,6 +103,37 @@ func (r *SkillRepository) ListUserSkills(ctx context.Context, userID uuid.UUID) 
 	return result, nil
 }
 
+func (r *SkillRepository) AddVacancySkill(ctx context.Context, vacancyID uuid.UUID, skillID uuid.UUID) error {
+	err := r.q.AddVacancySkill(ctx, sdb.AddVacancySkillParams{
+		VacancyID: uuidToPgtype(vacancyID),
+		SkillID:   uuidToPgtype(skillID),
+	})
+	if err != nil {
+		return fmt.Errorf("add vacancy skill: %w", err)
+	}
+	return nil
+}
+
+func (r *SkillRepository) RemoveVacancySkills(ctx context.Context, vacancyID uuid.UUID) error {
+	err := r.q.RemoveVacancySkills(ctx, uuidToPgtype(vacancyID))
+	if err != nil {
+		return fmt.Errorf("remove vacancy skills: %w", err)
+	}
+	return nil
+}
+
+func (r *SkillRepository) ListVacancySkills(ctx context.Context, vacancyID uuid.UUID) ([]domain.Skill, error) {
+	rows, err := r.q.ListVacancySkills(ctx, uuidToPgtype(vacancyID))
+	if err != nil {
+		return nil, fmt.Errorf("list vacancy skills: %w", err)
+	}
+	result := make([]domain.Skill, 0, len(rows))
+	for _, row := range rows {
+		result = append(result, *skillToDomain(row))
+	}
+	return result, nil
+}
+
 func skillToDomain(row sdb.Skill) *domain.Skill {
 	return &domain.Skill{
 		ID:        pgtypeToUUID(row.ID),

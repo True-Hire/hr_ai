@@ -1,9 +1,13 @@
 package app
 
 import (
+	"fmt"
+
+	casbinlib "github.com/casbin/casbin/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/ruziba3vich/hr-ai/internal/application"
+	casbininfra "github.com/ruziba3vich/hr-ai/internal/infrastructure/casbin"
 	"github.com/ruziba3vich/hr-ai/internal/infrastructure/gemini"
 	"github.com/ruziba3vich/hr-ai/internal/infrastructure/repository"
 )
@@ -22,10 +26,13 @@ type Services struct {
 	HRAuth           *application.HRAuthService
 	Company          *application.CompanyService
 	CompanyText      *application.CompanyTextService
+	Vacancy          *application.VacancyService
+	VacancyText      *application.VacancyTextService
+	CasbinEnforcer   *casbinlib.Enforcer
 	JWTSecret        string
 }
 
-func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret string) *Services {
+func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL string) (*Services, error) {
 	userRepo := repository.NewUserRepository(pool)
 	sessionRepo := repository.NewSessionRepository(pool)
 	userSvc := application.NewUserService(userRepo)
@@ -42,7 +49,15 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret string) *Services {
 	companyRepo := repository.NewCompanyRepository(pool)
 	companyTextRepo := repository.NewCompanyTextRepository(pool)
 
+	vacancyRepo := repository.NewVacancyRepository(pool)
+	vacancyTextRepo := repository.NewVacancyTextRepository(pool)
+
 	geminiClient := gemini.NewClient(geminiAPIKey)
+
+	enforcer, err := casbininfra.NewEnforcer(databaseURL)
+	if err != nil {
+		return nil, fmt.Errorf("init casbin enforcer: %w", err)
+	}
 
 	return &Services{
 		User:             userSvc,
@@ -58,6 +73,9 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret string) *Services {
 		HRAuth:           application.NewHRAuthService(companyHRRepo, hrSessionRepo, jwtSecret),
 		Company:          application.NewCompanyService(companyRepo, companyTextRepo, geminiClient),
 		CompanyText:      application.NewCompanyTextService(companyTextRepo),
+		Vacancy:          application.NewVacancyService(vacancyRepo, vacancyTextRepo, skillSvc, geminiClient),
+		VacancyText:      application.NewVacancyTextService(vacancyTextRepo),
+		CasbinEnforcer:   enforcer,
 		JWTSecret:        jwtSecret,
-	}
+	}, nil
 }
