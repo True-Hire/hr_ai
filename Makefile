@@ -2,6 +2,7 @@ include .env
 export
 
 MIGRATIONS_DIR = db/migrations
+MIGRATE = migrate -path $(MIGRATIONS_DIR) -database "$(DATABASE_URL)?sslmode=disable"
 
 .PHONY: run swag-gen migrate-create migrate-up migrate-down migrate-force
 
@@ -13,25 +14,15 @@ run:
 
 migrate-create:
 	@if [ -z "$(name)" ]; then echo "Usage: make migrate-create name=create_something"; exit 1; fi
-	@next=$$(printf "%03d" $$(( $$(ls $(MIGRATIONS_DIR)/*.sql 2>/dev/null | wc -l) + 1 ))); \
-	touch $(MIGRATIONS_DIR)/$${next}_$(name).sql; \
-	echo "Created $(MIGRATIONS_DIR)/$${next}_$(name).sql"
+	migrate create -ext sql -dir $(MIGRATIONS_DIR) -seq -digits 3 $(name)
 
 migrate-up:
-	@for f in $$(ls $(MIGRATIONS_DIR)/*.sql | sort); do \
-		echo "Running $$f ..."; \
-		psql "$(DATABASE_URL)" -f "$$f" || exit 1; \
-	done
-	@echo "All migrations applied."
+	$(MIGRATE) up
 
 migrate-down:
-	@latest=$$(ls $(MIGRATIONS_DIR)/*.sql | sort | tail -1); \
-	table=$$(head -1 "$$latest" | grep -oP '(?i)(?:CREATE TABLE IF NOT EXISTS |CREATE TABLE )\K\S+' | tr -d '('); \
-	if [ -z "$$table" ]; then echo "Could not detect table from $$latest"; exit 1; fi; \
-	echo "Dropping table $$table from $$latest ..."; \
-	psql "$(DATABASE_URL)" -c "DROP TABLE IF EXISTS $$table CASCADE;"
+	$(MIGRATE) down 1
 
 migrate-force:
-	@latest=$$(ls $(MIGRATIONS_DIR)/*.sql | sort | tail -1); \
-	echo "Force re-running $$latest ..."; \
-	psql "$(DATABASE_URL)" -f "$$latest"
+	@version=$$(ls $(MIGRATIONS_DIR)/*.up.sql | sort | tail -1 | grep -oP '\d+' | head -1); \
+	echo "Forcing version $$version ..."; \
+	$(MIGRATE) force $$version
