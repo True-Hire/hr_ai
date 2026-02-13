@@ -1,0 +1,18 @@
+services:
+  hr-ai:
+    build: .
+    network_mode: host
+    env_file:
+      - .env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  migrate:
+    image: postgres:17-alpine
+    volumes:
+      - ./db/migrations:/migrations:ro
+    env_file:
+      - .env
+    entrypoint: ["sh", "-c", "for f in /migrations/*.sql; do echo \"Running $$f...\"; psql \"$$DATABASE_URL\" -f \"$$f\"; done"]
