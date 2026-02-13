@@ -14,6 +14,7 @@ type CreateUserRequest struct {
 	Patronymic      string   `json:"patronymic"`
 	Phone           string   `json:"phone"`
 	Telegram        string   `json:"telegram"`
+	TelegramID      string   `json:"telegram_id"`
 	Email           string   `json:"email" binding:"omitempty,email"`
 	Gender          string   `json:"gender"`
 	Country         string   `json:"country"`
@@ -25,6 +26,7 @@ type CreateUserRequest struct {
 	JobStatus       string   `json:"job_status"`
 	ActivityType    string   `json:"activity_type"`
 	Specializations []string `json:"specializations"`
+	Password        string   `json:"password" binding:"required,min=6"`
 }
 
 type UpdateUserRequest struct {
@@ -33,6 +35,7 @@ type UpdateUserRequest struct {
 	Patronymic      string   `json:"patronymic"`
 	Phone           string   `json:"phone"`
 	Telegram        string   `json:"telegram"`
+	TelegramID      string   `json:"telegram_id"`
 	Email           string   `json:"email" binding:"omitempty,email"`
 	Gender          string   `json:"gender"`
 	Country         string   `json:"country"`
@@ -53,6 +56,7 @@ func (r *CreateUserRequest) ToDomain() *domain.User {
 		Patronymic:      r.Patronymic,
 		Phone:           r.Phone,
 		Telegram:        r.Telegram,
+		TelegramID:      r.TelegramID,
 		Email:           r.Email,
 		Gender:          r.Gender,
 		Country:         r.Country,
@@ -75,6 +79,7 @@ func (r *UpdateUserRequest) ToDomain(id uuid.UUID) *domain.User {
 		Patronymic:      r.Patronymic,
 		Phone:           r.Phone,
 		Telegram:        r.Telegram,
+		TelegramID:      r.TelegramID,
 		Email:           r.Email,
 		Gender:          r.Gender,
 		Country:         r.Country,
@@ -96,6 +101,7 @@ type UserResponse struct {
 	Patronymic      string               `json:"patronymic,omitempty"`
 	Phone           string               `json:"phone,omitempty"`
 	Telegram        string               `json:"telegram,omitempty"`
+	TelegramID      string               `json:"telegram_id,omitempty"`
 	Email           string               `json:"email,omitempty"`
 	Gender          string               `json:"gender,omitempty"`
 	Country         string               `json:"country,omitempty"`
@@ -181,6 +187,7 @@ func toUserResponseWithProfile(u *domain.User, profile *UserProfileResponse) Use
 		Patronymic:      u.Patronymic,
 		Phone:           u.Phone,
 		Telegram:        u.Telegram,
+		TelegramID:      u.TelegramID,
 		Email:           u.Email,
 		Gender:          u.Gender,
 		Country:         u.Country,

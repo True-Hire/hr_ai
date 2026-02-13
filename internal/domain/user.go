@@ -17,6 +17,7 @@ type User struct {
 	Patronymic      string
 	Phone           string
 	Telegram        string
+	TelegramID      string
 	Email           string
 	Gender          string
 	Country         string
@@ -28,6 +29,7 @@ type User struct {
 	JobStatus       string
 	ActivityType    string
 	Specializations []string
+	PasswordHash    string
 	CreatedAt       time.Time
 }
 
@@ -38,4 +40,7 @@ type UserRepository interface {
 	Count(ctx context.Context) (int64, error)
 	Update(ctx context.Context, user *User) (*User, error)
 	Delete(ctx context.Context, id uuid.UUID) error
+	GetByPhone(ctx context.Context, phone string) (*User, error)
+	GetByEmail(ctx context.Context, email string) (*User, error)
+	SetPassword(ctx context.Context, id uuid.UUID, hash string) error
 }
