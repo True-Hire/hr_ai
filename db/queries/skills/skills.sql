@@ -30,3 +30,18 @@ FROM skills s
 JOIN user_skills us ON us.skill_id = s.id
 WHERE us.user_id = $1
 ORDER BY s.name;
+
+-- name: AddVacancySkill :exec
+INSERT INTO vacancy_skills (vacancy_id, skill_id)
+VALUES ($1, $2)
+ON CONFLICT DO NOTHING;
+
+-- name: RemoveVacancySkills :exec
+DELETE FROM vacancy_skills WHERE vacancy_id = $1;
+
+-- name: ListVacancySkills :many
+SELECT s.id, s.name, s.created_at
+FROM skills s
+JOIN vacancy_skills vs ON vs.skill_id = s.id
+WHERE vs.vacancy_id = $1
+ORDER BY s.name;

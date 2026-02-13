@@ -111,6 +111,26 @@ sql:
         out: "db/sqlc/companies"
         sql_package: "pgx/v5"
 
+# VACANCIES
+  - engine: "postgresql"
+    queries: "db/queries/vacancies/"
+    schema: "db/migrations/"
+    gen:
+      go:
+        package: "vacancies"
+        out: "db/sqlc/vacancies"
+        sql_package: "pgx/v5"
+
+# VACANCY_TEXTS
+  - engine: "postgresql"
+    queries: "db/queries/vacancy_texts/"
+    schema: "db/migrations/"
+    gen:
+      go:
+        package: "vacancytexts"
+        out: "db/sqlc/vacancy_texts"
+        sql_package: "pgx/v5"
+
 # COMPANY_TEXTS
   - engine: "postgresql"
     queries: "db/queries/company_texts/"

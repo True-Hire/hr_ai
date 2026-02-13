@@ -27,6 +27,22 @@ func (q *Queries) AddUserSkill(ctx context.Context, arg AddUserSkillParams) erro
 	return err
 }
 
+const addVacancySkill = `-- name: AddVacancySkill :exec
+INSERT INTO vacancy_skills (vacancy_id, skill_id)
+VALUES ($1, $2)
+ON CONFLICT DO NOTHING
+`
+
+type AddVacancySkillParams struct {
+	VacancyID pgtype.UUID
+	SkillID   pgtype.UUID
+}
+
+func (q *Queries) AddVacancySkill(ctx context.Context, arg AddVacancySkillParams) error {
+	_, err := q.db.Exec(ctx, addVacancySkill, arg.VacancyID, arg.SkillID)
+	return err
+}
+
 const getSkillByID = `-- name: GetSkillByID :one
 SELECT id, name, created_at FROM skills WHERE id = $1
 `
@@ -101,12 +117,49 @@ func (q *Queries) ListUserSkills(ctx context.Context, userID pgtype.UUID) ([]Ski
 	return items, nil
 }
 
+const listVacancySkills = `-- name: ListVacancySkills :many
+SELECT s.id, s.name, s.created_at
+FROM skills s
+JOIN vacancy_skills vs ON vs.skill_id = s.id
+WHERE vs.vacancy_id = $1
+ORDER BY s.name
+`
+
+func (q *Queries) ListVacancySkills(ctx context.Context, vacancyID pgtype.UUID) ([]Skill, error) {
+	rows, err := q.db.Query(ctx, listVacancySkills, vacancyID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Skill
+	for rows.Next() {
+		var i Skill
+		if err := rows.Scan(&i.ID, &i.Name, &i.CreatedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const removeUserSkills = `-- name: RemoveUserSkills :exec
 DELETE FROM user_skills WHERE user_id = $1
 `
 
 func (q *Queries) RemoveUserSkills(ctx context.Context, userID pgtype.UUID) error {
 	_, err := q.db.Exec(ctx, removeUserSkills, userID)
+	return err
+}
+
+const removeVacancySkills = `-- name: RemoveVacancySkills :exec
+DELETE FROM vacancy_skills WHERE vacancy_id = $1
+`
+
+func (q *Queries) RemoveVacancySkills(ctx context.Context, vacancyID pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, removeVacancySkills, vacancyID)
 	return err
 }
 
