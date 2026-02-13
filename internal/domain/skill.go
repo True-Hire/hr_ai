@@ -22,4 +22,7 @@ type SkillRepository interface {
 	AddUserSkill(ctx context.Context, userID uuid.UUID, skillID uuid.UUID) error
 	RemoveUserSkills(ctx context.Context, userID uuid.UUID) error
 	ListUserSkills(ctx context.Context, userID uuid.UUID) ([]Skill, error)
+	AddVacancySkill(ctx context.Context, vacancyID uuid.UUID, skillID uuid.UUID) error
+	RemoveVacancySkills(ctx context.Context, vacancyID uuid.UUID) error
+	ListVacancySkills(ctx context.Context, vacancyID uuid.UUID) ([]Skill, error)
 }
