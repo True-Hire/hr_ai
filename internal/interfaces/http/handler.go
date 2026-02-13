@@ -21,6 +21,7 @@ type UserHandler struct {
 	educationSvc    *application.EducationItemService
 	itemTextSvc     *application.ItemTextService
 	skillSvc        *application.SkillService
+	authSvc         *application.AuthService
 }
 
 func NewUserHandler(
@@ -31,6 +32,7 @@ func NewUserHandler(
 	educationSvc *application.EducationItemService,
 	itemTextSvc *application.ItemTextService,
 	skillSvc *application.SkillService,
+	authSvc *application.AuthService,
 ) *UserHandler {
 	return &UserHandler{
 		service:         service,
@@ -40,6 +42,7 @@ func NewUserHandler(
 		educationSvc:    educationSvc,
 		itemTextSvc:     itemTextSvc,
 		skillSvc:        skillSvc,
+		authSvc:         authSvc,
 	}
 }
 
@@ -63,6 +66,11 @@ func (h *UserHandler) Create(c *gin.Context) {
 	created, err := h.service.CreateUser(c.Request.Context(), req.ToDomain())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to create user"})
+		return
+	}
+
+	if err := h.authSvc.SetPassword(c.Request.Context(), created.ID, req.Password); err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "user created but failed to set password"})
 		return
 	}
 

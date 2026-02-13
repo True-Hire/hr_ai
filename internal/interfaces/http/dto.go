@@ -25,6 +25,7 @@ type CreateUserRequest struct {
 	JobStatus       string   `json:"job_status"`
 	ActivityType    string   `json:"activity_type"`
 	Specializations []string `json:"specializations"`
+	Password        string   `json:"password" binding:"required,min=6"`
 }
 
 type UpdateUserRequest struct {
