@@ -34,6 +34,7 @@ func NewRouter(svc *app.Services) *gin.Engine {
 		{
 			users.POST("", userHandler.Create)
 			users.GET("", userHandler.List)
+			users.GET("/me", AuthMiddleware(svc.JWTSecret), userHandler.Me)
 			users.GET("/:id", userHandler.GetByID)
 			users.PUT("/:id", userHandler.Update)
 			users.DELETE("/:id", userHandler.Delete)
