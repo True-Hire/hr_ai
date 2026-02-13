@@ -1,0 +1,962 @@
+basePath: /api/v1
+definitions:
+  http.CreateProfileFieldRequest:
+    properties:
+      field_name:
+        type: string
+      source_lang:
+        type: string
+    required:
+    - field_name
+    - source_lang
+    type: object
+  http.CreateProfileFieldTextRequest:
+    properties:
+      content:
+        type: string
+      is_source:
+        type: boolean
+      lang:
+        type: string
+      model_version:
+        type: string
+    required:
+    - content
+    - lang
+    type: object
+  http.CreateUserRequest:
+    properties:
+      activity_type:
+        type: string
+      country:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      gender:
+        type: string
+      job_status:
+        type: string
+      last_name:
+        type: string
+      nationality:
+        type: string
+      patronymic:
+        type: string
+      phone:
+        type: string
+      profile_pic_url:
+        type: string
+      region:
+        type: string
+      specializations:
+        items:
+          type: string
+        type: array
+      status:
+        type: string
+      tariff_type:
+        type: string
+      telegram:
+        type: string
+    required:
+    - first_name
+    - last_name
+    type: object
+  http.EducationItemResponse:
+    properties:
+      degree:
+        type: string
+      description:
+        type: string
+      end_date:
+        type: string
+      field_of_study:
+        type: string
+      id:
+        type: string
+      institution:
+        type: string
+      location:
+        type: string
+      start_date:
+        type: string
+    type: object
+  http.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  http.ExperienceItemResponse:
+    properties:
+      company:
+        type: string
+      description:
+        type: string
+      end_date:
+        type: string
+      id:
+        type: string
+      position:
+        type: string
+      projects:
+        items:
+          $ref: '#/definitions/http.ProjectResponse'
+        type: array
+      start_date:
+        type: string
+      web_site:
+        type: string
+    type: object
+  http.LanguageItemResponse:
+    properties:
+      level:
+        type: string
+      name:
+        type: string
+    type: object
+  http.PaginatedUsersResponse:
+    properties:
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+      users:
+        items:
+          $ref: '#/definitions/http.UserResponse'
+        type: array
+    type: object
+  http.ProfileFieldResponse:
+    properties:
+      field_name:
+        type: string
+      id:
+        type: string
+      source_lang:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  http.ProfileFieldTextResponse:
+    properties:
+      content:
+        type: string
+      is_source:
+        type: boolean
+      lang:
+        type: string
+      model_version:
+        type: string
+      profile_field_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  http.ProfileParseEducationResponse:
+    properties:
+      degree:
+        type: string
+      end_date:
+        type: string
+      field_of_study:
+        type: string
+      id:
+        type: string
+      institution:
+        type: string
+      location:
+        type: string
+      start_date:
+        type: string
+      texts:
+        items:
+          $ref: '#/definitions/http.ProfileParseItemTextResponse'
+        type: array
+    type: object
+  http.ProfileParseExperienceResponse:
+    properties:
+      company:
+        type: string
+      end_date:
+        type: string
+      id:
+        type: string
+      position:
+        type: string
+      projects:
+        type: string
+      start_date:
+        type: string
+      texts:
+        items:
+          $ref: '#/definitions/http.ProfileParseItemTextResponse'
+        type: array
+      web_site:
+        type: string
+    type: object
+  http.ProfileParseFieldResponse:
+    properties:
+      field_name:
+        type: string
+      id:
+        type: string
+      texts:
+        items:
+          $ref: '#/definitions/http.ProfileParseFieldTextResponse'
+        type: array
+    type: object
+  http.ProfileParseFieldTextResponse:
+    properties:
+      content:
+        type: string
+      is_source:
+        type: boolean
+      lang:
+        type: string
+      model_version:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  http.ProfileParseItemTextResponse:
+    properties:
+      description:
+        type: string
+      is_source:
+        type: boolean
+      lang:
+        type: string
+      model_version:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  http.ProfileParseResponse:
+    properties:
+      education:
+        items:
+          $ref: '#/definitions/http.ProfileParseEducationResponse'
+        type: array
+      experience:
+        items:
+          $ref: '#/definitions/http.ProfileParseExperienceResponse'
+        type: array
+      fields:
+        items:
+          $ref: '#/definitions/http.ProfileParseFieldResponse'
+        type: array
+      source_lang:
+        type: string
+    type: object
+  http.ProfileParseTextRequest:
+    properties:
+      user_input:
+        type: string
+    required:
+    - user_input
+    type: object
+  http.ProjectResponse:
+    properties:
+      items:
+        items:
+          type: string
+        type: array
+      project:
+        type: string
+    type: object
+  http.SkillResponse:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  http.UpdateProfileFieldRequest:
+    properties:
+      field_name:
+        type: string
+      source_lang:
+        type: string
+    type: object
+  http.UpdateProfileFieldTextRequest:
+    properties:
+      content:
+        type: string
+      model_version:
+        type: string
+    required:
+    - content
+    type: object
+  http.UpdateUserRequest:
+    properties:
+      activity_type:
+        type: string
+      country:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      gender:
+        type: string
+      job_status:
+        type: string
+      last_name:
+        type: string
+      nationality:
+        type: string
+      patronymic:
+        type: string
+      phone:
+        type: string
+      profile_pic_url:
+        type: string
+      region:
+        type: string
+      specializations:
+        items:
+          type: string
+        type: array
+      status:
+        type: string
+      tariff_type:
+        type: string
+      telegram:
+        type: string
+    type: object
+  http.UserProfileResponse:
+    properties:
+      about:
+        type: string
+      achievements:
+        type: string
+      certifications:
+        items:
+          type: string
+        type: array
+      education:
+        items:
+          $ref: '#/definitions/http.EducationItemResponse'
+        type: array
+      experience:
+        items:
+          $ref: '#/definitions/http.ExperienceItemResponse'
+        type: array
+      languages:
+        items:
+          $ref: '#/definitions/http.LanguageItemResponse'
+        type: array
+      skills:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    type: object
+  http.UserResponse:
+    properties:
+      activity_type:
+        type: string
+      country:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      gender:
+        type: string
+      id:
+        type: string
+      job_status:
+        type: string
+      last_name:
+        type: string
+      nationality:
+        type: string
+      patronymic:
+        type: string
+      phone:
+        type: string
+      profile:
+        $ref: '#/definitions/http.UserProfileResponse'
+      profile_pic_url:
+        type: string
+      region:
+        type: string
+      specializations:
+        items:
+          type: string
+        type: array
+      status:
+        type: string
+      tariff_type:
+        type: string
+      telegram:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: HR AI platform API with multilingual profile parsing powered by Gemini
+  title: HR AI API
+  version: "1.0"
+paths:
+  /profile-fields/{id}:
+    delete:
+      parameters:
+      - description: Profile field ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Delete a profile field
+      tags:
+      - profile-fields
+    get:
+      parameters:
+      - description: Profile field ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.ProfileFieldResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Get a profile field by ID
+      tags:
+      - profile-fields
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Profile field ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated profile field data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateProfileFieldRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.ProfileFieldResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Update a profile field
+      tags:
+      - profile-fields
+  /profile-fields/{id}/texts:
+    get:
+      parameters:
+      - description: Profile field ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.ProfileFieldTextResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: List all text translations for a profile field
+      tags:
+      - profile-field-texts
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Profile field ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Text data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.CreateProfileFieldTextRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.ProfileFieldTextResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Create a text translation for a profile field
+      tags:
+      - profile-field-texts
+  /profile-fields/{id}/texts/{lang}:
+    delete:
+      parameters:
+      - description: Profile field ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Language code (uz, ru, en)
+        in: path
+        name: lang
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Delete a profile field text
+      tags:
+      - profile-field-texts
+    get:
+      parameters:
+      - description: Profile field ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Language code (uz, ru, en)
+        in: path
+        name: lang
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.ProfileFieldTextResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Get a profile field text by field ID and language
+      tags:
+      - profile-field-texts
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Profile field ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Language code (uz, ru, en)
+        in: path
+        name: lang
+        required: true
+        type: string
+      - description: Updated text data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateProfileFieldTextRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.ProfileFieldTextResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Update a profile field text
+      tags:
+      - profile-field-texts
+  /skills:
+    get:
+      description: Returns skills matching the query, or all skills if no query is
+        provided. Used for autocomplete/suggestions.
+      parameters:
+      - description: Search query
+        in: query
+        name: q
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.SkillResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Search or list all skills
+      tags:
+      - skills
+  /users:
+    get:
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - default: en
+        description: Language code (uz, ru, en)
+        in: query
+        name: lang
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.PaginatedUsersResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: List users with pagination
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Create a new user
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Delete a user
+      tags:
+      - users
+    get:
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - default: en
+        description: Language code (uz, ru, en)
+        in: query
+        name: lang
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Get user by ID with full profile
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated user data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Update a user
+      tags:
+      - users
+  /users/{id}/profile-fields:
+    get:
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.ProfileFieldResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: List profile fields for a user
+      tags:
+      - profile-fields
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Profile field data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.CreateProfileFieldRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.ProfileFieldResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Create a profile field for a user
+      tags:
+      - profile-fields
+  /users/{id}/profile/parse:
+    post:
+      consumes:
+      - application/json
+      - multipart/form-data
+      description: Accepts JSON with user_input text, or multipart/form-data with
+        either user_input field or a file (PDF, PNG, JPG, TXT). Parses the profile
+        and stores multilingual translations (uz, ru, en).
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Text input (for JSON content type)
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/http.ProfileParseTextRequest'
+      - description: Text input (for multipart)
+        in: formData
+        name: user_input
+        type: string
+      - description: 'File upload: PDF, PNG, JPG, TXT (max 20MB)'
+        in: formData
+        name: file
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.ProfileParseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Parse a user profile from text or file using Gemini AI
+      tags:
+      - profile-parse
+swagger: "2.0"

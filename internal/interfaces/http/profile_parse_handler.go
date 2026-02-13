@@ -31,6 +31,21 @@ func NewProfileParseHandler(service *application.ProfileParseService) *ProfilePa
 	return &ProfileParseHandler{service: service}
 }
 
+// Parse godoc
+// @Summary Parse a user profile from text or file using Gemini AI
+// @Description Accepts JSON with user_input text, or multipart/form-data with either user_input field or a file (PDF, PNG, JPG, TXT). Parses the profile and stores multilingual translations (uz, ru, en).
+// @Tags profile-parse
+// @Accept json,mpfd
+// @Produce json
+// @Param id path string true "User ID (UUID)"
+// @Param request body ProfileParseTextRequest false "Text input (for JSON content type)"
+// @Param user_input formData string false "Text input (for multipart)"
+// @Param file formData file false "File upload: PDF, PNG, JPG, TXT (max 20MB)"
+// @Success 200 {object} ProfileParseResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /users/{id}/profile/parse [post]
 func (h *ProfileParseHandler) Parse(c *gin.Context) {
 	userID, err := uuid.Parse(c.Param("id"))
 	if err != nil {

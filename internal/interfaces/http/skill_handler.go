@@ -21,6 +21,15 @@ type SkillResponse struct {
 	Name string `json:"name"`
 }
 
+// Search godoc
+// @Summary Search or list all skills
+// @Description Returns skills matching the query, or all skills if no query is provided. Used for autocomplete/suggestions.
+// @Tags skills
+// @Produce json
+// @Param q query string false "Search query"
+// @Success 200 {array} SkillResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /skills [get]
 func (h *SkillHandler) Search(c *gin.Context) {
 	query := c.Query("q")
 

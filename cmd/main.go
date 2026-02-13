@@ -13,8 +13,14 @@ import (
 	"github.com/ruziba3vich/hr-ai/internal/config"
 	"github.com/ruziba3vich/hr-ai/internal/infrastructure/postgres"
 	httphandler "github.com/ruziba3vich/hr-ai/internal/interfaces/http"
+
+	_ "github.com/ruziba3vich/hr-ai/docs"
 )
 
+// @title HR AI API
+// @version 1.0
+// @description HR AI platform API with multilingual profile parsing powered by Gemini
+// @BasePath /api/v1
 func main() {
 	cfg, err := config.Load()
 	if err != nil {

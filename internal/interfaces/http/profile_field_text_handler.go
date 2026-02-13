@@ -19,6 +19,17 @@ func NewProfileFieldTextHandler(service *application.ProfileFieldTextService) *P
 	return &ProfileFieldTextHandler{service: service}
 }
 
+// Create godoc
+// @Summary Create a text translation for a profile field
+// @Tags profile-field-texts
+// @Accept json
+// @Produce json
+// @Param id path string true "Profile field ID (UUID)"
+// @Param request body CreateProfileFieldTextRequest true "Text data"
+// @Success 201 {object} ProfileFieldTextResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /profile-fields/{id}/texts [post]
 func (h *ProfileFieldTextHandler) Create(c *gin.Context) {
 	fieldID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -41,6 +52,17 @@ func (h *ProfileFieldTextHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, toProfileFieldTextResponse(text))
 }
 
+// Get godoc
+// @Summary Get a profile field text by field ID and language
+// @Tags profile-field-texts
+// @Produce json
+// @Param id path string true "Profile field ID (UUID)"
+// @Param lang path string true "Language code (uz, ru, en)"
+// @Success 200 {object} ProfileFieldTextResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /profile-fields/{id}/texts/{lang} [get]
 func (h *ProfileFieldTextHandler) Get(c *gin.Context) {
 	fieldID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -67,6 +89,15 @@ func (h *ProfileFieldTextHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, toProfileFieldTextResponse(text))
 }
 
+// ListByField godoc
+// @Summary List all text translations for a profile field
+// @Tags profile-field-texts
+// @Produce json
+// @Param id path string true "Profile field ID (UUID)"
+// @Success 200 {array} ProfileFieldTextResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /profile-fields/{id}/texts [get]
 func (h *ProfileFieldTextHandler) ListByField(c *gin.Context) {
 	fieldID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -88,6 +119,19 @@ func (h *ProfileFieldTextHandler) ListByField(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// Update godoc
+// @Summary Update a profile field text
+// @Tags profile-field-texts
+// @Accept json
+// @Produce json
+// @Param id path string true "Profile field ID (UUID)"
+// @Param lang path string true "Language code (uz, ru, en)"
+// @Param request body UpdateProfileFieldTextRequest true "Updated text data"
+// @Success 200 {object} ProfileFieldTextResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /profile-fields/{id}/texts/{lang} [put]
 func (h *ProfileFieldTextHandler) Update(c *gin.Context) {
 	fieldID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -120,6 +164,16 @@ func (h *ProfileFieldTextHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, toProfileFieldTextResponse(text))
 }
 
+// Delete godoc
+// @Summary Delete a profile field text
+// @Tags profile-field-texts
+// @Param id path string true "Profile field ID (UUID)"
+// @Param lang path string true "Language code (uz, ru, en)"
+// @Success 204
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /profile-fields/{id}/texts/{lang} [delete]
 func (h *ProfileFieldTextHandler) Delete(c *gin.Context) {
 	fieldID, err := uuid.Parse(c.Param("id"))
 	if err != nil {

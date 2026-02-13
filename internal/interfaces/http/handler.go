@@ -43,6 +43,16 @@ func NewUserHandler(
 	}
 }
 
+// Create godoc
+// @Summary Create a new user
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param request body CreateUserRequest true "User data"
+// @Success 201 {object} UserResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /users [post]
 func (h *UserHandler) Create(c *gin.Context) {
 	var req CreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -59,6 +69,17 @@ func (h *UserHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, toUserResponse(created))
 }
 
+// GetByID godoc
+// @Summary Get user by ID with full profile
+// @Tags users
+// @Produce json
+// @Param id path string true "User ID (UUID)"
+// @Param lang query string false "Language code (uz, ru, en)" default(en)
+// @Success 200 {object} UserResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /users/{id} [get]
 func (h *UserHandler) GetByID(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -82,6 +103,16 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 	c.JSON(http.StatusOK, toUserResponseWithProfile(user, profile))
 }
 
+// List godoc
+// @Summary List users with pagination
+// @Tags users
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param page_size query int false "Page size" default(20)
+// @Param lang query string false "Language code (uz, ru, en)" default(en)
+// @Success 200 {object} PaginatedUsersResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /users [get]
 func (h *UserHandler) List(c *gin.Context) {
 	page := parseQueryInt32(c, "page", 1)
 	pageSize := parseQueryInt32(c, "page_size", 20)
@@ -108,6 +139,18 @@ func (h *UserHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// Update godoc
+// @Summary Update a user
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path string true "User ID (UUID)"
+// @Param request body UpdateUserRequest true "Updated user data"
+// @Success 200 {object} UserResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /users/{id} [put]
 func (h *UserHandler) Update(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -134,6 +177,15 @@ func (h *UserHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, toUserResponse(updated))
 }
 
+// Delete godoc
+// @Summary Delete a user
+// @Tags users
+// @Param id path string true "User ID (UUID)"
+// @Success 204
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /users/{id} [delete]
 func (h *UserHandler) Delete(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {

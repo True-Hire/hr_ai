@@ -19,6 +19,17 @@ func NewProfileFieldHandler(service *application.ProfileFieldService) *ProfileFi
 	return &ProfileFieldHandler{service: service}
 }
 
+// Create godoc
+// @Summary Create a profile field for a user
+// @Tags profile-fields
+// @Accept json
+// @Produce json
+// @Param id path string true "User ID (UUID)"
+// @Param request body CreateProfileFieldRequest true "Profile field data"
+// @Success 201 {object} ProfileFieldResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /users/{id}/profile-fields [post]
 func (h *ProfileFieldHandler) Create(c *gin.Context) {
 	userID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -41,6 +52,16 @@ func (h *ProfileFieldHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, toProfileFieldResponse(field))
 }
 
+// GetByID godoc
+// @Summary Get a profile field by ID
+// @Tags profile-fields
+// @Produce json
+// @Param id path string true "Profile field ID (UUID)"
+// @Success 200 {object} ProfileFieldResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /profile-fields/{id} [get]
 func (h *ProfileFieldHandler) GetByID(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -61,6 +82,15 @@ func (h *ProfileFieldHandler) GetByID(c *gin.Context) {
 	c.JSON(http.StatusOK, toProfileFieldResponse(field))
 }
 
+// ListByUser godoc
+// @Summary List profile fields for a user
+// @Tags profile-fields
+// @Produce json
+// @Param id path string true "User ID (UUID)"
+// @Success 200 {array} ProfileFieldResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /users/{id}/profile-fields [get]
 func (h *ProfileFieldHandler) ListByUser(c *gin.Context) {
 	userID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -82,6 +112,18 @@ func (h *ProfileFieldHandler) ListByUser(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// Update godoc
+// @Summary Update a profile field
+// @Tags profile-fields
+// @Accept json
+// @Produce json
+// @Param id path string true "Profile field ID (UUID)"
+// @Param request body UpdateProfileFieldRequest true "Updated profile field data"
+// @Success 200 {object} ProfileFieldResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /profile-fields/{id} [put]
 func (h *ProfileFieldHandler) Update(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -108,6 +150,15 @@ func (h *ProfileFieldHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, toProfileFieldResponse(field))
 }
 
+// Delete godoc
+// @Summary Delete a profile field
+// @Tags profile-fields
+// @Param id path string true "Profile field ID (UUID)"
+// @Success 204
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /profile-fields/{id} [delete]
 func (h *ProfileFieldHandler) Delete(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
