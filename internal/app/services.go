@@ -18,6 +18,8 @@ type Services struct {
 	Skill            *application.SkillService
 	ProfileParse     *application.ProfileParseService
 	Auth             *application.AuthService
+	CompanyHR        *application.CompanyHRService
+	HRAuth           *application.HRAuthService
 	JWTSecret        string
 }
 
@@ -32,6 +34,9 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret string) *Services {
 	itSvc := application.NewItemTextService(repository.NewItemTextRepository(pool))
 	skillSvc := application.NewSkillService(repository.NewSkillRepository(pool))
 
+	companyHRRepo := repository.NewCompanyHRRepository(pool)
+	hrSessionRepo := repository.NewHRSessionRepository(pool)
+
 	geminiClient := gemini.NewClient(geminiAPIKey)
 
 	return &Services{
@@ -44,6 +49,8 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret string) *Services {
 		Skill:            skillSvc,
 		ProfileParse:     application.NewProfileParseService(geminiClient, pfSvc, pftSvc, expSvc, eduSvc, itSvc, skillSvc, userSvc),
 		Auth:             application.NewAuthService(userRepo, sessionRepo, jwtSecret),
+		CompanyHR:        application.NewCompanyHRService(companyHRRepo),
+		HRAuth:           application.NewHRAuthService(companyHRRepo, hrSessionRepo, jwtSecret),
 		JWTSecret:        jwtSecret,
 	}
 }
