@@ -13,6 +13,7 @@ import (
 
 const (
 	baseURL      = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+	embeddingURL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent"
 	modelVersion = "gemini-2.5-flash"
 )
 
@@ -271,6 +272,114 @@ func (c *Client) ParseVacancyFromText(ctx context.Context, userInput string) (*P
 	}
 
 	return &parsed, nil
+}
+
+func (c *Client) EmbedText(ctx context.Context, text string) ([]float32, error) {
+	reqBody := map[string]any{
+		"model": "models/gemini-embedding-001",
+		"content": map[string]any{
+			"parts": []map[string]string{
+				{"text": text},
+			},
+		},
+		"outputDimensionality": 768,
+	}
+
+	jsonBody, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("marshal embedding request: %w", err)
+	}
+
+	url := embeddingURL + "?key=" + c.apiKey
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(jsonBody))
+	if err != nil {
+		return nil, fmt.Errorf("create embedding request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("embedding API call: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read embedding response: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("embedding API error (status %d): %s", resp.StatusCode, string(body))
+	}
+
+	var result struct {
+		Embedding struct {
+			Values []float32 `json:"values"`
+		} `json:"embedding"`
+	}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("unmarshal embedding response: %w", err)
+	}
+
+	return result.Embedding.Values, nil
+}
+
+func (c *Client) TranslateToEnglish(ctx context.Context, text string) (string, error) {
+	parts := []part{
+		{Text: buildTranslateToEnglishPrompt(text)},
+	}
+
+	reqBody := generateRequest{
+		Contents:         []content{{Parts: parts}},
+		GenerationConfig: generationConfig{ResponseMimeType: "application/json"},
+	}
+
+	jsonBody, err := json.Marshal(reqBody)
+	if err != nil {
+		return "", fmt.Errorf("marshal translate request: %w", err)
+	}
+
+	url := baseURL + "?key=" + c.apiKey
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(jsonBody))
+	if err != nil {
+		return "", fmt.Errorf("create translate request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("translate API call: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("read translate response: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("translate API error (status %d): %s", resp.StatusCode, string(body))
+	}
+
+	var genResp generateResponse
+	if err := json.Unmarshal(body, &genResp); err != nil {
+		return "", fmt.Errorf("unmarshal translate response: %w", err)
+	}
+
+	if len(genResp.Candidates) == 0 || len(genResp.Candidates[0].Content.Parts) == 0 {
+		return "", fmt.Errorf("translate returned no content")
+	}
+
+	resultText := genResp.Candidates[0].Content.Parts[0].Text
+
+	var parsed struct {
+		Text string `json:"text"`
+	}
+	if err := json.Unmarshal([]byte(resultText), &parsed); err != nil {
+		return "", fmt.Errorf("parse translate JSON: %w (raw: %s)", err, resultText)
+	}
+
+	return parsed.Text, nil
 }
 
 func (c *Client) ParseProfileFromText(ctx context.Context, userInput string) (*ParsedProfile, error) {
