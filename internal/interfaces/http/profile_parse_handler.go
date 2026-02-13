@@ -37,19 +37,21 @@ func NewProfileParseHandler(service *application.ProfileParseService) *ProfilePa
 // @Tags profile-parse
 // @Accept json,mpfd
 // @Produce json
-// @Param id path string true "User ID (UUID)"
 // @Param request body ProfileParseTextRequest false "Text input (for JSON content type)"
 // @Param user_input formData string false "Text input (for multipart)"
 // @Param file formData file false "File upload: PDF, PNG, JPG, TXT (max 20MB)"
 // @Success 200 {object} ProfileParseResponse
 // @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /users/{id}/profile/parse [post]
+// @Security BearerAuth
+// @Router /users/me/profile/parse [post]
 func (h *ProfileParseHandler) Parse(c *gin.Context) {
-	userID, err := uuid.Parse(c.Param("id"))
+	rawID, _ := c.Get("user_id")
+	userID, err := uuid.Parse(rawID.(string))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid user id"})
+		c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "invalid token"})
 		return
 	}
 
