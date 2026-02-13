@@ -42,7 +42,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script_stop: true
-          envs: DATABASE_URL,SERVER_PORT,GEMINI_API_KEY,JWT_SECRET,GHCR_TOKEN
+          envs: DATABASE_URL,SERVER_PORT,GEMINI_API_KEY,JWT_SECRET,QDRANT_URL,QDRANT_API_KEY,GHCR_TOKEN
           script: |
             echo "Logging in to GHCR..."
             echo "$GHCR_TOKEN" | docker login ghcr.io -u ruziba3vich --password-stdin
@@ -54,6 +54,8 @@ jobs:
             SERVER_PORT=$SERVER_PORT
             GEMINI_API_KEY=$GEMINI_API_KEY
             JWT_SECRET=$JWT_SECRET
+            QDRANT_URL=$QDRANT_URL
+            QDRANT_API_KEY=$QDRANT_API_KEY
             EOF
             chmod 600 /opt/hr-ai/.env
 
@@ -81,4 +83,6 @@ jobs:
           SERVER_PORT: ${{ secrets.SERVER_PORT }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          QDRANT_URL: ${{ secrets.QDRANT_URL }}
+          QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
