@@ -19,6 +19,6 @@ WORKDIR /app
 COPY --from=builder /app/hr-ai .
 COPY db/migrations ./db/migrations
 
-EXPOSE 8080
+EXPOSE 11911
 
 CMD ["./hr-ai"]

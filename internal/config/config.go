@@ -23,7 +23,7 @@ func Load() (*Config, error) {
 
 	port := os.Getenv("SERVER_PORT")
 	if port == "" {
-		port = "8080"
+		port = "11911"
 	}
 
 	geminiKey := os.Getenv("GEMINI_API_KEY")

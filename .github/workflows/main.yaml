@@ -1,0 +1,66 @@
+name: Build and Deploy HR AI Backend
+
+on:
+  push:
+    branches:
+      - trunk
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build Docker image
+        run: |
+          docker build --no-cache \
+            -t ghcr.io/ruziba3vich/hr-ai:latest .
+
+      - name: Push Docker image
+        run: |
+          docker push ghcr.io/ruziba3vich/hr-ai:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script_stop: true
+          script: |
+            echo "Logging in to GHCR..."
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            echo "Stopping old container (if exists)..."
+            docker stop hr-ai || true
+            docker rm hr-ai || true
+
+            echo "Removing old image..."
+            docker rmi ghcr.io/ruziba3vich/hr-ai:latest || true
+
+            echo "Pulling latest image..."
+            docker pull ghcr.io/ruziba3vich/hr-ai:latest
+
+            echo "Starting new container..."
+            docker run -d \
+              --restart always \
+              --name hr-ai \
+              -p 11911:11911 \
+              ghcr.io/ruziba3vich/hr-ai:latest
+
+            echo "Deployment successful!"
