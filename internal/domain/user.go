@@ -17,6 +17,7 @@ type User struct {
 	Patronymic      string
 	Phone           string
 	Telegram        string
+	TelegramID      string
 	Email           string
 	Gender          string
 	Country         string

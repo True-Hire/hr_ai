@@ -87,6 +87,7 @@ type User struct {
 	Specializations []string
 	CreatedAt       pgtype.Timestamp
 	PasswordHash    pgtype.Text
+	TelegramID      pgtype.Text
 }
 
 type UserSession struct {

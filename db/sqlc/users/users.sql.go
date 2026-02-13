@@ -24,17 +24,17 @@ func (q *Queries) CountUsers(ctx context.Context) (int64, error) {
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
-    id, first_name, last_name, patronymic, phone, telegram, email,
+    id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
     gender, country, region, nationality, profile_pic_url,
     status, tariff_type, job_status, activity_type, specializations, created_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7,
-    $8, $9, $10, $11, $12,
-    $13, $14, $15, $16, $17, now()
+    $1, $2, $3, $4, $5, $6, $7, $8,
+    $9, $10, $11, $12, $13,
+    $14, $15, $16, $17, $18, now()
 )
 RETURNING id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id
 `
 
 type CreateUserParams struct {
@@ -44,6 +44,7 @@ type CreateUserParams struct {
 	Patronymic      pgtype.Text
 	Phone           pgtype.Text
 	Telegram        pgtype.Text
+	TelegramID      pgtype.Text
 	Email           pgtype.Text
 	Gender          pgtype.Text
 	Country         pgtype.Text
@@ -65,6 +66,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.Patronymic,
 		arg.Phone,
 		arg.Telegram,
+		arg.TelegramID,
 		arg.Email,
 		arg.Gender,
 		arg.Country,
@@ -98,6 +100,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Specializations,
 		&i.CreatedAt,
 		&i.PasswordHash,
+		&i.TelegramID,
 	)
 	return i, err
 }
@@ -115,7 +118,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id
 FROM users
 WHERE email = $1
 `
@@ -143,6 +146,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email pgtype.Text) (User, 
 		&i.Specializations,
 		&i.CreatedAt,
 		&i.PasswordHash,
+		&i.TelegramID,
 	)
 	return i, err
 }
@@ -150,7 +154,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email pgtype.Text) (User, 
 const getUserByID = `-- name: GetUserByID :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id
 FROM users
 WHERE id = $1
 `
@@ -178,6 +182,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error)
 		&i.Specializations,
 		&i.CreatedAt,
 		&i.PasswordHash,
+		&i.TelegramID,
 	)
 	return i, err
 }
@@ -185,7 +190,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error)
 const getUserByPhone = `-- name: GetUserByPhone :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id
 FROM users
 WHERE phone = $1
 `
@@ -213,6 +218,7 @@ func (q *Queries) GetUserByPhone(ctx context.Context, phone pgtype.Text) (User, 
 		&i.Specializations,
 		&i.CreatedAt,
 		&i.PasswordHash,
+		&i.TelegramID,
 	)
 	return i, err
 }
@@ -220,7 +226,7 @@ func (q *Queries) GetUserByPhone(ctx context.Context, phone pgtype.Text) (User, 
 const listUsers = `-- name: ListUsers :many
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id
 FROM users
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2
@@ -260,6 +266,7 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 			&i.Specializations,
 			&i.CreatedAt,
 			&i.PasswordHash,
+			&i.TelegramID,
 		); err != nil {
 			return nil, err
 		}
@@ -292,21 +299,22 @@ SET first_name = COALESCE(NULLIF($1, ''), first_name),
     patronymic = COALESCE(NULLIF($3, ''), patronymic),
     phone = COALESCE(NULLIF($4, ''), phone),
     telegram = COALESCE(NULLIF($5, ''), telegram),
-    email = COALESCE(NULLIF($6, ''), email),
-    gender = COALESCE(NULLIF($7, ''), gender),
-    country = COALESCE(NULLIF($8, ''), country),
-    region = COALESCE(NULLIF($9, ''), region),
-    nationality = COALESCE(NULLIF($10, ''), nationality),
-    profile_pic_url = COALESCE(NULLIF($11, ''), profile_pic_url),
-    status = COALESCE(NULLIF($12, ''), status),
-    tariff_type = COALESCE(NULLIF($13, ''), tariff_type),
-    job_status = COALESCE(NULLIF($14, ''), job_status),
-    activity_type = COALESCE(NULLIF($15, ''), activity_type),
-    specializations = CASE WHEN $16::TEXT[] = '{}' THEN specializations ELSE $16 END
-WHERE id = $17
+    telegram_id = COALESCE(NULLIF($6, ''), telegram_id),
+    email = COALESCE(NULLIF($7, ''), email),
+    gender = COALESCE(NULLIF($8, ''), gender),
+    country = COALESCE(NULLIF($9, ''), country),
+    region = COALESCE(NULLIF($10, ''), region),
+    nationality = COALESCE(NULLIF($11, ''), nationality),
+    profile_pic_url = COALESCE(NULLIF($12, ''), profile_pic_url),
+    status = COALESCE(NULLIF($13, ''), status),
+    tariff_type = COALESCE(NULLIF($14, ''), tariff_type),
+    job_status = COALESCE(NULLIF($15, ''), job_status),
+    activity_type = COALESCE(NULLIF($16, ''), activity_type),
+    specializations = CASE WHEN $17::TEXT[] = '{}' THEN specializations ELSE $17 END
+WHERE id = $18
 RETURNING id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id
 `
 
 type UpdateUserParams struct {
@@ -315,6 +323,7 @@ type UpdateUserParams struct {
 	Patronymic      interface{}
 	Phone           interface{}
 	Telegram        interface{}
+	TelegramID      interface{}
 	Email           interface{}
 	Gender          interface{}
 	Country         interface{}
@@ -336,6 +345,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		arg.Patronymic,
 		arg.Phone,
 		arg.Telegram,
+		arg.TelegramID,
 		arg.Email,
 		arg.Gender,
 		arg.Country,
@@ -370,6 +380,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.Specializations,
 		&i.CreatedAt,
 		&i.PasswordHash,
+		&i.TelegramID,
 	)
 	return i, err
 }
