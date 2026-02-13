@@ -8,29 +8,49 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Company struct {
+	ID              pgtype.UUID
+	EmployeeCount   pgtype.Int4
+	Country         pgtype.Text
+	Address         pgtype.Text
+	Phone           pgtype.Text
+	Telegram        pgtype.Text
+	TelegramChannel pgtype.Text
+	Email           pgtype.Text
+	LogoUrl         pgtype.Text
+	WebSite         pgtype.Text
+	Instagram       pgtype.Text
+	SourceLang      string
+	CreatedAt       pgtype.Timestamp
+}
+
 type CompanyHr struct {
-	ID            pgtype.UUID
-	FirstName     string
-	LastName      string
-	Patronymic    pgtype.Text
-	Phone         pgtype.Text
-	Telegram      pgtype.Text
-	TelegramID    pgtype.Text
-	Email         pgtype.Text
-	Position      pgtype.Text
-	Status        string
-	PasswordHash  pgtype.Text
-	CompanyName   pgtype.Text
-	ActivityType  pgtype.Text
-	CompanyType   pgtype.Text
-	EmployeeCount pgtype.Int4
-	Country       pgtype.Text
-	Market        pgtype.Text
-	WebSite       pgtype.Text
-	About         pgtype.Text
-	LogoUrl       pgtype.Text
-	Instagram     pgtype.Text
-	CreatedAt     pgtype.Timestamp
+	ID           pgtype.UUID
+	FirstName    string
+	LastName     string
+	Patronymic   pgtype.Text
+	Phone        pgtype.Text
+	Telegram     pgtype.Text
+	TelegramID   pgtype.Text
+	Email        pgtype.Text
+	Position     pgtype.Text
+	Status       string
+	PasswordHash pgtype.Text
+	CreatedAt    pgtype.Timestamp
+	CompanyID    pgtype.UUID
+}
+
+type CompanyText struct {
+	CompanyID    pgtype.UUID
+	Lang         string
+	Name         string
+	ActivityType string
+	CompanyType  string
+	About        string
+	Market       string
+	IsSource     bool
+	ModelVersion pgtype.Text
+	UpdatedAt    pgtype.Timestamp
 }
 
 type EducationItem struct {

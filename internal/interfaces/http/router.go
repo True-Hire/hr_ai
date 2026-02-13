@@ -21,6 +21,7 @@ func NewRouter(svc *app.Services) *gin.Engine {
 	authHandler := NewAuthHandler(svc.Auth)
 	companyHRHandler := NewCompanyHRHandler(svc.CompanyHR, svc.HRAuth)
 	hrAuthHandler := NewHRAuthHandler(svc.HRAuth)
+	companyHandler := NewCompanyHandler(svc.Company)
 
 	v1 := router.Group("/api/v1")
 	{
@@ -63,6 +64,15 @@ func NewRouter(svc *app.Services) *gin.Engine {
 			hrs.GET("/:id", companyHRHandler.GetByID)
 			hrs.PUT("/:id", companyHRHandler.Update)
 			hrs.DELETE("/:id", companyHRHandler.Delete)
+		}
+
+		companies := v1.Group("/companies")
+		{
+			companies.POST("", companyHandler.Create)
+			companies.GET("", companyHandler.List)
+			companies.GET("/:id", companyHandler.GetByID)
+			companies.PUT("/:id", companyHandler.Update)
+			companies.DELETE("/:id", companyHandler.Delete)
 		}
 
 		profileFields := v1.Group("/profile-fields")
