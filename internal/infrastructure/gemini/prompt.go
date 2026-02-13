@@ -108,6 +108,42 @@ User input:
 %s`, userInput)
 }
 
+func buildCompanyPrompt(userInput string) string {
+	return fmt.Sprintf(`You are an AI that translates company information into 3 languages: Uzbek (uz), Russian (ru), and English (en).
+
+Analyze the following company data and translate the text fields. If the original text is in one language, translate the content to the other two languages.
+
+Detect which language the input is primarily written in and set source_lang to one of: "uz", "ru", "en".
+
+TEXT FIELDS (translated into 3 languages):
+- name: Company name
+- activity_type: Type of business activity
+- company_type: Type of company (e.g. LLC, Inc, etc.)
+- about: Description of the company
+- market: Market or industry the company operates in
+
+IMPORTANT RULES:
+- Only include fields where you can extract meaningful content
+- Do NOT include fields with empty or placeholder content
+- Translate accurately and naturally into all 3 languages
+- If a field is a proper noun (like a company name), transliterate rather than translate
+
+Return ONLY valid JSON in this exact format:
+{
+  "source_lang": "ru",
+  "fields": {
+    "name": {"uz": "...", "ru": "...", "en": "..."},
+    "activity_type": {"uz": "...", "ru": "...", "en": "..."},
+    "company_type": {"uz": "...", "ru": "...", "en": "..."},
+    "about": {"uz": "...", "ru": "...", "en": "..."},
+    "market": {"uz": "...", "ru": "...", "en": "..."}
+  }
+}
+
+Company data:
+%s`, userInput)
+}
+
 func buildFilePrompt() string {
 	return `You are an AI that extracts structured profile information from uploaded documents (resumes, CVs, profiles) for a job platform.
 

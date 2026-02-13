@@ -11,28 +11,19 @@ import (
 var ErrCompanyHRNotFound = errors.New("company hr not found")
 
 type CompanyHR struct {
-	ID            uuid.UUID
-	FirstName     string
-	LastName      string
-	Patronymic    string
-	Phone         string
-	Telegram      string
-	TelegramID    string
-	Email         string
-	Position      string
-	Status        string
-	PasswordHash  string
-	CompanyName   string
-	ActivityType  string
-	CompanyType   string
-	EmployeeCount int32
-	Country       string
-	Market        string
-	WebSite       string
-	About         string
-	LogoURL       string
-	Instagram     string
-	CreatedAt     time.Time
+	ID           uuid.UUID
+	FirstName    string
+	LastName     string
+	Patronymic   string
+	Phone        string
+	Telegram     string
+	TelegramID   string
+	Email        string
+	Position     string
+	Status       string
+	PasswordHash string
+	CompanyID    uuid.UUID
+	CreatedAt    time.Time
 }
 
 type CompanyHRRepository interface {

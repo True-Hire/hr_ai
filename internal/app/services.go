@@ -20,6 +20,8 @@ type Services struct {
 	Auth             *application.AuthService
 	CompanyHR        *application.CompanyHRService
 	HRAuth           *application.HRAuthService
+	Company          *application.CompanyService
+	CompanyText      *application.CompanyTextService
 	JWTSecret        string
 }
 
@@ -37,6 +39,9 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret string) *Services {
 	companyHRRepo := repository.NewCompanyHRRepository(pool)
 	hrSessionRepo := repository.NewHRSessionRepository(pool)
 
+	companyRepo := repository.NewCompanyRepository(pool)
+	companyTextRepo := repository.NewCompanyTextRepository(pool)
+
 	geminiClient := gemini.NewClient(geminiAPIKey)
 
 	return &Services{
@@ -51,6 +56,8 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret string) *Services {
 		Auth:             application.NewAuthService(userRepo, sessionRepo, jwtSecret),
 		CompanyHR:        application.NewCompanyHRService(companyHRRepo),
 		HRAuth:           application.NewHRAuthService(companyHRRepo, hrSessionRepo, jwtSecret),
+		Company:          application.NewCompanyService(companyRepo, companyTextRepo, geminiClient),
+		CompanyText:      application.NewCompanyTextService(companyTextRepo),
 		JWTSecret:        jwtSecret,
 	}
 }
