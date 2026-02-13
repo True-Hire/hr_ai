@@ -115,6 +115,7 @@ type UserResponse struct {
 	Specializations []string             `json:"specializations"`
 	CreatedAt       string               `json:"created_at"`
 	Profile         *UserProfileResponse `json:"profile,omitempty"`
+	SearchScore     *float64             `json:"search_score,omitempty"`
 }
 
 type UserProfileResponse struct {
