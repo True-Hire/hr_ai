@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/google/uuid"
 
@@ -20,6 +21,7 @@ type ProfileParseService struct {
 	itemTextSvc     *ItemTextService
 	skillSvc        *SkillService
 	userSvc         *UserService
+	vectorIndexSvc  *VectorIndexService
 }
 
 func NewProfileParseService(
@@ -31,6 +33,7 @@ func NewProfileParseService(
 	itemTextSvc *ItemTextService,
 	skillSvc *SkillService,
 	userSvc *UserService,
+	vectorIndexSvc *VectorIndexService,
 ) *ProfileParseService {
 	return &ProfileParseService{
 		geminiClient:    geminiClient,
@@ -41,6 +44,7 @@ func NewProfileParseService(
 		itemTextSvc:     itemTextSvc,
 		skillSvc:        skillSvc,
 		userSvc:         userSvc,
+		vectorIndexSvc:  vectorIndexSvc,
 	}
 }
 
@@ -76,7 +80,13 @@ func (s *ProfileParseService) ParseFromText(ctx context.Context, userID uuid.UUI
 		return nil, fmt.Errorf("gemini parse text: %w", err)
 	}
 
-	return s.storeResults(ctx, userID, parsed)
+	result, err := s.storeResults(ctx, userID, parsed)
+	if err != nil {
+		return nil, err
+	}
+
+	s.asyncIndex(userID)
+	return result, nil
 }
 
 func (s *ProfileParseService) ParseFromFile(ctx context.Context, userID uuid.UUID, fileData []byte, mimeType string) (*ParseResult, error) {
@@ -89,7 +99,24 @@ func (s *ProfileParseService) ParseFromFile(ctx context.Context, userID uuid.UUI
 		return nil, fmt.Errorf("gemini parse file: %w", err)
 	}
 
-	return s.storeResults(ctx, userID, parsed)
+	result, err := s.storeResults(ctx, userID, parsed)
+	if err != nil {
+		return nil, err
+	}
+
+	s.asyncIndex(userID)
+	return result, nil
+}
+
+func (s *ProfileParseService) asyncIndex(userID uuid.UUID) {
+	if s.vectorIndexSvc == nil {
+		return
+	}
+	go func() {
+		if err := s.vectorIndexSvc.IndexUser(context.Background(), userID); err != nil {
+			log.Printf("async vector index for user %s: %v", userID, err)
+		}
+	}()
 }
 
 func (s *ProfileParseService) storeResults(ctx context.Context, userID uuid.UUID, parsed *gemini.ParsedProfile) (*ParseResult, error) {

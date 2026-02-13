@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"fmt"
 
 	casbinlib "github.com/casbin/casbin/v2"
@@ -9,6 +10,7 @@ import (
 	"github.com/ruziba3vich/hr-ai/internal/application"
 	casbininfra "github.com/ruziba3vich/hr-ai/internal/infrastructure/casbin"
 	"github.com/ruziba3vich/hr-ai/internal/infrastructure/gemini"
+	"github.com/ruziba3vich/hr-ai/internal/infrastructure/qdrant"
 	"github.com/ruziba3vich/hr-ai/internal/infrastructure/repository"
 )
 
@@ -28,11 +30,13 @@ type Services struct {
 	CompanyText      *application.CompanyTextService
 	Vacancy          *application.VacancyService
 	VacancyText      *application.VacancyTextService
+	VectorIndex      *application.VectorIndexService
+	Search           *application.SearchService
 	CasbinEnforcer   *casbinlib.Enforcer
 	JWTSecret        string
 }
 
-func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL string) (*Services, error) {
+func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdrantURL, qdrantAPIKey string) (*Services, error) {
 	userRepo := repository.NewUserRepository(pool)
 	sessionRepo := repository.NewSessionRepository(pool)
 	userSvc := application.NewUserService(userRepo)
@@ -54,6 +58,14 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL string
 
 	geminiClient := gemini.NewClient(geminiAPIKey)
 
+	qdrantClient := qdrant.NewClient(qdrantURL, qdrantAPIKey)
+	if err := qdrantClient.EnsureCollection(context.Background(), "user_profile_vectors", 768); err != nil {
+		return nil, fmt.Errorf("ensure qdrant collection: %w", err)
+	}
+
+	vectorIndexSvc := application.NewVectorIndexService(qdrantClient, geminiClient, pfSvc, pftSvc, expSvc, itSvc, skillSvc, userSvc)
+	searchSvc := application.NewSearchService(qdrantClient, geminiClient, userSvc)
+
 	enforcer, err := casbininfra.NewEnforcer(databaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("init casbin enforcer: %w", err)
@@ -67,7 +79,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL string
 		EducationItem:    eduSvc,
 		ItemText:         itSvc,
 		Skill:            skillSvc,
-		ProfileParse:     application.NewProfileParseService(geminiClient, pfSvc, pftSvc, expSvc, eduSvc, itSvc, skillSvc, userSvc),
+		ProfileParse:     application.NewProfileParseService(geminiClient, pfSvc, pftSvc, expSvc, eduSvc, itSvc, skillSvc, userSvc, vectorIndexSvc),
 		Auth:             application.NewAuthService(userRepo, sessionRepo, jwtSecret),
 		CompanyHR:        application.NewCompanyHRService(companyHRRepo),
 		HRAuth:           application.NewHRAuthService(companyHRRepo, hrSessionRepo, jwtSecret),
@@ -75,6 +87,8 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL string
 		CompanyText:      application.NewCompanyTextService(companyTextRepo),
 		Vacancy:          application.NewVacancyService(vacancyRepo, vacancyTextRepo, skillSvc, geminiClient),
 		VacancyText:      application.NewVacancyTextService(vacancyTextRepo),
+		VectorIndex:      vectorIndexSvc,
+		Search:           searchSvc,
 		CasbinEnforcer:   enforcer,
 		JWTSecret:        jwtSecret,
 	}, nil

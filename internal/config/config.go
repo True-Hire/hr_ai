@@ -12,6 +12,8 @@ type Config struct {
 	ServerPort   string
 	GeminiAPIKey string
 	JWTSecret    string
+	QdrantURL    string
+	QdrantAPIKey string
 }
 
 func Load() (*Config, error) {
@@ -37,10 +39,22 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("JWT_SECRET is required")
 	}
 
+	qdrantURL := os.Getenv("QDRANT_URL")
+	if qdrantURL == "" {
+		return nil, fmt.Errorf("QDRANT_URL is required")
+	}
+
+	qdrantAPIKey := os.Getenv("QDRANT_API_KEY")
+	if qdrantAPIKey == "" {
+		return nil, fmt.Errorf("QDRANT_API_KEY is required")
+	}
+
 	return &Config{
 		DatabaseURL:  dbURL,
 		ServerPort:   port,
 		GeminiAPIKey: geminiKey,
 		JWTSecret:    jwtSecret,
+		QdrantURL:    qdrantURL,
+		QdrantAPIKey: qdrantAPIKey,
 	}, nil
 }

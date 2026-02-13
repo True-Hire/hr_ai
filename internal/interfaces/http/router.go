@@ -23,6 +23,7 @@ func NewRouter(svc *app.Services) *gin.Engine {
 	hrAuthHandler := NewHRAuthHandler(svc.HRAuth)
 	companyHandler := NewCompanyHandler(svc.Company)
 	vacancyHandler := NewVacancyHandler(svc.Vacancy)
+	searchHandler := NewSearchHandler(svc.Search, svc.VectorIndex, userHandler)
 
 	v1 := router.Group("/api/v1")
 	{
@@ -84,6 +85,12 @@ func NewRouter(svc *app.Services) *gin.Engine {
 			vacancies.GET("/:id", JWTMiddleware(svc.JWTSecret), CasbinMiddleware(svc.CasbinEnforcer, "vacancies", "read"), vacancyHandler.GetByID)
 			vacancies.PUT("/:id", HRAuthMiddleware(svc.JWTSecret), CasbinMiddleware(svc.CasbinEnforcer, "vacancies", "update"), vacancyHandler.Update)
 			vacancies.DELETE("/:id", HRAuthMiddleware(svc.JWTSecret), CasbinMiddleware(svc.CasbinEnforcer, "vacancies", "delete"), vacancyHandler.Delete)
+		}
+
+		search := v1.Group("/search")
+		{
+			search.GET("/users", searchHandler.SearchUsers)
+			search.POST("/reindex", HRAuthMiddleware(svc.JWTSecret), searchHandler.ReindexAll)
 		}
 
 		profileFields := v1.Group("/profile-fields")
