@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS user_sessions CASCADE;
+ALTER TABLE users DROP COLUMN IF EXISTS password_hash;

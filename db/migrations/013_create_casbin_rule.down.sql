@@ -1,0 +1,1 @@
+-- casbin_rule table is managed by the pgx adapter, no action needed.
