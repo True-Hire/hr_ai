@@ -34,7 +34,7 @@ func main() {
 	}
 	defer pool.Close()
 
-	services, err := app.NewServices(pool, cfg.GeminiAPIKey, cfg.JWTSecret, cfg.DatabaseURL)
+	services, err := app.NewServices(pool, cfg.GeminiAPIKey, cfg.JWTSecret, cfg.DatabaseURL, cfg.QdrantURL, cfg.QdrantAPIKey)
 	if err != nil {
 		log.Fatalf("failed to init services: %v", err)
 	}
