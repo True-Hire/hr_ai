@@ -137,6 +137,142 @@ func (c *Client) TranslateCompany(ctx context.Context, input string) (*ParsedCom
 	return &parsed, nil
 }
 
+// ParsedVacancy is the structured result from Gemini vacancy text translation.
+type ParsedVacancy struct {
+	SourceLang string                       `json:"source_lang"`
+	Fields     map[string]map[string]string `json:"fields"`
+}
+
+// ParsedVacancyFull is the result from Gemini when parsing a full job posting text.
+type ParsedVacancyFull struct {
+	SourceLang    string                       `json:"source_lang"`
+	Fields        map[string]map[string]string `json:"fields"`
+	SalaryMin     int32                        `json:"salary_min"`
+	SalaryMax     int32                        `json:"salary_max"`
+	SalaryCurrency string                      `json:"salary_currency"`
+	ExperienceMin int32                        `json:"experience_min"`
+	ExperienceMax int32                        `json:"experience_max"`
+	Format        string                       `json:"format"`
+	Schedule      string                       `json:"schedule"`
+	Phone         string                       `json:"phone"`
+	Telegram      string                       `json:"telegram"`
+	Email         string                       `json:"email"`
+	Address       string                       `json:"address"`
+	Skills        []string                     `json:"skills"`
+}
+
+func (c *Client) TranslateVacancy(ctx context.Context, input string) (*ParsedVacancy, error) {
+	parts := []part{
+		{Text: buildVacancyPrompt(input)},
+	}
+
+	reqBody := generateRequest{
+		Contents:         []content{{Parts: parts}},
+		GenerationConfig: generationConfig{ResponseMimeType: "application/json"},
+	}
+
+	jsonBody, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("marshal gemini request: %w", err)
+	}
+
+	url := baseURL + "?key=" + c.apiKey
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(jsonBody))
+	if err != nil {
+		return nil, fmt.Errorf("create gemini request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("gemini API call: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read gemini response: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("gemini API error (status %d): %s", resp.StatusCode, string(body))
+	}
+
+	var genResp generateResponse
+	if err := json.Unmarshal(body, &genResp); err != nil {
+		return nil, fmt.Errorf("unmarshal gemini response: %w", err)
+	}
+
+	if len(genResp.Candidates) == 0 || len(genResp.Candidates[0].Content.Parts) == 0 {
+		return nil, fmt.Errorf("gemini returned no content")
+	}
+
+	text := genResp.Candidates[0].Content.Parts[0].Text
+
+	var parsed ParsedVacancy
+	if err := json.Unmarshal([]byte(text), &parsed); err != nil {
+		return nil, fmt.Errorf("parse gemini vacancy JSON: %w (raw: %s)", err, text)
+	}
+
+	return &parsed, nil
+}
+
+func (c *Client) ParseVacancyFromText(ctx context.Context, userInput string) (*ParsedVacancyFull, error) {
+	parts := []part{
+		{Text: buildVacancyParsePrompt(userInput)},
+	}
+
+	reqBody := generateRequest{
+		Contents:         []content{{Parts: parts}},
+		GenerationConfig: generationConfig{ResponseMimeType: "application/json"},
+	}
+
+	jsonBody, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("marshal gemini request: %w", err)
+	}
+
+	url := baseURL + "?key=" + c.apiKey
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(jsonBody))
+	if err != nil {
+		return nil, fmt.Errorf("create gemini request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("gemini API call: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read gemini response: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("gemini API error (status %d): %s", resp.StatusCode, string(body))
+	}
+
+	var genResp generateResponse
+	if err := json.Unmarshal(body, &genResp); err != nil {
+		return nil, fmt.Errorf("unmarshal gemini response: %w", err)
+	}
+
+	if len(genResp.Candidates) == 0 || len(genResp.Candidates[0].Content.Parts) == 0 {
+		return nil, fmt.Errorf("gemini returned no content")
+	}
+
+	text := genResp.Candidates[0].Content.Parts[0].Text
+
+	var parsed ParsedVacancyFull
+	if err := json.Unmarshal([]byte(text), &parsed); err != nil {
+		return nil, fmt.Errorf("parse gemini vacancy full JSON: %w (raw: %s)", err, text)
+	}
+
+	return &parsed, nil
+}
+
 func (c *Client) ParseProfileFromText(ctx context.Context, userInput string) (*ParsedProfile, error) {
 	parts := []part{
 		{Text: buildPrompt(userInput)},
