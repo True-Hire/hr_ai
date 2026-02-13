@@ -8,6 +8,17 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type CasbinRule struct {
+	ID    int64
+	Ptype string
+	V0    string
+	V1    string
+	V2    string
+	V3    string
+	V4    string
+	V5    string
+}
+
 type Company struct {
 	ID              pgtype.UUID
 	EmployeeCount   pgtype.Int4
@@ -160,4 +171,42 @@ type UserSession struct {
 type UserSkill struct {
 	UserID  pgtype.UUID
 	SkillID pgtype.UUID
+}
+
+type Vacancy struct {
+	ID             pgtype.UUID
+	HrID           pgtype.UUID
+	CompanyID      pgtype.UUID
+	SalaryMin      pgtype.Int4
+	SalaryMax      pgtype.Int4
+	SalaryCurrency string
+	ExperienceMin  pgtype.Int4
+	ExperienceMax  pgtype.Int4
+	Format         string
+	Schedule       string
+	Phone          pgtype.Text
+	Telegram       pgtype.Text
+	Email          pgtype.Text
+	Address        pgtype.Text
+	Status         string
+	SourceLang     string
+	CreatedAt      pgtype.Timestamp
+}
+
+type VacancySkill struct {
+	VacancyID pgtype.UUID
+	SkillID   pgtype.UUID
+}
+
+type VacancyText struct {
+	VacancyID        pgtype.UUID
+	Lang             string
+	Title            string
+	Description      string
+	Responsibilities string
+	Requirements     string
+	Benefits         string
+	IsSource         bool
+	ModelVersion     pgtype.Text
+	UpdatedAt        pgtype.Timestamp
 }
