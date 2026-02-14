@@ -69,27 +69,39 @@ type VacancyTextResponse struct {
 	UpdatedAt        string `json:"updated_at"`
 }
 
+type VacancyCompanyResponse struct {
+	ID              string `json:"id"`
+	Name            string `json:"name"`
+	ActivityType    string `json:"activity_type,omitempty"`
+	CompanyType     string `json:"company_type,omitempty"`
+	About           string `json:"about,omitempty"`
+	LogoURL         string `json:"logo_url,omitempty"`
+	Country         string `json:"country,omitempty"`
+	EmployeeCount   int32  `json:"employee_count,omitempty"`
+}
+
 type VacancyResponse struct {
-	ID             string               `json:"id"`
-	HRID           string               `json:"hr_id"`
-	CompanyID      string               `json:"company_id"`
-	CountryID      string               `json:"country_id,omitempty"`
-	SalaryMin      int32                `json:"salary_min,omitempty"`
-	SalaryMax      int32                `json:"salary_max,omitempty"`
-	SalaryCurrency string               `json:"salary_currency"`
-	ExperienceMin  int32                `json:"experience_min,omitempty"`
-	ExperienceMax  int32                `json:"experience_max,omitempty"`
-	Format         string               `json:"format"`
-	Schedule       string               `json:"schedule"`
-	Phone          string               `json:"phone,omitempty"`
-	Telegram       string               `json:"telegram,omitempty"`
-	Email          string               `json:"email,omitempty"`
-	Address        string               `json:"address,omitempty"`
-	Status         string               `json:"status"`
-	SourceLang     string               `json:"source_lang"`
-	CreatedAt      string               `json:"created_at"`
-	Text           *VacancyTextResponse `json:"text"`
-	Skills         []SkillResponse      `json:"skills"`
+	ID             string                `json:"id"`
+	HRID           string                `json:"hr_id"`
+	CompanyID      string                `json:"company_id"`
+	CountryID      string                `json:"country_id,omitempty"`
+	SalaryMin      int32                 `json:"salary_min,omitempty"`
+	SalaryMax      int32                 `json:"salary_max,omitempty"`
+	SalaryCurrency string                `json:"salary_currency"`
+	ExperienceMin  int32                 `json:"experience_min,omitempty"`
+	ExperienceMax  int32                 `json:"experience_max,omitempty"`
+	Format         string                `json:"format"`
+	Schedule       string                `json:"schedule"`
+	Phone          string                `json:"phone,omitempty"`
+	Telegram       string                `json:"telegram,omitempty"`
+	Email          string                `json:"email,omitempty"`
+	Address        string                `json:"address,omitempty"`
+	Status         string                `json:"status"`
+	SourceLang     string                `json:"source_lang"`
+	CreatedAt      string                `json:"created_at"`
+	Company        *VacancyCompanyResponse `json:"company,omitempty"`
+	Text           *VacancyTextResponse  `json:"text"`
+	Skills         []SkillResponse       `json:"skills"`
 }
 
 type PaginatedVacanciesResponse struct {
@@ -143,6 +155,36 @@ func toVacancyResponse(vwd *application.VacancyWithDetails, lang string) Vacancy
 				break
 			}
 		}
+	}
+
+	if vwd.Company != nil {
+		cr := &VacancyCompanyResponse{
+			ID:            vwd.Company.Company.ID.String(),
+			LogoURL:       vwd.Company.Company.LogoURL,
+			Country:       vwd.Company.Company.Country,
+			EmployeeCount: vwd.Company.Company.EmployeeCount,
+		}
+		for _, t := range vwd.Company.Texts {
+			if t.Lang == lang {
+				cr.Name = t.Name
+				cr.ActivityType = t.ActivityType
+				cr.CompanyType = t.CompanyType
+				cr.About = t.About
+				break
+			}
+		}
+		if cr.Name == "" {
+			for _, t := range vwd.Company.Texts {
+				if t.Lang == "en" {
+					cr.Name = t.Name
+					cr.ActivityType = t.ActivityType
+					cr.CompanyType = t.CompanyType
+					cr.About = t.About
+					break
+				}
+			}
+		}
+		resp.Company = cr
 	}
 
 	for _, s := range vwd.Skills {

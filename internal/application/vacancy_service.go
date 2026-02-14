@@ -15,11 +15,12 @@ type VacancyService struct {
 	repo         domain.VacancyRepository
 	textRepo     domain.VacancyTextRepository
 	skillSvc     *SkillService
+	companySvc   *CompanyService
 	geminiClient *gemini.Client
 }
 
-func NewVacancyService(repo domain.VacancyRepository, textRepo domain.VacancyTextRepository, skillSvc *SkillService, geminiClient *gemini.Client) *VacancyService {
-	return &VacancyService{repo: repo, textRepo: textRepo, skillSvc: skillSvc, geminiClient: geminiClient}
+func NewVacancyService(repo domain.VacancyRepository, textRepo domain.VacancyTextRepository, skillSvc *SkillService, companySvc *CompanyService, geminiClient *gemini.Client) *VacancyService {
+	return &VacancyService{repo: repo, textRepo: textRepo, skillSvc: skillSvc, companySvc: companySvc, geminiClient: geminiClient}
 }
 
 type CreateVacancyInput struct {
@@ -49,6 +50,7 @@ type VacancyWithDetails struct {
 	Vacancy *domain.Vacancy
 	Texts   []domain.VacancyText
 	Skills  []domain.Skill
+	Company *CompanyWithTexts
 }
 
 func (s *VacancyService) CreateVacancy(ctx context.Context, input *CreateVacancyInput) (*VacancyWithDetails, error) {
@@ -124,7 +126,9 @@ func (s *VacancyService) CreateVacancy(ctx context.Context, input *CreateVacancy
 		}
 	}
 
-	return &VacancyWithDetails{Vacancy: created, Texts: texts, Skills: skills}, nil
+	company, _ := s.companySvc.GetCompany(ctx, created.CompanyID)
+
+	return &VacancyWithDetails{Vacancy: created, Texts: texts, Skills: skills, Company: company}, nil
 }
 
 func (s *VacancyService) ParseVacancy(ctx context.Context, hrID, companyID uuid.UUID, userInput string) (*VacancyWithDetails, error) {
@@ -183,7 +187,9 @@ func (s *VacancyService) ParseVacancy(ctx context.Context, hrID, companyID uuid.
 		}
 	}
 
-	return &VacancyWithDetails{Vacancy: created, Texts: texts, Skills: skills}, nil
+	company, _ := s.companySvc.GetCompany(ctx, created.CompanyID)
+
+	return &VacancyWithDetails{Vacancy: created, Texts: texts, Skills: skills, Company: company}, nil
 }
 
 func (s *VacancyService) storeVacancyTexts(ctx context.Context, vacancyID uuid.UUID, sourceLang string, fields map[string]map[string]string) ([]domain.VacancyText, error) {
@@ -241,7 +247,9 @@ func (s *VacancyService) GetVacancy(ctx context.Context, id uuid.UUID) (*Vacancy
 		return nil, fmt.Errorf("list vacancy skills: %w", err)
 	}
 
-	return &VacancyWithDetails{Vacancy: vacancy, Texts: texts, Skills: skills}, nil
+	company, _ := s.companySvc.GetCompany(ctx, vacancy.CompanyID)
+
+	return &VacancyWithDetails{Vacancy: vacancy, Texts: texts, Skills: skills, Company: company}, nil
 }
 
 type ListVacanciesResult struct {
@@ -269,6 +277,7 @@ func (s *VacancyService) ListVacancies(ctx context.Context, page, pageSize int32
 	}
 
 	result := make([]VacancyWithDetails, 0, len(vacancies))
+	companyCache := map[uuid.UUID]*CompanyWithTexts{}
 	for _, v := range vacancies {
 		texts, err := s.textRepo.ListByVacancy(ctx, v.ID)
 		if err != nil {
@@ -278,7 +287,12 @@ func (s *VacancyService) ListVacancies(ctx context.Context, page, pageSize int32
 		if err != nil {
 			return nil, fmt.Errorf("list vacancy skills for %s: %w", v.ID, err)
 		}
-		result = append(result, VacancyWithDetails{Vacancy: &v, Texts: texts, Skills: skills})
+		company, ok := companyCache[v.CompanyID]
+		if !ok {
+			company, _ = s.companySvc.GetCompany(ctx, v.CompanyID)
+			companyCache[v.CompanyID] = company
+		}
+		result = append(result, VacancyWithDetails{Vacancy: &v, Texts: texts, Skills: skills, Company: company})
 	}
 
 	return &ListVacanciesResult{Vacancies: result, Total: total}, nil
@@ -304,6 +318,10 @@ func (s *VacancyService) ListVacanciesByCompany(ctx context.Context, companyID u
 	}
 
 	result := make([]VacancyWithDetails, 0, len(vacancies))
+	var company *CompanyWithTexts
+	if len(vacancies) > 0 {
+		company, _ = s.companySvc.GetCompany(ctx, companyID)
+	}
 	for _, v := range vacancies {
 		texts, err := s.textRepo.ListByVacancy(ctx, v.ID)
 		if err != nil {
@@ -313,7 +331,7 @@ func (s *VacancyService) ListVacanciesByCompany(ctx context.Context, companyID u
 		if err != nil {
 			return nil, fmt.Errorf("list vacancy skills for %s: %w", v.ID, err)
 		}
-		result = append(result, VacancyWithDetails{Vacancy: &v, Texts: texts, Skills: skills})
+		result = append(result, VacancyWithDetails{Vacancy: &v, Texts: texts, Skills: skills, Company: company})
 	}
 
 	return &ListVacanciesResult{Vacancies: result, Total: total}, nil
@@ -416,7 +434,9 @@ func (s *VacancyService) UpdateVacancy(ctx context.Context, input *UpdateVacancy
 		return nil, fmt.Errorf("list vacancy skills: %w", err)
 	}
 
-	return &VacancyWithDetails{Vacancy: updated, Texts: texts, Skills: skills}, nil
+	company, _ := s.companySvc.GetCompany(ctx, updated.CompanyID)
+
+	return &VacancyWithDetails{Vacancy: updated, Texts: texts, Skills: skills, Company: company}, nil
 }
 
 func (s *VacancyService) DeleteVacancy(ctx context.Context, id uuid.UUID) error {
