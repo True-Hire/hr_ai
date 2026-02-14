@@ -15,10 +15,11 @@ type CompanyService struct {
 	repo         domain.CompanyRepository
 	textRepo     domain.CompanyTextRepository
 	geminiClient *gemini.Client
+	cache        *CacheService
 }
 
-func NewCompanyService(repo domain.CompanyRepository, textRepo domain.CompanyTextRepository, geminiClient *gemini.Client) *CompanyService {
-	return &CompanyService{repo: repo, textRepo: textRepo, geminiClient: geminiClient}
+func NewCompanyService(repo domain.CompanyRepository, textRepo domain.CompanyTextRepository, geminiClient *gemini.Client, cache *CacheService) *CompanyService {
+	return &CompanyService{repo: repo, textRepo: textRepo, geminiClient: geminiClient, cache: cache}
 }
 
 type CreateCompanyInput struct {
@@ -125,10 +126,20 @@ func (s *CompanyService) CreateCompany(ctx context.Context, input *CreateCompany
 		texts = append(texts, *savedText)
 	}
 
-	return &CompanyWithTexts{Company: created, Texts: texts}, nil
+	result := &CompanyWithTexts{Company: created, Texts: texts}
+	if s.cache != nil {
+		s.cache.SetCompany(ctx, created.ID, result)
+	}
+	return result, nil
 }
 
 func (s *CompanyService) GetCompany(ctx context.Context, id uuid.UUID) (*CompanyWithTexts, error) {
+	if s.cache != nil {
+		if cached, ok := s.cache.GetCompany(ctx, id); ok {
+			return cached, nil
+		}
+	}
+
 	company, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -139,7 +150,11 @@ func (s *CompanyService) GetCompany(ctx context.Context, id uuid.UUID) (*Company
 		return nil, fmt.Errorf("list company texts: %w", err)
 	}
 
-	return &CompanyWithTexts{Company: company, Texts: texts}, nil
+	result := &CompanyWithTexts{Company: company, Texts: texts}
+	if s.cache != nil {
+		s.cache.SetCompany(ctx, id, result)
+	}
+	return result, nil
 }
 
 type ListCompaniesResult struct {
@@ -189,12 +204,23 @@ func (s *CompanyService) UpdateCompany(ctx context.Context, company *domain.Comp
 		return nil, fmt.Errorf("list company texts: %w", err)
 	}
 
-	return &CompanyWithTexts{Company: updated, Texts: texts}, nil
+	result := &CompanyWithTexts{Company: updated, Texts: texts}
+	if s.cache != nil {
+		s.cache.InvalidateCompany(ctx, updated.ID)
+		s.cache.SetCompany(ctx, updated.ID, result)
+	}
+	return result, nil
 }
 
 func (s *CompanyService) DeleteCompany(ctx context.Context, id uuid.UUID) error {
 	if err := s.textRepo.DeleteByCompany(ctx, id); err != nil {
 		return fmt.Errorf("delete company texts: %w", err)
 	}
-	return s.repo.Delete(ctx, id)
+	if err := s.repo.Delete(ctx, id); err != nil {
+		return err
+	}
+	if s.cache != nil {
+		s.cache.InvalidateCompany(ctx, id)
+	}
+	return nil
 }

@@ -14,10 +14,11 @@ type CountryService struct {
 	repo         domain.CountryRepository
 	textRepo     domain.CountryTextRepository
 	geminiClient *gemini.Client
+	cache        *CacheService
 }
 
-func NewCountryService(repo domain.CountryRepository, textRepo domain.CountryTextRepository, geminiClient *gemini.Client) *CountryService {
-	return &CountryService{repo: repo, textRepo: textRepo, geminiClient: geminiClient}
+func NewCountryService(repo domain.CountryRepository, textRepo domain.CountryTextRepository, geminiClient *gemini.Client, cache *CacheService) *CountryService {
+	return &CountryService{repo: repo, textRepo: textRepo, geminiClient: geminiClient, cache: cache}
 }
 
 type CountryWithTexts struct {
@@ -26,6 +27,12 @@ type CountryWithTexts struct {
 }
 
 func (s *CountryService) GetCountry(ctx context.Context, id uuid.UUID) (*CountryWithTexts, error) {
+	if s.cache != nil {
+		if cached, ok := s.cache.GetCountry(ctx, id); ok {
+			return cached, nil
+		}
+	}
+
 	country, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -36,10 +43,20 @@ func (s *CountryService) GetCountry(ctx context.Context, id uuid.UUID) (*Country
 		return nil, fmt.Errorf("list country texts: %w", err)
 	}
 
-	return &CountryWithTexts{Country: country, Texts: texts}, nil
+	result := &CountryWithTexts{Country: country, Texts: texts}
+	if s.cache != nil {
+		s.cache.SetCountry(ctx, id, result)
+	}
+	return result, nil
 }
 
 func (s *CountryService) ListCountries(ctx context.Context) ([]CountryWithTexts, error) {
+	if s.cache != nil {
+		if cached, ok := s.cache.GetCountriesList(ctx); ok {
+			return cached, nil
+		}
+	}
+
 	countries, err := s.repo.List(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("list countries: %w", err)
@@ -54,6 +71,9 @@ func (s *CountryService) ListCountries(ctx context.Context) ([]CountryWithTexts,
 		result = append(result, CountryWithTexts{Country: &c, Texts: texts})
 	}
 
+	if s.cache != nil {
+		s.cache.SetCountriesList(ctx, result)
+	}
 	return result, nil
 }
 
@@ -100,12 +120,23 @@ func (s *CountryService) CreateCountry(ctx context.Context, name, shortCode stri
 		texts = append(texts, *saved)
 	}
 
-	return &CountryWithTexts{Country: country, Texts: texts}, nil
+	result := &CountryWithTexts{Country: country, Texts: texts}
+	if s.cache != nil {
+		s.cache.SetCountry(ctx, country.ID, result)
+		s.cache.InvalidateCountriesList(ctx)
+	}
+	return result, nil
 }
 
 func (s *CountryService) DeleteCountry(ctx context.Context, id uuid.UUID) error {
 	if err := s.textRepo.DeleteByCountry(ctx, id); err != nil {
 		return fmt.Errorf("delete country texts: %w", err)
 	}
-	return s.repo.Delete(ctx, id)
+	if err := s.repo.Delete(ctx, id); err != nil {
+		return err
+	}
+	if s.cache != nil {
+		s.cache.InvalidateCountry(ctx, id)
+	}
+	return nil
 }

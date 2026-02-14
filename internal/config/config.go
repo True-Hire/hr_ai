@@ -14,6 +14,7 @@ type Config struct {
 	JWTSecret    string
 	QdrantURL    string
 	QdrantAPIKey string
+	RedisURL     string
 }
 
 func Load() (*Config, error) {
@@ -49,6 +50,11 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("QDRANT_API_KEY is required")
 	}
 
+	redisURL := os.Getenv("REDIS_URL")
+	if redisURL == "" {
+		return nil, fmt.Errorf("REDIS_URL is required")
+	}
+
 	return &Config{
 		DatabaseURL:  dbURL,
 		ServerPort:   port,
@@ -56,5 +62,6 @@ func Load() (*Config, error) {
 		JWTSecret:    jwtSecret,
 		QdrantURL:    qdrantURL,
 		QdrantAPIKey: qdrantAPIKey,
+		RedisURL:     redisURL,
 	}, nil
 }
