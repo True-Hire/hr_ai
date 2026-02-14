@@ -8,13 +8,19 @@ import (
 )
 
 type Config struct {
-	DatabaseURL  string
-	ServerPort   string
-	GeminiAPIKey string
-	JWTSecret    string
-	QdrantURL    string
-	QdrantAPIKey string
-	RedisURL     string
+	DatabaseURL      string
+	ServerPort       string
+	GeminiAPIKey     string
+	JWTSecret        string
+	QdrantURL        string
+	QdrantAPIKey     string
+	RedisURL         string
+	TelegramBotToken string
+	MinioEndpoint    string
+	MinioAccessKey   string
+	MinioSecretKey   string
+	MinioBucket      string
+	MinioUseSSL      bool
 }
 
 func Load() (*Config, error) {
@@ -55,13 +61,39 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("REDIS_URL is required")
 	}
 
+	tgBotToken := os.Getenv("TELEGRAM_BOT_TOKEN")
+
+	minioEndpoint := os.Getenv("MINIO_ENDPOINT")
+	if minioEndpoint == "" {
+		return nil, fmt.Errorf("MINIO_ENDPOINT is required")
+	}
+	minioAccessKey := os.Getenv("MINIO_ACCESS_KEY")
+	if minioAccessKey == "" {
+		return nil, fmt.Errorf("MINIO_ACCESS_KEY is required")
+	}
+	minioSecretKey := os.Getenv("MINIO_SECRET_KEY")
+	if minioSecretKey == "" {
+		return nil, fmt.Errorf("MINIO_SECRET_KEY is required")
+	}
+	minioBucket := os.Getenv("MINIO_BUCKET")
+	if minioBucket == "" {
+		minioBucket = "hr-ai"
+	}
+	minioUseSSL := os.Getenv("MINIO_USE_SSL") == "true"
+
 	return &Config{
-		DatabaseURL:  dbURL,
-		ServerPort:   port,
-		GeminiAPIKey: geminiKey,
-		JWTSecret:    jwtSecret,
-		QdrantURL:    qdrantURL,
-		QdrantAPIKey: qdrantAPIKey,
-		RedisURL:     redisURL,
+		DatabaseURL:      dbURL,
+		ServerPort:       port,
+		GeminiAPIKey:     geminiKey,
+		JWTSecret:        jwtSecret,
+		QdrantURL:        qdrantURL,
+		QdrantAPIKey:     qdrantAPIKey,
+		RedisURL:         redisURL,
+		TelegramBotToken: tgBotToken,
+		MinioEndpoint:    minioEndpoint,
+		MinioAccessKey:   minioAccessKey,
+		MinioSecretKey:   minioSecretKey,
+		MinioBucket:      minioBucket,
+		MinioUseSSL:      minioUseSSL,
 	}, nil
 }
