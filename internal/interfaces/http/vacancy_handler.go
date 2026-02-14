@@ -78,7 +78,8 @@ func (h *VacancyHandler) Create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, toVacancyResponse(result))
+	lang := c.DefaultQuery("lang", "en")
+	c.JSON(http.StatusCreated, toVacancyResponse(result, lang))
 }
 
 // Parse godoc
@@ -118,7 +119,8 @@ func (h *VacancyHandler) Parse(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, toVacancyResponse(result))
+	lang := c.DefaultQuery("lang", "en")
+	c.JSON(http.StatusCreated, toVacancyResponse(result, lang))
 }
 
 // GetByID godoc
@@ -148,7 +150,8 @@ func (h *VacancyHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, toVacancyResponse(result))
+	lang := c.DefaultQuery("lang", "en")
+	c.JSON(http.StatusOK, toVacancyResponse(result, lang))
 }
 
 // List godoc
@@ -185,6 +188,8 @@ func (h *VacancyHandler) List(c *gin.Context) {
 		return
 	}
 
+	lang := c.DefaultQuery("lang", "en")
+
 	resp := PaginatedVacanciesResponse{
 		Vacancies: make([]VacancyResponse, 0, len(result.Vacancies)),
 		Total:     result.Total,
@@ -192,7 +197,7 @@ func (h *VacancyHandler) List(c *gin.Context) {
 		PageSize:  pageSize,
 	}
 	for _, vwd := range result.Vacancies {
-		resp.Vacancies = append(resp.Vacancies, toVacancyResponse(&vwd))
+		resp.Vacancies = append(resp.Vacancies, toVacancyResponse(&vwd, lang))
 	}
 
 	c.JSON(http.StatusOK, resp)
@@ -249,7 +254,8 @@ func (h *VacancyHandler) Update(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, toVacancyResponse(result))
+	lang := c.DefaultQuery("lang", "en")
+	c.JSON(http.StatusOK, toVacancyResponse(result, lang))
 }
 
 // Delete godoc
