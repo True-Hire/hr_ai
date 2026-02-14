@@ -317,10 +317,89 @@ func (s *VacancyService) ListVacanciesByCompany(ctx context.Context, companyID u
 	return &ListVacanciesResult{Vacancies: result, Total: total}, nil
 }
 
-func (s *VacancyService) UpdateVacancy(ctx context.Context, v *domain.Vacancy) (*VacancyWithDetails, error) {
-	updated, err := s.repo.Update(ctx, v)
+type UpdateVacancyInput struct {
+	ID               uuid.UUID
+	SalaryMin        int32
+	SalaryMax        int32
+	SalaryCurrency   string
+	ExperienceMin    int32
+	ExperienceMax    int32
+	Format           string
+	Schedule         string
+	Phone            string
+	Telegram         string
+	Email            string
+	Address          string
+	Status           string
+	Title            string
+	Description      string
+	Responsibilities string
+	Requirements     string
+	Benefits         string
+	Skills           []string
+}
+
+func (s *VacancyService) UpdateVacancy(ctx context.Context, input *UpdateVacancyInput) (*VacancyWithDetails, error) {
+	vacancy := &domain.Vacancy{
+		ID:             input.ID,
+		SalaryMin:      input.SalaryMin,
+		SalaryMax:      input.SalaryMax,
+		SalaryCurrency: input.SalaryCurrency,
+		ExperienceMin:  input.ExperienceMin,
+		ExperienceMax:  input.ExperienceMax,
+		Format:         input.Format,
+		Schedule:       input.Schedule,
+		Phone:          input.Phone,
+		Telegram:       input.Telegram,
+		Email:          input.Email,
+		Address:        input.Address,
+		Status:         input.Status,
+	}
+
+	updated, err := s.repo.Update(ctx, vacancy)
 	if err != nil {
 		return nil, err
+	}
+
+	// If any text field provided, retranslate via Gemini and replace all texts
+	if input.Title != "" || input.Description != "" || input.Responsibilities != "" || input.Requirements != "" || input.Benefits != "" {
+		textData := map[string]string{}
+		if input.Title != "" {
+			textData["title"] = input.Title
+		}
+		if input.Description != "" {
+			textData["description"] = input.Description
+		}
+		if input.Responsibilities != "" {
+			textData["responsibilities"] = input.Responsibilities
+		}
+		if input.Requirements != "" {
+			textData["requirements"] = input.Requirements
+		}
+		if input.Benefits != "" {
+			textData["benefits"] = input.Benefits
+		}
+
+		jsonBytes, _ := json.Marshal(textData)
+		parsed, err := s.geminiClient.TranslateVacancy(ctx, string(jsonBytes))
+		if err != nil {
+			return nil, fmt.Errorf("gemini translate vacancy: %w", err)
+		}
+
+		if err := s.textRepo.DeleteByVacancy(ctx, updated.ID); err != nil {
+			return nil, fmt.Errorf("delete old vacancy texts: %w", err)
+		}
+
+		if _, err := s.storeVacancyTexts(ctx, updated.ID, parsed.SourceLang, parsed.Fields); err != nil {
+			return nil, err
+		}
+	}
+
+	// If skills provided, update them
+	if input.Skills != nil {
+		if _, err := s.skillSvc.SetVacancySkills(ctx, updated.ID, input.Skills); err != nil {
+			return nil, fmt.Errorf("set vacancy skills: %w", err)
+		}
 	}
 
 	texts, err := s.textRepo.ListByVacancy(ctx, updated.ID)

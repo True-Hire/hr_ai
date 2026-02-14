@@ -34,18 +34,24 @@ type VacancyParseRequest struct {
 }
 
 type UpdateVacancyRequest struct {
-	SalaryMin      int32  `json:"salary_min"`
-	SalaryMax      int32  `json:"salary_max"`
-	SalaryCurrency string `json:"salary_currency"`
-	ExperienceMin  int32  `json:"experience_min"`
-	ExperienceMax  int32  `json:"experience_max"`
-	Format         string `json:"format"`
-	Schedule       string `json:"schedule"`
-	Phone          string `json:"phone"`
-	Telegram       string `json:"telegram"`
-	Email          string `json:"email" binding:"omitempty,email"`
-	Address        string `json:"address"`
-	Status         string `json:"status"`
+	SalaryMin        int32    `json:"salary_min"`
+	SalaryMax        int32    `json:"salary_max"`
+	SalaryCurrency   string   `json:"salary_currency"`
+	ExperienceMin    int32    `json:"experience_min"`
+	ExperienceMax    int32    `json:"experience_max"`
+	Format           string   `json:"format"`
+	Schedule         string   `json:"schedule"`
+	Phone            string   `json:"phone"`
+	Telegram         string   `json:"telegram"`
+	Email            string   `json:"email" binding:"omitempty,email"`
+	Address          string   `json:"address"`
+	Status           string   `json:"status"`
+	Title            string   `json:"title"`
+	Description      string   `json:"description"`
+	Responsibilities string   `json:"responsibilities"`
+	Requirements     string   `json:"requirements"`
+	Benefits         string   `json:"benefits"`
+	Skills           []string `json:"skills"`
 }
 
 type VacancyTextResponse struct {

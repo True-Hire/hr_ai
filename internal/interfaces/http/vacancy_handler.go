@@ -228,23 +228,29 @@ func (h *VacancyHandler) Update(c *gin.Context) {
 		return
 	}
 
-	vacancy := &domain.Vacancy{
-		ID:             id,
-		SalaryMin:      req.SalaryMin,
-		SalaryMax:      req.SalaryMax,
-		SalaryCurrency: req.SalaryCurrency,
-		ExperienceMin:  req.ExperienceMin,
-		ExperienceMax:  req.ExperienceMax,
-		Format:         req.Format,
-		Schedule:       req.Schedule,
-		Phone:          req.Phone,
-		Telegram:       req.Telegram,
-		Email:          req.Email,
-		Address:        req.Address,
-		Status:         req.Status,
+	input := &application.UpdateVacancyInput{
+		ID:               id,
+		SalaryMin:        req.SalaryMin,
+		SalaryMax:        req.SalaryMax,
+		SalaryCurrency:   req.SalaryCurrency,
+		ExperienceMin:    req.ExperienceMin,
+		ExperienceMax:    req.ExperienceMax,
+		Format:           req.Format,
+		Schedule:         req.Schedule,
+		Phone:            req.Phone,
+		Telegram:         req.Telegram,
+		Email:            req.Email,
+		Address:          req.Address,
+		Status:           req.Status,
+		Title:            req.Title,
+		Description:      req.Description,
+		Responsibilities: req.Responsibilities,
+		Requirements:     req.Requirements,
+		Benefits:         req.Benefits,
+		Skills:           req.Skills,
 	}
 
-	result, err := h.service.UpdateVacancy(c.Request.Context(), vacancy)
+	result, err := h.service.UpdateVacancy(c.Request.Context(), input)
 	if err != nil {
 		if errors.Is(err, domain.ErrVacancyNotFound) {
 			c.JSON(http.StatusNotFound, ErrorResponse{Error: "vacancy not found"})
