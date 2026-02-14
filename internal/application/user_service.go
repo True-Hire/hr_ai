@@ -67,6 +67,10 @@ func (s *UserService) UpdateUser(ctx context.Context, user *domain.User) (*domai
 	return s.repo.Update(ctx, user)
 }
 
+func (s *UserService) GetByTelegramID(ctx context.Context, telegramID string) (*domain.User, error) {
+	return s.repo.GetByTelegramID(ctx, telegramID)
+}
+
 func (s *UserService) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	return s.repo.Delete(ctx, id)
 }

@@ -144,6 +144,17 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*domain.
 	return userToDomain(row), nil
 }
 
+func (r *UserRepository) GetByTelegramID(ctx context.Context, telegramID string) (*domain.User, error) {
+	row, err := r.q.GetUserByTelegramID(ctx, textToPgtype(telegramID))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrUserNotFound
+		}
+		return nil, fmt.Errorf("get user by telegram id: %w", err)
+	}
+	return userToDomain(row), nil
+}
+
 func (r *UserRepository) SetPassword(ctx context.Context, id uuid.UUID, hash string) error {
 	err := r.q.SetUserPassword(ctx, usersdb.SetUserPasswordParams{
 		ID:           uuidToPgtype(id),

@@ -223,6 +223,42 @@ func (q *Queries) GetUserByPhone(ctx context.Context, phone pgtype.Text) (User, 
 	return i, err
 }
 
+const getUserByTelegramID = `-- name: GetUserByTelegramID :one
+SELECT id, first_name, last_name, patronymic, phone, telegram, email,
+    gender, country, region, nationality, profile_pic_url,
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id
+FROM users
+WHERE telegram_id = $1
+`
+
+func (q *Queries) GetUserByTelegramID(ctx context.Context, telegramID pgtype.Text) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByTelegramID, telegramID)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.Patronymic,
+		&i.Phone,
+		&i.Telegram,
+		&i.Email,
+		&i.Gender,
+		&i.Country,
+		&i.Region,
+		&i.Nationality,
+		&i.ProfilePicUrl,
+		&i.Status,
+		&i.TariffType,
+		&i.JobStatus,
+		&i.ActivityType,
+		&i.Specializations,
+		&i.CreatedAt,
+		&i.PasswordHash,
+		&i.TelegramID,
+	)
+	return i, err
+}
+
 const listUsers = `-- name: ListUsers :many
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
