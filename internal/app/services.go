@@ -28,6 +28,7 @@ type Services struct {
 	HRAuth           *application.HRAuthService
 	Company          *application.CompanyService
 	CompanyText      *application.CompanyTextService
+	Country          *application.CountryService
 	Vacancy          *application.VacancyService
 	VacancyText      *application.VacancyTextService
 	VectorIndex      *application.VectorIndexService
@@ -54,6 +55,9 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 
 	companyRepo := repository.NewCompanyRepository(pool)
 	companyTextRepo := repository.NewCompanyTextRepository(pool)
+
+	countryRepo := repository.NewCountryRepository(pool)
+	countryTextRepo := repository.NewCountryTextRepository(pool)
 
 	vacancyRepo := repository.NewVacancyRepository(pool)
 	vacancyTextRepo := repository.NewVacancyTextRepository(pool)
@@ -83,6 +87,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 		Auth:             application.NewAuthService(userRepo, sessionRepo, jwtSecret),
 		CompanyHR:        application.NewCompanyHRService(companyHRRepo),
 		HRAuth:           application.NewHRAuthService(companyHRRepo, hrSessionRepo, jwtSecret),
+		Country:          application.NewCountryService(countryRepo, countryTextRepo, geminiClient),
 		Company:          application.NewCompanyService(companyRepo, companyTextRepo, geminiClient),
 		CompanyText:      application.NewCompanyTextService(companyTextRepo),
 		Vacancy:          application.NewVacancyService(vacancyRepo, vacancyTextRepo, skillSvc, geminiClient),

@@ -23,6 +23,7 @@ func NewRouter(svc *app.Services) *gin.Engine {
 	hrAuthHandler := NewHRAuthHandler(svc.HRAuth)
 	companyHandler := NewCompanyHandler(svc.Company)
 	vacancyHandler := NewVacancyHandler(svc.Vacancy)
+	countryHandler := NewCountryHandler(svc.Country)
 	searchHandler := NewSearchHandler(svc.Search, svc.VectorIndex, userHandler)
 
 	v1 := router.Group("/api/v1")
@@ -75,6 +76,12 @@ func NewRouter(svc *app.Services) *gin.Engine {
 			companies.GET("/:id", companyHandler.GetByID)
 			companies.PUT("/:id", companyHandler.Update)
 			companies.DELETE("/:id", companyHandler.Delete)
+		}
+
+		countries := v1.Group("/countries")
+		{
+			countries.GET("", countryHandler.List)
+			countries.GET("/:id", countryHandler.GetByID)
 		}
 
 		vacancies := v1.Group("/vacancies")
