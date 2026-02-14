@@ -34,7 +34,7 @@ func main() {
 	}
 	defer pool.Close()
 
-	services, err := app.NewServices(pool, cfg.GeminiAPIKey, cfg.JWTSecret, cfg.DatabaseURL, cfg.QdrantURL, cfg.QdrantAPIKey)
+	services, err := app.NewServices(pool, cfg.GeminiAPIKey, cfg.JWTSecret, cfg.DatabaseURL, cfg.QdrantURL, cfg.QdrantAPIKey, cfg.RedisURL)
 	if err != nil {
 		log.Fatalf("failed to init services: %v", err)
 	}
@@ -52,6 +52,8 @@ func main() {
 			log.Fatalf("server error: %v", err)
 		}
 	}()
+
+	defer services.RedisClient.Close()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)

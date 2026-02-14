@@ -11,6 +11,7 @@ import (
 	casbininfra "github.com/ruziba3vich/hr-ai/internal/infrastructure/casbin"
 	"github.com/ruziba3vich/hr-ai/internal/infrastructure/gemini"
 	"github.com/ruziba3vich/hr-ai/internal/infrastructure/qdrant"
+	redisclient "github.com/ruziba3vich/hr-ai/internal/infrastructure/redis"
 	"github.com/ruziba3vich/hr-ai/internal/infrastructure/repository"
 )
 
@@ -34,10 +35,17 @@ type Services struct {
 	VectorIndex      *application.VectorIndexService
 	Search           *application.SearchService
 	CasbinEnforcer   *casbinlib.Enforcer
+	RedisClient      *redisclient.Client
 	JWTSecret        string
 }
 
-func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdrantURL, qdrantAPIKey string) (*Services, error) {
+func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdrantURL, qdrantAPIKey, redisURL string) (*Services, error) {
+	rc, err := redisclient.NewClient(redisURL)
+	if err != nil {
+		return nil, fmt.Errorf("init redis: %w", err)
+	}
+	cacheSvc := application.NewCacheService(rc)
+
 	userRepo := repository.NewUserRepository(pool)
 	sessionRepo := repository.NewSessionRepository(pool)
 	userSvc := application.NewUserService(userRepo)
@@ -70,6 +78,8 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 	vectorIndexSvc := application.NewVectorIndexService(qdrantClient, geminiClient, pfSvc, pftSvc, expSvc, itSvc, skillSvc, userSvc)
 	searchSvc := application.NewSearchService(qdrantClient, geminiClient, userSvc)
 
+	companySvc := application.NewCompanyService(companyRepo, companyTextRepo, geminiClient, cacheSvc)
+
 	enforcer, err := casbininfra.NewEnforcer(databaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("init casbin enforcer: %w", err)
@@ -87,14 +97,15 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 		Auth:             application.NewAuthService(userRepo, sessionRepo, jwtSecret),
 		CompanyHR:        application.NewCompanyHRService(companyHRRepo),
 		HRAuth:           application.NewHRAuthService(companyHRRepo, hrSessionRepo, jwtSecret),
-		Country:          application.NewCountryService(countryRepo, countryTextRepo, geminiClient),
-		Company:          application.NewCompanyService(companyRepo, companyTextRepo, geminiClient),
+		Country:          application.NewCountryService(countryRepo, countryTextRepo, geminiClient, cacheSvc),
+		Company:          companySvc,
 		CompanyText:      application.NewCompanyTextService(companyTextRepo),
-		Vacancy:          application.NewVacancyService(vacancyRepo, vacancyTextRepo, skillSvc, geminiClient),
+		Vacancy:          application.NewVacancyService(vacancyRepo, vacancyTextRepo, skillSvc, companySvc, geminiClient),
 		VacancyText:      application.NewVacancyTextService(vacancyTextRepo),
 		VectorIndex:      vectorIndexSvc,
 		Search:           searchSvc,
 		CasbinEnforcer:   enforcer,
+		RedisClient:      rc,
 		JWTSecret:        jwtSecret,
 	}, nil
 }
