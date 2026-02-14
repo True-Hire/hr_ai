@@ -14,6 +14,7 @@ type Vacancy struct {
 	ID             uuid.UUID
 	HRID           uuid.UUID
 	CompanyID      uuid.UUID
+	CountryID      uuid.UUID
 	SalaryMin      int32
 	SalaryMax      int32
 	SalaryCurrency string

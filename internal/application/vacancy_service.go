@@ -25,6 +25,7 @@ func NewVacancyService(repo domain.VacancyRepository, textRepo domain.VacancyTex
 type CreateVacancyInput struct {
 	HRID             uuid.UUID
 	CompanyID        uuid.UUID
+	CountryID        uuid.UUID
 	SalaryMin        int32
 	SalaryMax        int32
 	SalaryCurrency   string
@@ -79,6 +80,7 @@ func (s *VacancyService) CreateVacancy(ctx context.Context, input *CreateVacancy
 		ID:             uuid.New(),
 		HRID:           input.HRID,
 		CompanyID:      input.CompanyID,
+		CountryID:      input.CountryID,
 		SalaryMin:      input.SalaryMin,
 		SalaryMax:      input.SalaryMax,
 		SalaryCurrency: input.SalaryCurrency,
@@ -319,6 +321,7 @@ func (s *VacancyService) ListVacanciesByCompany(ctx context.Context, companyID u
 
 type UpdateVacancyInput struct {
 	ID               uuid.UUID
+	CountryID        uuid.UUID
 	SalaryMin        int32
 	SalaryMax        int32
 	SalaryCurrency   string
@@ -342,6 +345,7 @@ type UpdateVacancyInput struct {
 func (s *VacancyService) UpdateVacancy(ctx context.Context, input *UpdateVacancyInput) (*VacancyWithDetails, error) {
 	vacancy := &domain.Vacancy{
 		ID:             input.ID,
+		CountryID:      input.CountryID,
 		SalaryMin:      input.SalaryMin,
 		SalaryMax:      input.SalaryMax,
 		SalaryCurrency: input.SalaryCurrency,

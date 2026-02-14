@@ -3,12 +3,14 @@ package http
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/ruziba3vich/hr-ai/internal/application"
 	"github.com/ruziba3vich/hr-ai/internal/domain"
 )
 
 type CreateVacancyRequest struct {
 	CompanyID        string   `json:"company_id" binding:"required"`
+	CountryID        string   `json:"country_id"`
 	Title            string   `json:"title" binding:"required"`
 	Description      string   `json:"description"`
 	Responsibilities string   `json:"responsibilities"`
@@ -34,6 +36,7 @@ type VacancyParseRequest struct {
 }
 
 type UpdateVacancyRequest struct {
+	CountryID        string   `json:"country_id"`
 	SalaryMin        int32    `json:"salary_min"`
 	SalaryMax        int32    `json:"salary_max"`
 	SalaryCurrency   string   `json:"salary_currency"`
@@ -70,6 +73,7 @@ type VacancyResponse struct {
 	ID             string               `json:"id"`
 	HRID           string               `json:"hr_id"`
 	CompanyID      string               `json:"company_id"`
+	CountryID      string               `json:"country_id,omitempty"`
 	SalaryMin      int32                `json:"salary_min,omitempty"`
 	SalaryMax      int32                `json:"salary_max,omitempty"`
 	SalaryCurrency string               `json:"salary_currency"`
@@ -96,10 +100,16 @@ type PaginatedVacanciesResponse struct {
 }
 
 func toVacancyResponse(vwd *application.VacancyWithDetails, lang string) VacancyResponse {
+	var countryID string
+	if vwd.Vacancy.CountryID != uuid.Nil {
+		countryID = vwd.Vacancy.CountryID.String()
+	}
+
 	resp := VacancyResponse{
 		ID:             vwd.Vacancy.ID.String(),
 		HRID:           vwd.Vacancy.HRID.String(),
 		CompanyID:      vwd.Vacancy.CompanyID.String(),
+		CountryID:      countryID,
 		SalaryMin:      vwd.Vacancy.SalaryMin,
 		SalaryMax:      vwd.Vacancy.SalaryMax,
 		SalaryCurrency: vwd.Vacancy.SalaryCurrency,
