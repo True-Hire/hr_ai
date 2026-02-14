@@ -101,7 +101,7 @@ func NewRouter(svc *app.Services) *gin.Engine {
 			profileFields.POST("/:id/texts", profileFieldTextHandler.Create)
 			profileFields.GET("/:id/texts", profileFieldTextHandler.ListByField)
 			profileFields.GET("/:id/texts/:lang", profileFieldTextHandler.Get)
-			profileFields.PUT("/:id/texts/:lang", profileFieldTextHandler.Update)
+			profileFields.PUT("/:id/texts", profileFieldTextHandler.Update)
 			profileFields.DELETE("/:id/texts/:lang", profileFieldTextHandler.Delete)
 		}
 	}
