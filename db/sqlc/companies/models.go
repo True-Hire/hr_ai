@@ -8,17 +8,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type CasbinRule struct {
-	ID    int64
-	Ptype string
-	V0    string
-	V1    string
-	V2    string
-	V3    string
-	V4    string
-	V5    string
-}
-
 type Company struct {
 	ID              pgtype.UUID
 	EmployeeCount   pgtype.Int4
@@ -59,6 +48,22 @@ type CompanyText struct {
 	CompanyType  string
 	About        string
 	Market       string
+	IsSource     bool
+	ModelVersion pgtype.Text
+	UpdatedAt    pgtype.Timestamp
+}
+
+type Country struct {
+	ID        pgtype.UUID
+	Name      string
+	ShortCode string
+	CreatedAt pgtype.Timestamp
+}
+
+type CountryText struct {
+	CountryID    pgtype.UUID
+	Lang         string
+	Name         string
 	IsSource     bool
 	ModelVersion pgtype.Text
 	UpdatedAt    pgtype.Timestamp
@@ -191,6 +196,7 @@ type Vacancy struct {
 	Status         string
 	SourceLang     string
 	CreatedAt      pgtype.Timestamp
+	CountryID      pgtype.UUID
 }
 
 type VacancySkill struct {

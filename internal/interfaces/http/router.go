@@ -23,6 +23,7 @@ func NewRouter(svc *app.Services) *gin.Engine {
 	hrAuthHandler := NewHRAuthHandler(svc.HRAuth)
 	companyHandler := NewCompanyHandler(svc.Company)
 	vacancyHandler := NewVacancyHandler(svc.Vacancy)
+	countryHandler := NewCountryHandler(svc.Country)
 	searchHandler := NewSearchHandler(svc.Search, svc.VectorIndex, userHandler)
 
 	v1 := router.Group("/api/v1")
@@ -77,6 +78,12 @@ func NewRouter(svc *app.Services) *gin.Engine {
 			companies.DELETE("/:id", companyHandler.Delete)
 		}
 
+		countries := v1.Group("/countries")
+		{
+			countries.GET("", countryHandler.List)
+			countries.GET("/:id", countryHandler.GetByID)
+		}
+
 		vacancies := v1.Group("/vacancies")
 		{
 			vacancies.POST("", HRAuthMiddleware(svc.JWTSecret), CasbinMiddleware(svc.CasbinEnforcer, "vacancies", "create"), vacancyHandler.Create)
@@ -101,7 +108,7 @@ func NewRouter(svc *app.Services) *gin.Engine {
 			profileFields.POST("/:id/texts", profileFieldTextHandler.Create)
 			profileFields.GET("/:id/texts", profileFieldTextHandler.ListByField)
 			profileFields.GET("/:id/texts/:lang", profileFieldTextHandler.Get)
-			profileFields.PUT("/:id/texts/:lang", profileFieldTextHandler.Update)
+			profileFields.PUT("/:id/texts", profileFieldTextHandler.Update)
 			profileFields.DELETE("/:id/texts/:lang", profileFieldTextHandler.Delete)
 		}
 	}

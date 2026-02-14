@@ -382,6 +382,68 @@ func (c *Client) TranslateToEnglish(ctx context.Context, text string) (string, e
 	return parsed.Text, nil
 }
 
+// TranslatedText is the result from Gemini when translating a single text into 3 languages.
+type TranslatedText struct {
+	SourceLang   string            `json:"source_lang"`
+	Translations map[string]string `json:"translations"`
+}
+
+func (c *Client) TranslateText(ctx context.Context, text string) (*TranslatedText, error) {
+	parts := []part{
+		{Text: buildTranslateTextPrompt(text)},
+	}
+
+	reqBody := generateRequest{
+		Contents:         []content{{Parts: parts}},
+		GenerationConfig: generationConfig{ResponseMimeType: "application/json"},
+	}
+
+	jsonBody, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("marshal gemini request: %w", err)
+	}
+
+	url := baseURL + "?key=" + c.apiKey
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(jsonBody))
+	if err != nil {
+		return nil, fmt.Errorf("create gemini request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("gemini API call: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read gemini response: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("gemini API error (status %d): %s", resp.StatusCode, string(body))
+	}
+
+	var genResp generateResponse
+	if err := json.Unmarshal(body, &genResp); err != nil {
+		return nil, fmt.Errorf("unmarshal gemini response: %w", err)
+	}
+
+	if len(genResp.Candidates) == 0 || len(genResp.Candidates[0].Content.Parts) == 0 {
+		return nil, fmt.Errorf("gemini returned no content")
+	}
+
+	resultText := genResp.Candidates[0].Content.Parts[0].Text
+
+	var parsed TranslatedText
+	if err := json.Unmarshal([]byte(resultText), &parsed); err != nil {
+		return nil, fmt.Errorf("parse gemini translate JSON: %w (raw: %s)", err, resultText)
+	}
+
+	return &parsed, nil
+}
+
 func (c *Client) ParseProfileFromText(ctx context.Context, userInput string) (*ParsedProfile, error) {
 	parts := []part{
 		{Text: buildPrompt(userInput)},

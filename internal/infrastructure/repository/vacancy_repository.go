@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	vacanciesdb "github.com/ruziba3vich/hr-ai/db/sqlc/vacancies"
@@ -26,6 +27,7 @@ func (r *VacancyRepository) Create(ctx context.Context, v *domain.Vacancy) (*dom
 		ID:             uuidToPgtype(v.ID),
 		HrID:           uuidToPgtype(v.HRID),
 		CompanyID:      uuidToPgtype(v.CompanyID),
+		CountryID:      uuidToPgtypeNullable(v.CountryID),
 		SalaryMin:      int4ToPgtype(v.SalaryMin),
 		SalaryMax:      int4ToPgtype(v.SalaryMax),
 		SalaryCurrency: v.SalaryCurrency,
@@ -43,7 +45,7 @@ func (r *VacancyRepository) Create(ctx context.Context, v *domain.Vacancy) (*dom
 	if err != nil {
 		return nil, fmt.Errorf("create vacancy: %w", err)
 	}
-	return vacancyToDomain(row), nil
+	return vacancyFromCreateRow(row), nil
 }
 
 func (r *VacancyRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Vacancy, error) {
@@ -54,7 +56,7 @@ func (r *VacancyRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.
 		}
 		return nil, fmt.Errorf("get vacancy by id: %w", err)
 	}
-	return vacancyToDomain(row), nil
+	return vacancyFromGetRow(row), nil
 }
 
 func (r *VacancyRepository) List(ctx context.Context, limit, offset int32) ([]domain.Vacancy, error) {
@@ -64,7 +66,7 @@ func (r *VacancyRepository) List(ctx context.Context, limit, offset int32) ([]do
 	}
 	result := make([]domain.Vacancy, 0, len(rows))
 	for _, row := range rows {
-		result = append(result, *vacancyToDomain(row))
+		result = append(result, *vacancyFromListRow(row))
 	}
 	return result, nil
 }
@@ -80,7 +82,7 @@ func (r *VacancyRepository) ListByCompany(ctx context.Context, companyID uuid.UU
 	}
 	result := make([]domain.Vacancy, 0, len(rows))
 	for _, row := range rows {
-		result = append(result, *vacancyToDomain(row))
+		result = append(result, *vacancyFromListByCompanyRow(row))
 	}
 	return result, nil
 }
@@ -96,7 +98,7 @@ func (r *VacancyRepository) ListByHR(ctx context.Context, hrID uuid.UUID, limit,
 	}
 	result := make([]domain.Vacancy, 0, len(rows))
 	for _, row := range rows {
-		result = append(result, *vacancyToDomain(row))
+		result = append(result, *vacancyFromListByHRRow(row))
 	}
 	return result, nil
 }
@@ -124,6 +126,7 @@ func (r *VacancyRepository) Update(ctx context.Context, v *domain.Vacancy) (*dom
 		Email:          v.Email,
 		Address:        v.Address,
 		Status:         v.Status,
+		CountryID:      uuidToPgtypeNullable(v.CountryID),
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -131,18 +134,141 @@ func (r *VacancyRepository) Update(ctx context.Context, v *domain.Vacancy) (*dom
 		}
 		return nil, fmt.Errorf("update vacancy: %w", err)
 	}
-	return vacancyToDomain(row), nil
+	return vacancyFromUpdateRow(row), nil
 }
 
 func (r *VacancyRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.q.DeleteVacancy(ctx, uuidToPgtype(id))
 }
 
-func vacancyToDomain(row vacanciesdb.Vacancy) *domain.Vacancy {
+func pgtypeUUIDToNullable(id pgtype.UUID) uuid.UUID {
+	if !id.Valid {
+		return uuid.Nil
+	}
+	return uuid.UUID(id.Bytes)
+}
+
+func vacancyFromCreateRow(row vacanciesdb.CreateVacancyRow) *domain.Vacancy {
 	return &domain.Vacancy{
 		ID:             pgtypeToUUID(row.ID),
 		HRID:           pgtypeToUUID(row.HrID),
 		CompanyID:      pgtypeToUUID(row.CompanyID),
+		CountryID:      pgtypeUUIDToNullable(row.CountryID),
+		SalaryMin:      pgtypeToInt32(row.SalaryMin),
+		SalaryMax:      pgtypeToInt32(row.SalaryMax),
+		SalaryCurrency: row.SalaryCurrency,
+		ExperienceMin:  pgtypeToInt32(row.ExperienceMin),
+		ExperienceMax:  pgtypeToInt32(row.ExperienceMax),
+		Format:         row.Format,
+		Schedule:       row.Schedule,
+		Phone:          pgtypeToString(row.Phone),
+		Telegram:       pgtypeToString(row.Telegram),
+		Email:          pgtypeToString(row.Email),
+		Address:        pgtypeToString(row.Address),
+		Status:         row.Status,
+		SourceLang:     row.SourceLang,
+		CreatedAt:      row.CreatedAt.Time,
+	}
+}
+
+func vacancyFromGetRow(row vacanciesdb.GetVacancyByIDRow) *domain.Vacancy {
+	return &domain.Vacancy{
+		ID:             pgtypeToUUID(row.ID),
+		HRID:           pgtypeToUUID(row.HrID),
+		CompanyID:      pgtypeToUUID(row.CompanyID),
+		CountryID:      pgtypeUUIDToNullable(row.CountryID),
+		SalaryMin:      pgtypeToInt32(row.SalaryMin),
+		SalaryMax:      pgtypeToInt32(row.SalaryMax),
+		SalaryCurrency: row.SalaryCurrency,
+		ExperienceMin:  pgtypeToInt32(row.ExperienceMin),
+		ExperienceMax:  pgtypeToInt32(row.ExperienceMax),
+		Format:         row.Format,
+		Schedule:       row.Schedule,
+		Phone:          pgtypeToString(row.Phone),
+		Telegram:       pgtypeToString(row.Telegram),
+		Email:          pgtypeToString(row.Email),
+		Address:        pgtypeToString(row.Address),
+		Status:         row.Status,
+		SourceLang:     row.SourceLang,
+		CreatedAt:      row.CreatedAt.Time,
+	}
+}
+
+func vacancyFromListRow(row vacanciesdb.ListVacanciesRow) *domain.Vacancy {
+	return &domain.Vacancy{
+		ID:             pgtypeToUUID(row.ID),
+		HRID:           pgtypeToUUID(row.HrID),
+		CompanyID:      pgtypeToUUID(row.CompanyID),
+		CountryID:      pgtypeUUIDToNullable(row.CountryID),
+		SalaryMin:      pgtypeToInt32(row.SalaryMin),
+		SalaryMax:      pgtypeToInt32(row.SalaryMax),
+		SalaryCurrency: row.SalaryCurrency,
+		ExperienceMin:  pgtypeToInt32(row.ExperienceMin),
+		ExperienceMax:  pgtypeToInt32(row.ExperienceMax),
+		Format:         row.Format,
+		Schedule:       row.Schedule,
+		Phone:          pgtypeToString(row.Phone),
+		Telegram:       pgtypeToString(row.Telegram),
+		Email:          pgtypeToString(row.Email),
+		Address:        pgtypeToString(row.Address),
+		Status:         row.Status,
+		SourceLang:     row.SourceLang,
+		CreatedAt:      row.CreatedAt.Time,
+	}
+}
+
+func vacancyFromListByCompanyRow(row vacanciesdb.ListVacanciesByCompanyRow) *domain.Vacancy {
+	return &domain.Vacancy{
+		ID:             pgtypeToUUID(row.ID),
+		HRID:           pgtypeToUUID(row.HrID),
+		CompanyID:      pgtypeToUUID(row.CompanyID),
+		CountryID:      pgtypeUUIDToNullable(row.CountryID),
+		SalaryMin:      pgtypeToInt32(row.SalaryMin),
+		SalaryMax:      pgtypeToInt32(row.SalaryMax),
+		SalaryCurrency: row.SalaryCurrency,
+		ExperienceMin:  pgtypeToInt32(row.ExperienceMin),
+		ExperienceMax:  pgtypeToInt32(row.ExperienceMax),
+		Format:         row.Format,
+		Schedule:       row.Schedule,
+		Phone:          pgtypeToString(row.Phone),
+		Telegram:       pgtypeToString(row.Telegram),
+		Email:          pgtypeToString(row.Email),
+		Address:        pgtypeToString(row.Address),
+		Status:         row.Status,
+		SourceLang:     row.SourceLang,
+		CreatedAt:      row.CreatedAt.Time,
+	}
+}
+
+func vacancyFromListByHRRow(row vacanciesdb.ListVacanciesByHRRow) *domain.Vacancy {
+	return &domain.Vacancy{
+		ID:             pgtypeToUUID(row.ID),
+		HRID:           pgtypeToUUID(row.HrID),
+		CompanyID:      pgtypeToUUID(row.CompanyID),
+		CountryID:      pgtypeUUIDToNullable(row.CountryID),
+		SalaryMin:      pgtypeToInt32(row.SalaryMin),
+		SalaryMax:      pgtypeToInt32(row.SalaryMax),
+		SalaryCurrency: row.SalaryCurrency,
+		ExperienceMin:  pgtypeToInt32(row.ExperienceMin),
+		ExperienceMax:  pgtypeToInt32(row.ExperienceMax),
+		Format:         row.Format,
+		Schedule:       row.Schedule,
+		Phone:          pgtypeToString(row.Phone),
+		Telegram:       pgtypeToString(row.Telegram),
+		Email:          pgtypeToString(row.Email),
+		Address:        pgtypeToString(row.Address),
+		Status:         row.Status,
+		SourceLang:     row.SourceLang,
+		CreatedAt:      row.CreatedAt.Time,
+	}
+}
+
+func vacancyFromUpdateRow(row vacanciesdb.UpdateVacancyRow) *domain.Vacancy {
+	return &domain.Vacancy{
+		ID:             pgtypeToUUID(row.ID),
+		HRID:           pgtypeToUUID(row.HrID),
+		CompanyID:      pgtypeToUUID(row.CompanyID),
+		CountryID:      pgtypeUUIDToNullable(row.CountryID),
 		SalaryMin:      pgtypeToInt32(row.SalaryMin),
 		SalaryMax:      pgtypeToInt32(row.SalaryMax),
 		SalaryCurrency: row.SalaryCurrency,
