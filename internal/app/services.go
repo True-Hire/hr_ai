@@ -10,6 +10,7 @@ import (
 	"github.com/ruziba3vich/hr-ai/internal/application"
 	casbininfra "github.com/ruziba3vich/hr-ai/internal/infrastructure/casbin"
 	"github.com/ruziba3vich/hr-ai/internal/infrastructure/gemini"
+	minioclient "github.com/ruziba3vich/hr-ai/internal/infrastructure/minio"
 	"github.com/ruziba3vich/hr-ai/internal/infrastructure/qdrant"
 	redisclient "github.com/ruziba3vich/hr-ai/internal/infrastructure/redis"
 	"github.com/ruziba3vich/hr-ai/internal/infrastructure/repository"
@@ -34,17 +35,26 @@ type Services struct {
 	VacancyText      *application.VacancyTextService
 	VectorIndex      *application.VectorIndexService
 	Search           *application.SearchService
+	Bot              *application.BotService
+	Storage          *application.StorageService
 	CasbinEnforcer   *casbinlib.Enforcer
 	RedisClient      *redisclient.Client
 	JWTSecret        string
 }
 
-func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdrantURL, qdrantAPIKey, redisURL string) (*Services, error) {
+func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdrantURL, qdrantAPIKey, redisURL, minioEndpoint, minioAccessKey, minioSecretKey, minioBucket string, minioUseSSL bool) (*Services, error) {
 	rc, err := redisclient.NewClient(redisURL)
 	if err != nil {
 		return nil, fmt.Errorf("init redis: %w", err)
 	}
 	cacheSvc := application.NewCacheService(rc)
+
+	mc, err := minioclient.NewClient(minioEndpoint, minioAccessKey, minioSecretKey, minioBucket, minioUseSSL)
+	if err != nil {
+		rc.Close()
+		return nil, fmt.Errorf("init minio: %w", err)
+	}
+	storageSvc := application.NewStorageService(mc)
 
 	userRepo := repository.NewUserRepository(pool)
 	sessionRepo := repository.NewSessionRepository(pool)
@@ -85,6 +95,8 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 		return nil, fmt.Errorf("init casbin enforcer: %w", err)
 	}
 
+	profileParseSvc := application.NewProfileParseService(geminiClient, pfSvc, pftSvc, expSvc, eduSvc, itSvc, skillSvc, userSvc, vectorIndexSvc)
+
 	return &Services{
 		User:             userSvc,
 		ProfileField:     pfSvc,
@@ -93,7 +105,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 		EducationItem:    eduSvc,
 		ItemText:         itSvc,
 		Skill:            skillSvc,
-		ProfileParse:     application.NewProfileParseService(geminiClient, pfSvc, pftSvc, expSvc, eduSvc, itSvc, skillSvc, userSvc, vectorIndexSvc),
+		ProfileParse:     profileParseSvc,
 		Auth:             application.NewAuthService(userRepo, sessionRepo, jwtSecret),
 		CompanyHR:        application.NewCompanyHRService(companyHRRepo),
 		HRAuth:           application.NewHRAuthService(companyHRRepo, hrSessionRepo, jwtSecret),
@@ -104,6 +116,8 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 		VacancyText:      application.NewVacancyTextService(vacancyTextRepo),
 		VectorIndex:      vectorIndexSvc,
 		Search:           searchSvc,
+		Bot:              application.NewBotService(userSvc, profileParseSvc, storageSvc),
+		Storage:          storageSvc,
 		CasbinEnforcer:   enforcer,
 		RedisClient:      rc,
 		JWTSecret:        jwtSecret,
