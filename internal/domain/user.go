@@ -42,5 +42,6 @@ type UserRepository interface {
 	Delete(ctx context.Context, id uuid.UUID) error
 	GetByPhone(ctx context.Context, phone string) (*User, error)
 	GetByEmail(ctx context.Context, email string) (*User, error)
+	GetByTelegramID(ctx context.Context, telegramID string) (*User, error)
 	SetPassword(ctx context.Context, id uuid.UUID, hash string) error
 }

@@ -72,5 +72,12 @@ SELECT id, first_name, last_name, patronymic, phone, telegram, email,
 FROM users
 WHERE email = $1;
 
+-- name: GetUserByTelegramID :one
+SELECT id, first_name, last_name, patronymic, phone, telegram, email,
+    gender, country, region, nationality, profile_pic_url,
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id
+FROM users
+WHERE telegram_id = $1;
+
 -- name: SetUserPassword :exec
 UPDATE users SET password_hash = $2 WHERE id = $1;
