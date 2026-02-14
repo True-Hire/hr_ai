@@ -50,9 +50,19 @@ func (h *VacancyHandler) Create(c *gin.Context) {
 		return
 	}
 
+	var countryID uuid.UUID
+	if req.CountryID != "" {
+		countryID, err = uuid.Parse(req.CountryID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid country_id"})
+			return
+		}
+	}
+
 	input := &application.CreateVacancyInput{
 		HRID:             hrID,
 		CompanyID:        companyID,
+		CountryID:        countryID,
 		SalaryMin:        req.SalaryMin,
 		SalaryMax:        req.SalaryMax,
 		SalaryCurrency:   req.SalaryCurrency,
@@ -78,7 +88,8 @@ func (h *VacancyHandler) Create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, toVacancyResponse(result))
+	lang := c.DefaultQuery("lang", "en")
+	c.JSON(http.StatusCreated, toVacancyResponse(result, lang))
 }
 
 // Parse godoc
@@ -118,7 +129,8 @@ func (h *VacancyHandler) Parse(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, toVacancyResponse(result))
+	lang := c.DefaultQuery("lang", "en")
+	c.JSON(http.StatusCreated, toVacancyResponse(result, lang))
 }
 
 // GetByID godoc
@@ -148,7 +160,8 @@ func (h *VacancyHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, toVacancyResponse(result))
+	lang := c.DefaultQuery("lang", "en")
+	c.JSON(http.StatusOK, toVacancyResponse(result, lang))
 }
 
 // List godoc
@@ -185,6 +198,8 @@ func (h *VacancyHandler) List(c *gin.Context) {
 		return
 	}
 
+	lang := c.DefaultQuery("lang", "en")
+
 	resp := PaginatedVacanciesResponse{
 		Vacancies: make([]VacancyResponse, 0, len(result.Vacancies)),
 		Total:     result.Total,
@@ -192,7 +207,7 @@ func (h *VacancyHandler) List(c *gin.Context) {
 		PageSize:  pageSize,
 	}
 	for _, vwd := range result.Vacancies {
-		resp.Vacancies = append(resp.Vacancies, toVacancyResponse(&vwd))
+		resp.Vacancies = append(resp.Vacancies, toVacancyResponse(&vwd, lang))
 	}
 
 	c.JSON(http.StatusOK, resp)
@@ -223,23 +238,39 @@ func (h *VacancyHandler) Update(c *gin.Context) {
 		return
 	}
 
-	vacancy := &domain.Vacancy{
-		ID:             id,
-		SalaryMin:      req.SalaryMin,
-		SalaryMax:      req.SalaryMax,
-		SalaryCurrency: req.SalaryCurrency,
-		ExperienceMin:  req.ExperienceMin,
-		ExperienceMax:  req.ExperienceMax,
-		Format:         req.Format,
-		Schedule:       req.Schedule,
-		Phone:          req.Phone,
-		Telegram:       req.Telegram,
-		Email:          req.Email,
-		Address:        req.Address,
-		Status:         req.Status,
+	var countryID uuid.UUID
+	if req.CountryID != "" {
+		countryID, err = uuid.Parse(req.CountryID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid country_id"})
+			return
+		}
 	}
 
-	result, err := h.service.UpdateVacancy(c.Request.Context(), vacancy)
+	input := &application.UpdateVacancyInput{
+		ID:               id,
+		CountryID:        countryID,
+		SalaryMin:        req.SalaryMin,
+		SalaryMax:        req.SalaryMax,
+		SalaryCurrency:   req.SalaryCurrency,
+		ExperienceMin:    req.ExperienceMin,
+		ExperienceMax:    req.ExperienceMax,
+		Format:           req.Format,
+		Schedule:         req.Schedule,
+		Phone:            req.Phone,
+		Telegram:         req.Telegram,
+		Email:            req.Email,
+		Address:          req.Address,
+		Status:           req.Status,
+		Title:            req.Title,
+		Description:      req.Description,
+		Responsibilities: req.Responsibilities,
+		Requirements:     req.Requirements,
+		Benefits:         req.Benefits,
+		Skills:           req.Skills,
+	}
+
+	result, err := h.service.UpdateVacancy(c.Request.Context(), input)
 	if err != nil {
 		if errors.Is(err, domain.ErrVacancyNotFound) {
 			c.JSON(http.StatusNotFound, ErrorResponse{Error: "vacancy not found"})
@@ -249,7 +280,8 @@ func (h *VacancyHandler) Update(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, toVacancyResponse(result))
+	lang := c.DefaultQuery("lang", "en")
+	c.JSON(http.StatusOK, toVacancyResponse(result, lang))
 }
 
 // Delete godoc

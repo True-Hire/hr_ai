@@ -28,6 +28,7 @@ type Services struct {
 	HRAuth           *application.HRAuthService
 	Company          *application.CompanyService
 	CompanyText      *application.CompanyTextService
+	Country          *application.CountryService
 	Vacancy          *application.VacancyService
 	VacancyText      *application.VacancyTextService
 	VectorIndex      *application.VectorIndexService
@@ -40,11 +41,13 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 	userRepo := repository.NewUserRepository(pool)
 	sessionRepo := repository.NewSessionRepository(pool)
 	userSvc := application.NewUserService(userRepo)
+	geminiClient := gemini.NewClient(geminiAPIKey)
+
 	pfSvc := application.NewProfileFieldService(repository.NewProfileFieldRepository(pool))
-	pftSvc := application.NewProfileFieldTextService(repository.NewProfileFieldTextRepository(pool))
+	pftSvc := application.NewProfileFieldTextService(repository.NewProfileFieldTextRepository(pool), geminiClient)
 	expSvc := application.NewExperienceItemService(repository.NewExperienceItemRepository(pool))
 	eduSvc := application.NewEducationItemService(repository.NewEducationItemRepository(pool))
-	itSvc := application.NewItemTextService(repository.NewItemTextRepository(pool))
+	itSvc := application.NewItemTextService(repository.NewItemTextRepository(pool), geminiClient)
 	skillSvc := application.NewSkillService(repository.NewSkillRepository(pool))
 
 	companyHRRepo := repository.NewCompanyHRRepository(pool)
@@ -53,10 +56,11 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 	companyRepo := repository.NewCompanyRepository(pool)
 	companyTextRepo := repository.NewCompanyTextRepository(pool)
 
+	countryRepo := repository.NewCountryRepository(pool)
+	countryTextRepo := repository.NewCountryTextRepository(pool)
+
 	vacancyRepo := repository.NewVacancyRepository(pool)
 	vacancyTextRepo := repository.NewVacancyTextRepository(pool)
-
-	geminiClient := gemini.NewClient(geminiAPIKey)
 
 	qdrantClient := qdrant.NewClient(qdrantURL, qdrantAPIKey)
 	if err := qdrantClient.EnsureCollection(context.Background(), "user_profile_vectors", 768); err != nil {
@@ -83,6 +87,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 		Auth:             application.NewAuthService(userRepo, sessionRepo, jwtSecret),
 		CompanyHR:        application.NewCompanyHRService(companyHRRepo),
 		HRAuth:           application.NewHRAuthService(companyHRRepo, hrSessionRepo, jwtSecret),
+		Country:          application.NewCountryService(countryRepo, countryTextRepo, geminiClient),
 		Company:          application.NewCompanyService(companyRepo, companyTextRepo, geminiClient),
 		CompanyText:      application.NewCompanyTextService(companyTextRepo),
 		Vacancy:          application.NewVacancyService(vacancyRepo, vacancyTextRepo, skillSvc, geminiClient),

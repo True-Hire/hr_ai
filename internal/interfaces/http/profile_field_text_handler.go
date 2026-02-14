@@ -120,28 +120,20 @@ func (h *ProfileFieldTextHandler) ListByField(c *gin.Context) {
 }
 
 // Update godoc
-// @Summary Update a profile field text
+// @Summary Update a profile field text (retranslates into all 3 languages via Gemini)
 // @Tags profile-field-texts
 // @Accept json
 // @Produce json
 // @Param id path string true "Profile field ID (UUID)"
-// @Param lang path string true "Language code (uz, ru, en)"
 // @Param request body UpdateProfileFieldTextRequest true "Updated text data"
-// @Success 200 {object} ProfileFieldTextResponse
+// @Success 200 {array} ProfileFieldTextResponse
 // @Failure 400 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /profile-fields/{id}/texts/{lang} [put]
+// @Router /profile-fields/{id}/texts [put]
 func (h *ProfileFieldTextHandler) Update(c *gin.Context) {
 	fieldID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid profile field id"})
-		return
-	}
-
-	lang := c.Param("lang")
-	if lang == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "lang is required"})
 		return
 	}
 
@@ -151,17 +143,17 @@ func (h *ProfileFieldTextHandler) Update(c *gin.Context) {
 		return
 	}
 
-	text, err := h.service.UpdateProfileFieldText(c.Request.Context(), req.ToDomain(fieldID, lang))
+	texts, err := h.service.UpdateProfileFieldText(c.Request.Context(), fieldID, req.Content)
 	if err != nil {
-		if errors.Is(err, domain.ErrProfileFieldTextNotFound) {
-			c.JSON(http.StatusNotFound, ErrorResponse{Error: "profile field text not found"})
-			return
-		}
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to update profile field text"})
 		return
 	}
 
-	c.JSON(http.StatusOK, toProfileFieldTextResponse(text))
+	resp := make([]ProfileFieldTextResponse, 0, len(texts))
+	for _, t := range texts {
+		resp = append(resp, toProfileFieldTextResponse(&t))
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 // Delete godoc

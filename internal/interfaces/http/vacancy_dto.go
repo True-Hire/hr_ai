@@ -3,12 +3,14 @@ package http
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/ruziba3vich/hr-ai/internal/application"
 	"github.com/ruziba3vich/hr-ai/internal/domain"
 )
 
 type CreateVacancyRequest struct {
 	CompanyID        string   `json:"company_id" binding:"required"`
+	CountryID        string   `json:"country_id"`
 	Title            string   `json:"title" binding:"required"`
 	Description      string   `json:"description"`
 	Responsibilities string   `json:"responsibilities"`
@@ -34,18 +36,25 @@ type VacancyParseRequest struct {
 }
 
 type UpdateVacancyRequest struct {
-	SalaryMin      int32  `json:"salary_min"`
-	SalaryMax      int32  `json:"salary_max"`
-	SalaryCurrency string `json:"salary_currency"`
-	ExperienceMin  int32  `json:"experience_min"`
-	ExperienceMax  int32  `json:"experience_max"`
-	Format         string `json:"format"`
-	Schedule       string `json:"schedule"`
-	Phone          string `json:"phone"`
-	Telegram       string `json:"telegram"`
-	Email          string `json:"email" binding:"omitempty,email"`
-	Address        string `json:"address"`
-	Status         string `json:"status"`
+	CountryID        string   `json:"country_id"`
+	SalaryMin        int32    `json:"salary_min"`
+	SalaryMax        int32    `json:"salary_max"`
+	SalaryCurrency   string   `json:"salary_currency"`
+	ExperienceMin    int32    `json:"experience_min"`
+	ExperienceMax    int32    `json:"experience_max"`
+	Format           string   `json:"format"`
+	Schedule         string   `json:"schedule"`
+	Phone            string   `json:"phone"`
+	Telegram         string   `json:"telegram"`
+	Email            string   `json:"email" binding:"omitempty,email"`
+	Address          string   `json:"address"`
+	Status           string   `json:"status"`
+	Title            string   `json:"title"`
+	Description      string   `json:"description"`
+	Responsibilities string   `json:"responsibilities"`
+	Requirements     string   `json:"requirements"`
+	Benefits         string   `json:"benefits"`
+	Skills           []string `json:"skills"`
 }
 
 type VacancyTextResponse struct {
@@ -61,25 +70,26 @@ type VacancyTextResponse struct {
 }
 
 type VacancyResponse struct {
-	ID             string                `json:"id"`
-	HRID           string                `json:"hr_id"`
-	CompanyID      string                `json:"company_id"`
-	SalaryMin      int32                 `json:"salary_min,omitempty"`
-	SalaryMax      int32                 `json:"salary_max,omitempty"`
-	SalaryCurrency string                `json:"salary_currency"`
-	ExperienceMin  int32                 `json:"experience_min,omitempty"`
-	ExperienceMax  int32                 `json:"experience_max,omitempty"`
-	Format         string                `json:"format"`
-	Schedule       string                `json:"schedule"`
-	Phone          string                `json:"phone,omitempty"`
-	Telegram       string                `json:"telegram,omitempty"`
-	Email          string                `json:"email,omitempty"`
-	Address        string                `json:"address,omitempty"`
-	Status         string                `json:"status"`
-	SourceLang     string                `json:"source_lang"`
-	CreatedAt      string                `json:"created_at"`
-	Texts          []VacancyTextResponse `json:"texts"`
-	Skills         []SkillResponse       `json:"skills"`
+	ID             string               `json:"id"`
+	HRID           string               `json:"hr_id"`
+	CompanyID      string               `json:"company_id"`
+	CountryID      string               `json:"country_id,omitempty"`
+	SalaryMin      int32                `json:"salary_min,omitempty"`
+	SalaryMax      int32                `json:"salary_max,omitempty"`
+	SalaryCurrency string               `json:"salary_currency"`
+	ExperienceMin  int32                `json:"experience_min,omitempty"`
+	ExperienceMax  int32                `json:"experience_max,omitempty"`
+	Format         string               `json:"format"`
+	Schedule       string               `json:"schedule"`
+	Phone          string               `json:"phone,omitempty"`
+	Telegram       string               `json:"telegram,omitempty"`
+	Email          string               `json:"email,omitempty"`
+	Address        string               `json:"address,omitempty"`
+	Status         string               `json:"status"`
+	SourceLang     string               `json:"source_lang"`
+	CreatedAt      string               `json:"created_at"`
+	Text           *VacancyTextResponse `json:"text"`
+	Skills         []SkillResponse      `json:"skills"`
 }
 
 type PaginatedVacanciesResponse struct {
@@ -89,11 +99,17 @@ type PaginatedVacanciesResponse struct {
 	PageSize  int32             `json:"page_size"`
 }
 
-func toVacancyResponse(vwd *application.VacancyWithDetails) VacancyResponse {
+func toVacancyResponse(vwd *application.VacancyWithDetails, lang string) VacancyResponse {
+	var countryID string
+	if vwd.Vacancy.CountryID != uuid.Nil {
+		countryID = vwd.Vacancy.CountryID.String()
+	}
+
 	resp := VacancyResponse{
 		ID:             vwd.Vacancy.ID.String(),
 		HRID:           vwd.Vacancy.HRID.String(),
 		CompanyID:      vwd.Vacancy.CompanyID.String(),
+		CountryID:      countryID,
 		SalaryMin:      vwd.Vacancy.SalaryMin,
 		SalaryMax:      vwd.Vacancy.SalaryMax,
 		SalaryCurrency: vwd.Vacancy.SalaryCurrency,
@@ -108,12 +124,27 @@ func toVacancyResponse(vwd *application.VacancyWithDetails) VacancyResponse {
 		Status:         vwd.Vacancy.Status,
 		SourceLang:     vwd.Vacancy.SourceLang,
 		CreatedAt:      vwd.Vacancy.CreatedAt.Format(time.RFC3339),
-		Texts:          make([]VacancyTextResponse, 0, len(vwd.Texts)),
 		Skills:         make([]SkillResponse, 0, len(vwd.Skills)),
 	}
+
+	// Pick the text for the requested language, fallback to English
 	for _, t := range vwd.Texts {
-		resp.Texts = append(resp.Texts, toVacancyTextResponse(&t))
+		if t.Lang == lang {
+			tr := toVacancyTextResponse(&t)
+			resp.Text = &tr
+			break
+		}
 	}
+	if resp.Text == nil {
+		for _, t := range vwd.Texts {
+			if t.Lang == "en" {
+				tr := toVacancyTextResponse(&t)
+				resp.Text = &tr
+				break
+			}
+		}
+	}
+
 	for _, s := range vwd.Skills {
 		resp.Skills = append(resp.Skills, SkillResponse{
 			ID:   s.ID.String(),

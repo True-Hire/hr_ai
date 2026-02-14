@@ -16,8 +16,7 @@ type CreateProfileFieldTextRequest struct {
 }
 
 type UpdateProfileFieldTextRequest struct {
-	Content      string `json:"content" binding:"required"`
-	ModelVersion string `json:"model_version"`
+	Content string `json:"content" binding:"required"`
 }
 
 func (r *CreateProfileFieldTextRequest) ToDomain(profileFieldID uuid.UUID) *domain.ProfileFieldText {
@@ -26,15 +25,6 @@ func (r *CreateProfileFieldTextRequest) ToDomain(profileFieldID uuid.UUID) *doma
 		Lang:           r.Lang,
 		Content:        r.Content,
 		IsSource:       r.IsSource,
-		ModelVersion:   r.ModelVersion,
-	}
-}
-
-func (r *UpdateProfileFieldTextRequest) ToDomain(profileFieldID uuid.UUID, lang string) *domain.ProfileFieldText {
-	return &domain.ProfileFieldText{
-		ProfileFieldID: profileFieldID,
-		Lang:           lang,
-		Content:        r.Content,
 		ModelVersion:   r.ModelVersion,
 	}
 }
