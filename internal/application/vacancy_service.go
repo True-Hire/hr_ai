@@ -277,7 +277,6 @@ func (s *VacancyService) ListVacancies(ctx context.Context, page, pageSize int32
 	}
 
 	result := make([]VacancyWithDetails, 0, len(vacancies))
-	companyCache := map[uuid.UUID]*CompanyWithTexts{}
 	for _, v := range vacancies {
 		texts, err := s.textRepo.ListByVacancy(ctx, v.ID)
 		if err != nil {
@@ -287,11 +286,7 @@ func (s *VacancyService) ListVacancies(ctx context.Context, page, pageSize int32
 		if err != nil {
 			return nil, fmt.Errorf("list vacancy skills for %s: %w", v.ID, err)
 		}
-		company, ok := companyCache[v.CompanyID]
-		if !ok {
-			company, _ = s.companySvc.GetCompany(ctx, v.CompanyID)
-			companyCache[v.CompanyID] = company
-		}
+		company, _ := s.companySvc.GetCompany(ctx, v.CompanyID)
 		result = append(result, VacancyWithDetails{Vacancy: &v, Texts: texts, Skills: skills, Company: company})
 	}
 
