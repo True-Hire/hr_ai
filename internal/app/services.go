@@ -40,11 +40,13 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 	userRepo := repository.NewUserRepository(pool)
 	sessionRepo := repository.NewSessionRepository(pool)
 	userSvc := application.NewUserService(userRepo)
+	geminiClient := gemini.NewClient(geminiAPIKey)
+
 	pfSvc := application.NewProfileFieldService(repository.NewProfileFieldRepository(pool))
-	pftSvc := application.NewProfileFieldTextService(repository.NewProfileFieldTextRepository(pool))
+	pftSvc := application.NewProfileFieldTextService(repository.NewProfileFieldTextRepository(pool), geminiClient)
 	expSvc := application.NewExperienceItemService(repository.NewExperienceItemRepository(pool))
 	eduSvc := application.NewEducationItemService(repository.NewEducationItemRepository(pool))
-	itSvc := application.NewItemTextService(repository.NewItemTextRepository(pool))
+	itSvc := application.NewItemTextService(repository.NewItemTextRepository(pool), geminiClient)
 	skillSvc := application.NewSkillService(repository.NewSkillRepository(pool))
 
 	companyHRRepo := repository.NewCompanyHRRepository(pool)
@@ -55,8 +57,6 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 
 	vacancyRepo := repository.NewVacancyRepository(pool)
 	vacancyTextRepo := repository.NewVacancyTextRepository(pool)
-
-	geminiClient := gemini.NewClient(geminiAPIKey)
 
 	qdrantClient := qdrant.NewClient(qdrantURL, qdrantAPIKey)
 	if err := qdrantClient.EnsureCollection(context.Background(), "user_profile_vectors", 768); err != nil {
