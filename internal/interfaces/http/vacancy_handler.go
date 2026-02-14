@@ -50,9 +50,19 @@ func (h *VacancyHandler) Create(c *gin.Context) {
 		return
 	}
 
+	var countryID uuid.UUID
+	if req.CountryID != "" {
+		countryID, err = uuid.Parse(req.CountryID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid country_id"})
+			return
+		}
+	}
+
 	input := &application.CreateVacancyInput{
 		HRID:             hrID,
 		CompanyID:        companyID,
+		CountryID:        countryID,
 		SalaryMin:        req.SalaryMin,
 		SalaryMax:        req.SalaryMax,
 		SalaryCurrency:   req.SalaryCurrency,
@@ -228,8 +238,18 @@ func (h *VacancyHandler) Update(c *gin.Context) {
 		return
 	}
 
+	var countryID uuid.UUID
+	if req.CountryID != "" {
+		countryID, err = uuid.Parse(req.CountryID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid country_id"})
+			return
+		}
+	}
+
 	input := &application.UpdateVacancyInput{
 		ID:               id,
+		CountryID:        countryID,
 		SalaryMin:        req.SalaryMin,
 		SalaryMax:        req.SalaryMax,
 		SalaryCurrency:   req.SalaryCurrency,
