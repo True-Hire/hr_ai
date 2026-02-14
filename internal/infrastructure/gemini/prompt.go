@@ -256,6 +256,27 @@ Text to translate:
 %s`, text)
 }
 
+func buildTranslateTextPrompt(text string) string {
+	return fmt.Sprintf(`You are a translator. Translate the following text into 3 languages: Uzbek (uz), Russian (ru), and English (en).
+
+Detect which language the input is written in and set source_lang accordingly.
+
+Translate accurately and naturally into all 3 languages. Preserve the original meaning and tone.
+
+Return ONLY valid JSON in this exact format:
+{
+  "source_lang": "en",
+  "translations": {
+    "uz": "translated text in Uzbek",
+    "ru": "translated text in Russian",
+    "en": "translated text in English"
+  }
+}
+
+Text to translate:
+%s`, text)
+}
+
 func buildFilePrompt() string {
 	return `You are an AI that extracts structured profile information from uploaded documents (resumes, CVs, profiles) for a job platform.
 
