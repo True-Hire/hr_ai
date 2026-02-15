@@ -37,8 +37,10 @@ type VacancyRepository interface {
 	List(ctx context.Context, limit, offset int32) ([]Vacancy, error)
 	ListByCompany(ctx context.Context, companyID uuid.UUID, limit, offset int32) ([]Vacancy, error)
 	ListByHR(ctx context.Context, hrID uuid.UUID, limit, offset int32) ([]Vacancy, error)
+	Search(ctx context.Context, lang, query string, limit, offset int32) ([]Vacancy, error)
 	Count(ctx context.Context) (int64, error)
 	CountByCompany(ctx context.Context, companyID uuid.UUID) (int64, error)
+	CountSearch(ctx context.Context, lang, query string) (int64, error)
 	Update(ctx context.Context, v *Vacancy) (*Vacancy, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 }

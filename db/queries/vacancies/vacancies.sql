@@ -71,5 +71,22 @@ RETURNING id, hr_id, company_id, country_id, salary_min, salary_max, salary_curr
     experience_min, experience_max, format, schedule,
     phone, telegram, email, address, status, source_lang, created_at;
 
+-- name: SearchVacancies :many
+SELECT DISTINCT v.id, v.hr_id, v.company_id, v.country_id, v.salary_min, v.salary_max, v.salary_currency,
+    v.experience_min, v.experience_max, v.format, v.schedule,
+    v.phone, v.telegram, v.email, v.address, v.status, v.source_lang, v.created_at
+FROM vacancies v
+JOIN vacancy_texts vt ON vt.vacancy_id = v.id
+WHERE vt.lang = sqlc.arg(lang)
+  AND (vt.title ILIKE '%' || sqlc.arg(query) || '%' OR vt.description ILIKE '%' || sqlc.arg(query) || '%')
+ORDER BY v.created_at DESC
+LIMIT sqlc.arg(lim) OFFSET sqlc.arg(off);
+
+-- name: CountSearchVacancies :one
+SELECT COUNT(DISTINCT v.id) FROM vacancies v
+JOIN vacancy_texts vt ON vt.vacancy_id = v.id
+WHERE vt.lang = sqlc.arg(lang)
+  AND (vt.title ILIKE '%' || sqlc.arg(query) || '%' OR vt.description ILIKE '%' || sqlc.arg(query) || '%');
+
 -- name: DeleteVacancy :exec
 DELETE FROM vacancies WHERE id = $1;

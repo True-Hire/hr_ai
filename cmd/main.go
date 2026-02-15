@@ -35,7 +35,7 @@ func main() {
 	}
 	defer pool.Close()
 
-	services, err := app.NewServices(pool, cfg.GeminiAPIKey, cfg.JWTSecret, cfg.DatabaseURL, cfg.QdrantURL, cfg.QdrantAPIKey, cfg.RedisURL, cfg.MinioEndpoint, cfg.MinioAccessKey, cfg.MinioSecretKey, cfg.MinioBucket, cfg.MinioUseSSL)
+	services, err := app.NewServices(pool, cfg.GeminiAPIKey, cfg.JWTSecret, cfg.DatabaseURL, cfg.QdrantURL, cfg.QdrantAPIKey, cfg.RedisURL, cfg.MinioEndpoint, cfg.MinioAccessKey, cfg.MinioSecretKey, cfg.MinioBucket, cfg.MinioUseSSL, cfg.TelegramBotToken)
 	if err != nil {
 		log.Fatalf("failed to init services: %v", err)
 	}
@@ -44,7 +44,7 @@ func main() {
 	// Start Telegram bot in background
 	var tgBot *telegram.Bot
 	if cfg.TelegramBotToken != "" {
-		tgBot, err = telegram.NewBot(cfg.TelegramBotToken, services.Bot)
+		tgBot, err = telegram.NewBot(cfg.TelegramBotToken, services.Bot, cfg.WebAppURL)
 		if err != nil {
 			log.Fatalf("failed to init telegram bot: %v", err)
 		}

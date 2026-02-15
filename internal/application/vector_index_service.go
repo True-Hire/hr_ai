@@ -9,11 +9,13 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/ruziba3vich/hr-ai/internal/domain"
 	"github.com/ruziba3vich/hr-ai/internal/infrastructure/gemini"
 	"github.com/ruziba3vich/hr-ai/internal/infrastructure/qdrant"
 )
 
 const collectionName = "user_profile_vectors"
+const vacancyCollectionName = "vacancy_vectors"
 
 type sectionDef struct {
 	Name   string
@@ -27,6 +29,13 @@ var sections = []sectionDef{
 	{Name: "about", Weight: 1.0},
 }
 
+var vacancySections = []sectionDef{
+	{Name: "title", Weight: 1.5},
+	{Name: "skills", Weight: 1.4},
+	{Name: "description", Weight: 1.2},
+	{Name: "requirements", Weight: 1.0},
+}
+
 type VectorIndexService struct {
 	qdrantClient    *qdrant.Client
 	geminiClient    *gemini.Client
@@ -36,6 +45,8 @@ type VectorIndexService struct {
 	itemTextSvc     *ItemTextService
 	skillSvc        *SkillService
 	userSvc         *UserService
+	vacancyRepo     domain.VacancyRepository
+	vacancyTextRepo domain.VacancyTextRepository
 }
 
 func NewVectorIndexService(
@@ -47,6 +58,8 @@ func NewVectorIndexService(
 	itemTextSvc *ItemTextService,
 	skillSvc *SkillService,
 	userSvc *UserService,
+	vacancyRepo domain.VacancyRepository,
+	vacancyTextRepo domain.VacancyTextRepository,
 ) *VectorIndexService {
 	return &VectorIndexService{
 		qdrantClient:    qdrantClient,
@@ -57,6 +70,8 @@ func NewVectorIndexService(
 		itemTextSvc:     itemTextSvc,
 		skillSvc:        skillSvc,
 		userSvc:         userSvc,
+		vacancyRepo:     vacancyRepo,
+		vacancyTextRepo: vacancyTextRepo,
 	}
 }
 
@@ -110,7 +125,7 @@ func (s *VectorIndexService) DeleteUser(ctx context.Context, userID uuid.UUID) e
 }
 
 func (s *VectorIndexService) ReindexAll(ctx context.Context) error {
-	// List all users via pagination
+	// Reindex all users
 	page := int32(1)
 	pageSize := int32(50)
 	for {
@@ -131,7 +146,119 @@ func (s *VectorIndexService) ReindexAll(ctx context.Context) error {
 		}
 		page++
 	}
+
+	// Reindex all vacancies
+	if err := s.ReindexAllVacancies(ctx); err != nil {
+		return fmt.Errorf("reindex vacancies: %w", err)
+	}
+
 	return nil
+}
+
+func (s *VectorIndexService) IndexVacancy(ctx context.Context, vacancyID uuid.UUID) error {
+	chunks := s.buildVacancyChunks(ctx, vacancyID)
+
+	if err := s.qdrantClient.DeletePointsByPayload(ctx, vacancyCollectionName, "vacancy_id", vacancyID.String()); err != nil {
+		return fmt.Errorf("delete existing vacancy vectors: %w", err)
+	}
+
+	var points []qdrant.Point
+	for _, sec := range vacancySections {
+		text, ok := chunks[sec.Name]
+		if !ok || text == "" {
+			continue
+		}
+
+		vector, err := s.geminiClient.EmbedText(ctx, text)
+		if err != nil {
+			log.Printf("embed %s for vacancy %s: %v", sec.Name, vacancyID, err)
+			continue
+		}
+
+		pointID := deterministicUUID("vacancy:"+vacancyID.String(), sec.Name)
+
+		points = append(points, qdrant.Point{
+			ID:     pointID,
+			Vector: vector,
+			Payload: map[string]any{
+				"vacancy_id": vacancyID.String(),
+				"section":    sec.Name,
+				"weight":     sec.Weight,
+			},
+		})
+	}
+
+	if len(points) == 0 {
+		return nil
+	}
+
+	if err := s.qdrantClient.UpsertPoints(ctx, vacancyCollectionName, points); err != nil {
+		return fmt.Errorf("upsert vacancy vectors: %w", err)
+	}
+
+	return nil
+}
+
+func (s *VectorIndexService) DeleteVacancy(ctx context.Context, vacancyID uuid.UUID) error {
+	return s.qdrantClient.DeletePointsByPayload(ctx, vacancyCollectionName, "vacancy_id", vacancyID.String())
+}
+
+func (s *VectorIndexService) ReindexAllVacancies(ctx context.Context) error {
+	page := int32(1)
+	pageSize := int32(50)
+	for {
+		offset := (page - 1) * pageSize
+		vacancies, err := s.vacancyRepo.List(ctx, pageSize, offset)
+		if err != nil {
+			return fmt.Errorf("list vacancies page %d: %w", page, err)
+		}
+		if len(vacancies) == 0 {
+			break
+		}
+		for _, v := range vacancies {
+			if err := s.IndexVacancy(ctx, v.ID); err != nil {
+				log.Printf("reindex vacancy %s: %v", v.ID, err)
+			}
+		}
+		if len(vacancies) < int(pageSize) {
+			break
+		}
+		page++
+	}
+	return nil
+}
+
+func (s *VectorIndexService) buildVacancyChunks(ctx context.Context, vacancyID uuid.UUID) map[string]string {
+	chunks := make(map[string]string)
+
+	texts, err := s.vacancyTextRepo.ListByVacancy(ctx, vacancyID)
+	if err == nil {
+		for _, t := range texts {
+			if t.Lang == "en" {
+				if t.Title != "" {
+					chunks["title"] = t.Title
+				}
+				if t.Description != "" {
+					chunks["description"] = t.Description
+				}
+				if t.Requirements != "" {
+					chunks["requirements"] = t.Requirements
+				}
+				break
+			}
+		}
+	}
+
+	skills, err := s.skillSvc.ListVacancySkills(ctx, vacancyID)
+	if err == nil && len(skills) > 0 {
+		names := make([]string, 0, len(skills))
+		for _, sk := range skills {
+			names = append(names, sk.Name)
+		}
+		chunks["skills"] = strings.Join(names, ", ")
+	}
+
+	return chunks
 }
 
 func (s *VectorIndexService) buildChunks(ctx context.Context, userID uuid.UUID) map[string]string {

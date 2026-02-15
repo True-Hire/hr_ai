@@ -185,11 +185,12 @@ var msgSendResume = map[string]string{
 // -- Bot --
 
 type Bot struct {
-	bot    *tele.Bot
-	botSvc *application.BotService
+	bot       *tele.Bot
+	botSvc    *application.BotService
+	webAppURL string
 }
 
-func NewBot(token string, botSvc *application.BotService) (*Bot, error) {
+func NewBot(token string, botSvc *application.BotService, webAppURL string) (*Bot, error) {
 	b, err := tele.NewBot(tele.Settings{
 		Token:  token,
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
@@ -198,7 +199,7 @@ func NewBot(token string, botSvc *application.BotService) (*Bot, error) {
 		return nil, fmt.Errorf("create telegram bot: %w", err)
 	}
 
-	tb := &Bot{bot: b, botSvc: botSvc}
+	tb := &Bot{bot: b, botSvc: botSvc, webAppURL: webAppURL}
 	tb.registerHandlers()
 	return tb, nil
 }
@@ -248,7 +249,7 @@ func (tb *Bot) registerHandlers() {
 		}
 
 		lang := langOrDefault(result.User.Language)
-		return c.Send(fmt.Sprintf(msgWelcomeBackUser[lang], result.User.FirstName), userMenu(lang))
+		return c.Send(fmt.Sprintf(msgWelcomeBackUser[lang], result.User.FirstName), userMenu(lang, tb.webAppURL))
 	})
 
 	// Language selection callback
@@ -343,13 +344,13 @@ func (tb *Bot) registerHandlers() {
 		// Check if HR or user to send correct success message with menu
 		result, err := botSvc.HandleStart(ctx, sender.ID)
 		if err != nil {
-			return c.Send(fmt.Sprintf(msgRegisteredUser[lang], sender.FirstName), userMenu(lang))
+			return c.Send(fmt.Sprintf(msgRegisteredUser[lang], sender.FirstName), userMenu(lang, tb.webAppURL))
 		}
 
 		if result.IsHR {
 			return c.Send(fmt.Sprintf(msgRegisteredHR[lang], result.HR.FirstName), hrMenu(lang))
 		}
-		return c.Send(fmt.Sprintf(msgRegisteredUser[lang], result.User.FirstName), userMenu(lang))
+		return c.Send(fmt.Sprintf(msgRegisteredUser[lang], result.User.FirstName), userMenu(lang, tb.webAppURL))
 	})
 
 	// Text message handler
@@ -569,11 +570,15 @@ func (tb *Bot) registerHandlers() {
 	})
 }
 
-func userMenu(lang string) *tele.ReplyMarkup {
+func userMenu(lang, webAppURL string) *tele.ReplyMarkup {
 	markup := &tele.ReplyMarkup{ResizeKeyboard: true}
+	searchBtn := tele.Btn{Text: menuBtnSearchVacancies[lang]}
+	if webAppURL != "" {
+		searchBtn.WebApp = &tele.WebApp{URL: webAppURL}
+	}
 	markup.Reply(
 		markup.Row(tele.Btn{Text: menuBtnUpdateResume[lang]}),
-		markup.Row(tele.Btn{Text: menuBtnSearchVacancies[lang]}),
+		markup.Row(searchBtn),
 	)
 	return markup
 }
