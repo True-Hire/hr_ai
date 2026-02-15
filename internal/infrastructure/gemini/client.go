@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -40,30 +41,61 @@ func (c *Client) ModelVersion() string {
 type LangStringSlice map[string][]string
 
 func (l *LangStringSlice) UnmarshalJSON(data []byte) error {
-	// Try map first
 	var m map[string][]string
 	if err := json.Unmarshal(data, &m); err == nil {
 		*l = m
 		return nil
 	}
-	// If it's an empty array, return empty map
 	var arr []json.RawMessage
 	if err := json.Unmarshal(data, &arr); err == nil {
 		*l = make(map[string][]string)
 		return nil
 	}
-	return fmt.Errorf("certifications: expected object or array, got %s", string(data))
+	return fmt.Errorf("expected object or array, got %s", string(data))
+}
+
+// FlexibleFields handles Gemini returning field values as either strings or arrays.
+// e.g. "title": {"en": "Dev"} vs "achievements": {"en": ["Award 1", "Award 2"]}
+// Array values are joined with "\n" so downstream code always gets map[string]string.
+type FlexibleFields map[string]map[string]string
+
+func (f *FlexibleFields) UnmarshalJSON(data []byte) error {
+	var raw map[string]map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	result := make(map[string]map[string]string, len(raw))
+	for fieldName, translations := range raw {
+		result[fieldName] = make(map[string]string, len(translations))
+		for lang, val := range translations {
+			// Try string first
+			var s string
+			if err := json.Unmarshal(val, &s); err == nil {
+				result[fieldName][lang] = s
+				continue
+			}
+			// Try array of strings, join with newline
+			var arr []string
+			if err := json.Unmarshal(val, &arr); err == nil {
+				result[fieldName][lang] = strings.Join(arr, "\n")
+				continue
+			}
+			result[fieldName][lang] = string(val)
+		}
+	}
+	*f = result
+	return nil
 }
 
 // ParsedProfile is the structured result from Gemini profile parsing.
 type ParsedProfile struct {
-	SourceLang     string                       `json:"source_lang"`
-	Fields         map[string]map[string]string `json:"fields"`
-	Skills         LangStringSlice              `json:"skills"`
-	Certifications LangStringSlice              `json:"certifications"`
-	Languages      []ParsedLanguageItem         `json:"languages"`
-	Experience     []ParsedExperienceItem       `json:"experience"`
-	Education      []ParsedEducationItem        `json:"education"`
+	SourceLang     string               `json:"source_lang"`
+	Fields         FlexibleFields       `json:"fields"`
+	Skills         LangStringSlice      `json:"skills"`
+	Certifications LangStringSlice      `json:"certifications"`
+	Languages      []ParsedLanguageItem `json:"languages"`
+	Experience     []ParsedExperienceItem `json:"experience"`
+	Education      []ParsedEducationItem  `json:"education"`
 }
 
 type ParsedLanguageItem struct {
