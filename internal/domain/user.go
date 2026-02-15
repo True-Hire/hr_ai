@@ -30,6 +30,7 @@ type User struct {
 	ActivityType    string
 	Specializations []string
 	PasswordHash    string
+	Language        string
 	CreatedAt       time.Time
 }
 

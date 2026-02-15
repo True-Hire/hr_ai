@@ -43,6 +43,7 @@ func (r *UserRepository) Create(ctx context.Context, user *domain.User) (*domain
 		JobStatus:       textToPgtype(user.JobStatus),
 		ActivityType:    textToPgtype(user.ActivityType),
 		Specializations: user.Specializations,
+		Language:        user.Language,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("create user: %w", err)
@@ -104,6 +105,7 @@ func (r *UserRepository) Update(ctx context.Context, user *domain.User) (*domain
 		JobStatus:       user.JobStatus,
 		ActivityType:    user.ActivityType,
 		Specializations: user.Specializations,
+		Language:        user.Language,
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -187,6 +189,7 @@ func userToDomain(row usersdb.User) *domain.User {
 		ActivityType:    pgtypeToString(row.ActivityType),
 		Specializations: row.Specializations,
 		PasswordHash:    pgtypeToString(row.PasswordHash),
+		Language:        row.Language,
 		CreatedAt:       row.CreatedAt.Time,
 	}
 }

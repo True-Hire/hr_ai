@@ -36,6 +36,7 @@ func (r *CompanyHRRepository) Create(ctx context.Context, hr *domain.CompanyHR) 
 		Position:   textToPgtype(hr.Position),
 		Status:     hr.Status,
 		CompanyID:  uuidToPgtypeNullable(hr.CompanyID),
+		Language:   hr.Language,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("create company hr: %w", err)
@@ -90,6 +91,7 @@ func (r *CompanyHRRepository) Update(ctx context.Context, hr *domain.CompanyHR) 
 		Position:   hr.Position,
 		Status:     hr.Status,
 		CompanyID:  uuidToPgtypeNullable(hr.CompanyID),
+		Language:   hr.Language,
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -130,6 +132,17 @@ func (r *CompanyHRRepository) GetByEmail(ctx context.Context, email string) (*do
 	return companyHRToDomain(row), nil
 }
 
+func (r *CompanyHRRepository) GetByTelegramID(ctx context.Context, telegramID string) (*domain.CompanyHR, error) {
+	row, err := r.q.GetCompanyHRByTelegramID(ctx, textToPgtype(telegramID))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrCompanyHRNotFound
+		}
+		return nil, fmt.Errorf("get company hr by telegram id: %w", err)
+	}
+	return companyHRToDomain(row), nil
+}
+
 func (r *CompanyHRRepository) SetPassword(ctx context.Context, id uuid.UUID, hash string) error {
 	err := r.q.SetCompanyHRPassword(ctx, companyhrsdb.SetCompanyHRPasswordParams{
 		ID:           uuidToPgtype(id),
@@ -155,6 +168,7 @@ func companyHRToDomain(row companyhrsdb.CompanyHr) *domain.CompanyHR {
 		Status:       row.Status,
 		PasswordHash: pgtypeToString(row.PasswordHash),
 		CompanyID:    pgtypeToUUID(row.CompanyID),
+		Language:     row.Language,
 		CreatedAt:    row.CreatedAt.Time,
 	}
 }
