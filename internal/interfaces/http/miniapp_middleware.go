@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"sort"
@@ -39,6 +40,7 @@ func TelegramAuthMiddleware(botToken string, userSvc *application.UserService) g
 
 		telegramID, err := validateInitData(initData, botToken)
 		if err != nil {
+			log.Printf("miniapp auth failed: %v (initData length: %d)", err, len(initData))
 			c.AbortWithStatusJSON(http.StatusUnauthorized, ErrorResponse{Error: fmt.Sprintf("invalid initData: %v", err)})
 			return
 		}
@@ -57,20 +59,33 @@ func TelegramAuthMiddleware(botToken string, userSvc *application.UserService) g
 }
 
 func validateInitData(initData, botToken string) (int64, error) {
-	// Parse the initData query string
-	values, err := url.ParseQuery(initData)
-	if err != nil {
-		return 0, fmt.Errorf("parse initData: %w", err)
+	// Parse key=value pairs from the raw query string to preserve exact values.
+	// We must use the URL-decoded values for the data-check-string.
+	pairs := strings.Split(initData, "&")
+	kv := make(map[string]string, len(pairs))
+	for _, pair := range pairs {
+		k, v, ok := strings.Cut(pair, "=")
+		if !ok {
+			continue
+		}
+		decodedKey, err := url.QueryUnescape(k)
+		if err != nil {
+			decodedKey = k
+		}
+		decodedVal, err := url.QueryUnescape(v)
+		if err != nil {
+			decodedVal = v
+		}
+		kv[decodedKey] = decodedVal
 	}
 
-	hash := values.Get("hash")
-	if hash == "" {
+	hash, ok := kv["hash"]
+	if !ok || hash == "" {
 		return 0, fmt.Errorf("missing hash")
 	}
 
 	// Check auth_date is recent (within 24 hours)
-	authDateStr := values.Get("auth_date")
-	if authDateStr != "" {
+	if authDateStr, ok := kv["auth_date"]; ok {
 		authDate, err := strconv.ParseInt(authDateStr, 10, 64)
 		if err == nil {
 			if time.Now().Unix()-authDate > 86400 {
@@ -80,16 +95,18 @@ func validateInitData(initData, botToken string) (int64, error) {
 	}
 
 	// Build the data-check-string: sort all key=value pairs (except hash), join with \n
-	values.Del("hash")
-	keys := make([]string, 0, len(values))
-	for k := range values {
+	keys := make([]string, 0, len(kv))
+	for k := range kv {
+		if k == "hash" {
+			continue
+		}
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
 
 	var dataCheckParts []string
 	for _, k := range keys {
-		dataCheckParts = append(dataCheckParts, k+"="+values.Get(k))
+		dataCheckParts = append(dataCheckParts, k+"="+kv[k])
 	}
 	dataCheckString := strings.Join(dataCheckParts, "\n")
 
@@ -104,8 +121,8 @@ func validateInitData(initData, botToken string) (int64, error) {
 	}
 
 	// Extract user from initData
-	userJSON := values.Get("user")
-	if userJSON == "" {
+	userJSON, ok := kv["user"]
+	if !ok || userJSON == "" {
 		return 0, fmt.Errorf("missing user in initData")
 	}
 

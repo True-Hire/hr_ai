@@ -211,7 +211,10 @@ function authHeaders() {
 
 async function apiFetch(url) {
   const resp = await fetch(url, { headers: authHeaders() });
-  if (!resp.ok) throw new Error('API error: ' + resp.status);
+  if (!resp.ok) {
+    const body = await resp.text().catch(() => '');
+    throw new Error('API error: ' + resp.status + ' ' + body);
+  }
   return resp.json();
 }
 
@@ -282,7 +285,7 @@ async function loadVacancies() {
       list.appendChild(renderCard(v));
     });
   } catch (e) {
-    list.innerHTML = '<div class="empty">Failed to load vacancies</div>';
+    list.innerHTML = '<div class="empty">' + escapeHtml(e.message) + '</div>';
     console.error(e);
   }
 }
