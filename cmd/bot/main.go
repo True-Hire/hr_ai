@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
-	"strings"
 	"syscall"
 	"time"
 
@@ -114,19 +113,13 @@ func main() {
 		return c.Send(fmt.Sprintf(welcomeBackUser[lang], result.User.FirstName))
 	})
 
-	// Language selection callback
-	bot.Handle(tele.OnCallback, func(c tele.Context) error {
-		data := c.Callback().Data
-		if data == "" {
-			return nil
-		}
-
-		parts := strings.SplitN(data, "|", 2)
-		if len(parts) != 2 || parts[0] != "lang" {
+	// Language selection callback (telebot routes "\flang|<code>" to this handler)
+	bot.Handle(&tele.Btn{Unique: "lang"}, func(c tele.Context) error {
+		language := c.Callback().Data
+		if language == "" {
 			return c.Respond(&tele.CallbackResponse{Text: "Unknown action"})
 		}
 
-		language := parts[1]
 		sender := c.Sender()
 
 		var photoData []byte
