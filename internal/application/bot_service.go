@@ -62,20 +62,38 @@ func (s *BotService) HandleStart(ctx context.Context, telegramID int64) (*StartR
 	return &StartResult{IsNew: true}, nil
 }
 
-func (s *BotService) HandleLanguageSelection(ctx context.Context, telegramID int64, language, firstName, lastName, username string, photoData []byte) (*domain.User, error) {
+func (s *BotService) HandleLanguageSelection(ctx context.Context, telegramID int64, language string) (string, error) {
 	tgID := strconv.FormatInt(telegramID, 10)
 
 	if language != "en" && language != "ru" && language != "uz" {
-		return nil, fmt.Errorf("invalid language: %s", language)
+		return "", fmt.Errorf("invalid language: %s", language)
 	}
 
-	if err := s.stateSvc.ClearState(ctx, tgID); err != nil {
-		return nil, fmt.Errorf("clear state: %w", err)
+	data := map[string]string{"language": language}
+	if err := s.stateSvc.SetStateWithData(ctx, tgID, domain.BotStateChoosingRole, data); err != nil {
+		return "", fmt.Errorf("set role selection state: %w", err)
 	}
 
-	var telegram string
+	return language, nil
+}
+
+// HandleRoleSelection creates either a User or CompanyHR and transitions to sharing_phone state.
+func (s *BotService) HandleRoleSelection(ctx context.Context, telegramID int64, role, firstName, lastName, username string, photoData []byte) (string, bool, error) {
+	tgID := strconv.FormatInt(telegramID, 10)
+
+	state, err := s.stateSvc.GetState(ctx, tgID)
+	if err != nil || state == nil {
+		return "", false, fmt.Errorf("no active state for role selection")
+	}
+
+	language := state.Data["language"]
+	if language == "" {
+		language = "en"
+	}
+
+	var tg string
 	if username != "" {
-		telegram = "@" + username
+		tg = "@" + username
 	}
 
 	var photoURL string
@@ -86,21 +104,85 @@ func (s *BotService) HandleLanguageSelection(ctx context.Context, telegramID int
 		}
 	}
 
-	user := &domain.User{
-		FirstName:     firstName,
-		LastName:      lastName,
-		Telegram:      telegram,
-		TelegramID:    tgID,
-		ProfilePicURL: photoURL,
-		Language:      language,
+	isHR := role == "hr"
+
+	if isHR {
+		hr := &domain.CompanyHR{
+			FirstName:  firstName,
+			LastName:   lastName,
+			Telegram:   tg,
+			TelegramID: tgID,
+			Language:   language,
+		}
+		if _, err := s.hrSvc.CreateCompanyHR(ctx, hr); err != nil {
+			return "", false, fmt.Errorf("create hr: %w", err)
+		}
+	} else {
+		user := &domain.User{
+			FirstName:     firstName,
+			LastName:      lastName,
+			Telegram:      tg,
+			TelegramID:    tgID,
+			ProfilePicURL: photoURL,
+			Language:      language,
+		}
+		if _, err := s.userSvc.CreateUser(ctx, user); err != nil {
+			return "", false, fmt.Errorf("create user: %w", err)
+		}
 	}
 
-	created, err := s.userSvc.CreateUser(ctx, user)
-	if err != nil {
-		return nil, fmt.Errorf("create user: %w", err)
+	// Transition to sharing_phone state
+	data := map[string]string{
+		"language": language,
+		"role":     role,
+	}
+	if err := s.stateSvc.SetStateWithData(ctx, tgID, domain.BotStateSharingPhone, data); err != nil {
+		return "", false, fmt.Errorf("set sharing phone state: %w", err)
 	}
 
-	return created, nil
+	return language, isHR, nil
+}
+
+// HandlePhoneShared updates the phone number on the user or HR record and clears state.
+func (s *BotService) HandlePhoneShared(ctx context.Context, telegramID int64, phone string) (string, error) {
+	tgID := strconv.FormatInt(telegramID, 10)
+
+	state, err := s.stateSvc.GetState(ctx, tgID)
+	if err != nil || state == nil {
+		return "", fmt.Errorf("no active state for phone sharing")
+	}
+
+	language := state.Data["language"]
+	if language == "" {
+		language = "en"
+	}
+	role := state.Data["role"]
+
+	if err := s.stateSvc.ClearState(ctx, tgID); err != nil {
+		return "", fmt.Errorf("clear state: %w", err)
+	}
+
+	if role == "hr" {
+		hr, err := s.hrSvc.GetByTelegramID(ctx, tgID)
+		if err != nil {
+			return language, fmt.Errorf("get hr for phone update: %w", err)
+		}
+		hr.Phone = phone
+		if _, err := s.hrSvc.UpdateCompanyHR(ctx, hr); err != nil {
+			return language, fmt.Errorf("update hr phone: %w", err)
+		}
+	} else {
+		user, err := s.userSvc.GetByTelegramID(ctx, tgID)
+		if err != nil {
+			return language, fmt.Errorf("get user for phone update: %w", err)
+		}
+		user.Phone = phone
+		if _, err := s.userSvc.UpdateUser(ctx, user); err != nil {
+			return language, fmt.Errorf("update user phone: %w", err)
+		}
+	}
+
+	return language, nil
 }
 
 func (s *BotService) GetBotState(ctx context.Context, telegramID int64) (*domain.BotState, error) {
