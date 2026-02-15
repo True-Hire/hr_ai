@@ -30,6 +30,15 @@ func (s *BotStateService) SetState(ctx context.Context, telegramID, state string
 	return s.redis.Set(ctx, key, bs, s.ttl)
 }
 
+func (s *BotStateService) SetStateWithData(ctx context.Context, telegramID, state string, data map[string]string) error {
+	key := fmt.Sprintf("bot:state:%s", telegramID)
+	bs := &domain.BotState{
+		State: state,
+		Data:  data,
+	}
+	return s.redis.Set(ctx, key, bs, s.ttl)
+}
+
 func (s *BotStateService) GetState(ctx context.Context, telegramID string) (*domain.BotState, error) {
 	key := fmt.Sprintf("bot:state:%s", telegramID)
 	var state domain.BotState

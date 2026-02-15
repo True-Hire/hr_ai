@@ -5,4 +5,7 @@ type BotState struct {
 	Data  map[string]string `json:"data,omitempty"`
 }
 
-const BotStateChoosingLanguage = "choosing_language"
+const (
+	BotStateChoosingLanguage = "choosing_language"
+	BotStateChoosingRole     = "choosing_role"
+)
