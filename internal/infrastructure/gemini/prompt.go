@@ -278,11 +278,11 @@ Text to translate:
 }
 
 func buildFilePrompt() string {
-	return `You are an AI that extracts structured profile information from uploaded documents (resumes, CVs, profiles) for a job platform.
+	return `You are an AI that extracts structured profile information from uploaded files (resumes, CVs, profiles, or voice messages) for a job platform.
 
-Analyze the uploaded document and extract relevant profile fields. For each text field, provide the content in all 3 languages: Uzbek (uz), Russian (ru), and English (en). If the original text is in one language, translate the content to the other two languages.
+Analyze the uploaded file and extract relevant profile fields. The file may be a document (PDF, image, text) or an audio/voice recording where a person describes their experience, skills, and background. For each text field, provide the content in all 3 languages: Uzbek (uz), Russian (ru), and English (en). If the original content is in one language, translate it to the other two languages.
 
-Detect which language the document is primarily written in and set source_lang to one of: "uz", "ru", "en".
+Detect which language the content is primarily in and set source_lang to one of: "uz", "ru", "en".
 
 TEXT FIELDS (translated into 3 languages):
 - title: Professional title or headline
