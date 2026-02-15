@@ -39,9 +39,9 @@ func (s *BotService) HandleStart(ctx context.Context, telegramID int64, firstNam
 
 	var photoURL string
 	if len(photoData) > 0 {
-		url, err := s.storage.UploadProfilePhoto(ctx, photoData, "image/jpeg")
+		result, err := s.storage.UploadProfilePhoto(ctx, photoData, "image/jpeg")
 		if err == nil {
-			photoURL = url
+			photoURL = result.URL
 		}
 	}
 
