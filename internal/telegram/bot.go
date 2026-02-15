@@ -177,9 +177,9 @@ var msgError = map[string]string{
 }
 
 var msgSendResume = map[string]string{
-	"en": "📄 Send your resume as text, PDF, image (PNG/JPG), or text file.\n\nYou can also just paste the text of your resume right here 👇",
-	"ru": "📄 Отправьте резюме текстом, PDF, изображением (PNG/JPG) или текстовым файлом.\n\nМожете также просто вставить текст резюме прямо сюда 👇",
-	"uz": "📄 Rezyumeni matn, PDF, rasm (PNG/JPG) yoki matn fayli sifatida yuboring.\n\nShuningdek, rezyume matnini shu yerga joylashtirishingiz mumkin 👇",
+	"en": "📄 Send us your resume as a PDF, photo, or text file.\n\nOr simply tell us about yourself — your experience, skills, and interests. We'll create the resume for you!",
+	"ru": "📄 Отправьте нам резюме в формате PDF, фото или текстового файла.\n\nИли просто расскажите о себе — ваш опыт, навыки и интересы. Мы составим резюме за вас!",
+	"uz": "📄 Rezyumeni PDF, rasm yoki matn fayli sifatida yuboring.\n\nYoki shunchaki o'zingiz haqingizda gapirib bering — tajribangiz, ko'nikmalaringiz va qiziqishlaringiz. Biz rezyumeni siz uchun tuzib beramiz!",
 }
 
 // -- Bot --
