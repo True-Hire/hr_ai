@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/google/uuid"
 
@@ -12,15 +13,16 @@ import (
 )
 
 type VacancyService struct {
-	repo         domain.VacancyRepository
-	textRepo     domain.VacancyTextRepository
-	skillSvc     *SkillService
-	companySvc   *CompanyService
-	geminiClient *gemini.Client
+	repo           domain.VacancyRepository
+	textRepo       domain.VacancyTextRepository
+	skillSvc       *SkillService
+	companySvc     *CompanyService
+	geminiClient   *gemini.Client
+	vectorIndexSvc *VectorIndexService
 }
 
-func NewVacancyService(repo domain.VacancyRepository, textRepo domain.VacancyTextRepository, skillSvc *SkillService, companySvc *CompanyService, geminiClient *gemini.Client) *VacancyService {
-	return &VacancyService{repo: repo, textRepo: textRepo, skillSvc: skillSvc, companySvc: companySvc, geminiClient: geminiClient}
+func NewVacancyService(repo domain.VacancyRepository, textRepo domain.VacancyTextRepository, skillSvc *SkillService, companySvc *CompanyService, geminiClient *gemini.Client, vectorIndexSvc *VectorIndexService) *VacancyService {
+	return &VacancyService{repo: repo, textRepo: textRepo, skillSvc: skillSvc, companySvc: companySvc, geminiClient: geminiClient, vectorIndexSvc: vectorIndexSvc}
 }
 
 type CreateVacancyInput struct {
@@ -128,6 +130,14 @@ func (s *VacancyService) CreateVacancy(ctx context.Context, input *CreateVacancy
 
 	company, _ := s.companySvc.GetCompany(ctx, created.CompanyID)
 
+	if s.vectorIndexSvc != nil {
+		go func() {
+			if err := s.vectorIndexSvc.IndexVacancy(context.Background(), created.ID); err != nil {
+				log.Printf("index vacancy %s: %v", created.ID, err)
+			}
+		}()
+	}
+
 	return &VacancyWithDetails{Vacancy: created, Texts: texts, Skills: skills, Company: company}, nil
 }
 
@@ -188,6 +198,14 @@ func (s *VacancyService) ParseVacancy(ctx context.Context, hrID, companyID uuid.
 	}
 
 	company, _ := s.companySvc.GetCompany(ctx, created.CompanyID)
+
+	if s.vectorIndexSvc != nil {
+		go func() {
+			if err := s.vectorIndexSvc.IndexVacancy(context.Background(), created.ID); err != nil {
+				log.Printf("index vacancy %s: %v", created.ID, err)
+			}
+		}()
+	}
 
 	return &VacancyWithDetails{Vacancy: created, Texts: texts, Skills: skills, Company: company}, nil
 }
@@ -430,6 +448,14 @@ func (s *VacancyService) UpdateVacancy(ctx context.Context, input *UpdateVacancy
 	}
 
 	company, _ := s.companySvc.GetCompany(ctx, updated.CompanyID)
+
+	if s.vectorIndexSvc != nil {
+		go func() {
+			if err := s.vectorIndexSvc.IndexVacancy(context.Background(), updated.ID); err != nil {
+				log.Printf("reindex vacancy %s: %v", updated.ID, err)
+			}
+		}()
+	}
 
 	return &VacancyWithDetails{Vacancy: updated, Texts: texts, Skills: skills, Company: company}, nil
 }
