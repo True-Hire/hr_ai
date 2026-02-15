@@ -26,6 +26,12 @@ func NewRouter(svc *app.Services) *gin.Engine {
 	countryHandler := NewCountryHandler(svc.Country)
 	storageHandler := NewStorageHandler(svc.Storage)
 	searchHandler := NewSearchHandler(svc.Search, svc.VectorIndex, userHandler)
+	miniAppHandler := NewMiniAppHandler(svc.VacancySearch, svc.Vacancy)
+
+	// Serve Mini App HTML
+	router.GET("/web/app", func(c *gin.Context) {
+		c.File("web/app.html")
+	})
 
 	v1 := router.Group("/api/v1")
 	{
@@ -118,6 +124,14 @@ func NewRouter(svc *app.Services) *gin.Engine {
 			profileFields.GET("/:id/texts/:lang", profileFieldTextHandler.Get)
 			profileFields.PUT("/:id/texts", profileFieldTextHandler.Update)
 			profileFields.DELETE("/:id/texts/:lang", profileFieldTextHandler.Delete)
+		}
+
+		miniapp := v1.Group("/miniapp")
+		miniapp.Use(TelegramAuthMiddleware(svc.TelegramBotToken, svc.User))
+		{
+			miniapp.GET("/vacancies", miniAppHandler.ListForUser)
+			miniapp.GET("/vacancies/search", miniAppHandler.Search)
+			miniapp.GET("/vacancies/:id", miniAppHandler.GetByID)
 		}
 	}
 
