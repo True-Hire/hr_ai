@@ -25,13 +25,13 @@ func (q *Queries) CountCompanyHRs(ctx context.Context) (int64, error) {
 const createCompanyHR = `-- name: CreateCompanyHR :one
 INSERT INTO company_hrs (
     id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
-    position, status, company_id, created_at
+    position, status, company_id, language, created_at
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8,
-    $9, $10, $11, now()
+    $9, $10, $11, $12, now()
 )
 RETURNING id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
-    position, status, password_hash, created_at, company_id
+    position, status, password_hash, created_at, company_id, language
 `
 
 type CreateCompanyHRParams struct {
@@ -46,6 +46,7 @@ type CreateCompanyHRParams struct {
 	Position   pgtype.Text
 	Status     string
 	CompanyID  pgtype.UUID
+	Language   string
 }
 
 func (q *Queries) CreateCompanyHR(ctx context.Context, arg CreateCompanyHRParams) (CompanyHr, error) {
@@ -61,6 +62,7 @@ func (q *Queries) CreateCompanyHR(ctx context.Context, arg CreateCompanyHRParams
 		arg.Position,
 		arg.Status,
 		arg.CompanyID,
+		arg.Language,
 	)
 	var i CompanyHr
 	err := row.Scan(
@@ -77,6 +79,7 @@ func (q *Queries) CreateCompanyHR(ctx context.Context, arg CreateCompanyHRParams
 		&i.PasswordHash,
 		&i.CreatedAt,
 		&i.CompanyID,
+		&i.Language,
 	)
 	return i, err
 }
@@ -93,7 +96,7 @@ func (q *Queries) DeleteCompanyHR(ctx context.Context, id pgtype.UUID) error {
 
 const getCompanyHRByEmail = `-- name: GetCompanyHRByEmail :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
-    position, status, password_hash, created_at, company_id
+    position, status, password_hash, created_at, company_id, language
 FROM company_hrs
 WHERE email = $1
 `
@@ -115,13 +118,14 @@ func (q *Queries) GetCompanyHRByEmail(ctx context.Context, email pgtype.Text) (C
 		&i.PasswordHash,
 		&i.CreatedAt,
 		&i.CompanyID,
+		&i.Language,
 	)
 	return i, err
 }
 
 const getCompanyHRByID = `-- name: GetCompanyHRByID :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
-    position, status, password_hash, created_at, company_id
+    position, status, password_hash, created_at, company_id, language
 FROM company_hrs
 WHERE id = $1
 `
@@ -143,13 +147,14 @@ func (q *Queries) GetCompanyHRByID(ctx context.Context, id pgtype.UUID) (Company
 		&i.PasswordHash,
 		&i.CreatedAt,
 		&i.CompanyID,
+		&i.Language,
 	)
 	return i, err
 }
 
 const getCompanyHRByPhone = `-- name: GetCompanyHRByPhone :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
-    position, status, password_hash, created_at, company_id
+    position, status, password_hash, created_at, company_id, language
 FROM company_hrs
 WHERE phone = $1
 `
@@ -171,13 +176,43 @@ func (q *Queries) GetCompanyHRByPhone(ctx context.Context, phone pgtype.Text) (C
 		&i.PasswordHash,
 		&i.CreatedAt,
 		&i.CompanyID,
+		&i.Language,
+	)
+	return i, err
+}
+
+const getCompanyHRByTelegramID = `-- name: GetCompanyHRByTelegramID :one
+SELECT id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
+    position, status, password_hash, created_at, company_id, language
+FROM company_hrs
+WHERE telegram_id = $1
+`
+
+func (q *Queries) GetCompanyHRByTelegramID(ctx context.Context, telegramID pgtype.Text) (CompanyHr, error) {
+	row := q.db.QueryRow(ctx, getCompanyHRByTelegramID, telegramID)
+	var i CompanyHr
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.Patronymic,
+		&i.Phone,
+		&i.Telegram,
+		&i.TelegramID,
+		&i.Email,
+		&i.Position,
+		&i.Status,
+		&i.PasswordHash,
+		&i.CreatedAt,
+		&i.CompanyID,
+		&i.Language,
 	)
 	return i, err
 }
 
 const listCompanyHRs = `-- name: ListCompanyHRs :many
 SELECT id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
-    position, status, password_hash, created_at, company_id
+    position, status, password_hash, created_at, company_id, language
 FROM company_hrs
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2
@@ -211,6 +246,7 @@ func (q *Queries) ListCompanyHRs(ctx context.Context, arg ListCompanyHRsParams) 
 			&i.PasswordHash,
 			&i.CreatedAt,
 			&i.CompanyID,
+			&i.Language,
 		); err != nil {
 			return nil, err
 		}
@@ -247,10 +283,11 @@ SET first_name = COALESCE(NULLIF($1, ''), first_name),
     email = COALESCE(NULLIF($7, ''), email),
     position = COALESCE(NULLIF($8, ''), position),
     status = COALESCE(NULLIF($9, ''), status),
-    company_id = CASE WHEN $10::UUID IS NOT NULL THEN $10 ELSE company_id END
-WHERE id = $11
+    company_id = CASE WHEN $10::UUID IS NOT NULL THEN $10 ELSE company_id END,
+    language = COALESCE(NULLIF($11, ''), language)
+WHERE id = $12
 RETURNING id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
-    position, status, password_hash, created_at, company_id
+    position, status, password_hash, created_at, company_id, language
 `
 
 type UpdateCompanyHRParams struct {
@@ -264,6 +301,7 @@ type UpdateCompanyHRParams struct {
 	Position   interface{}
 	Status     interface{}
 	CompanyID  pgtype.UUID
+	Language   interface{}
 	ID         pgtype.UUID
 }
 
@@ -279,6 +317,7 @@ func (q *Queries) UpdateCompanyHR(ctx context.Context, arg UpdateCompanyHRParams
 		arg.Position,
 		arg.Status,
 		arg.CompanyID,
+		arg.Language,
 		arg.ID,
 	)
 	var i CompanyHr
@@ -296,6 +335,7 @@ func (q *Queries) UpdateCompanyHR(ctx context.Context, arg UpdateCompanyHRParams
 		&i.PasswordHash,
 		&i.CreatedAt,
 		&i.CompanyID,
+		&i.Language,
 	)
 	return i, err
 }
