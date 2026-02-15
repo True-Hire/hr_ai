@@ -109,7 +109,13 @@ func (h *UserHandler) Me(c *gin.Context) {
 		return
 	}
 
-	lang := c.DefaultQuery("lang", "en")
+	lang := c.Query("lang")
+	if lang == "" {
+		lang = user.Language
+	}
+	if lang == "" {
+		lang = "en"
+	}
 	profile := h.buildUserProfile(c, user.ID, lang)
 
 	c.JSON(http.StatusOK, toUserResponseWithProfile(user, profile))
