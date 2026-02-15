@@ -160,3 +160,13 @@ sql:
         package: "countrytexts"
         out: "db/sqlc/country_texts"
         sql_package: "pgx/v5"
+
+# VACANCY_APPLICATIONS
+  - engine: "postgresql"
+    queries: "db/queries/vacancy_applications/"
+    schema: "db/migrations/"
+    gen:
+      go:
+        package: "vacancyapplications"
+        out: "db/sqlc/vacancy_applications"
+        sql_package: "pgx/v5"
