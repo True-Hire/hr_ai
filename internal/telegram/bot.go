@@ -182,6 +182,12 @@ var msgOpenSearch = map[string]string{
 	"uz": "Vakansiyalarni ko'rish uchun quyidagi tugmani bosing 👇",
 }
 
+var msgOpenProfile = map[string]string{
+	"en": "Tap the button below to view your profile 👇",
+	"ru": "Нажмите кнопку ниже, чтобы посмотреть свой профиль 👇",
+	"uz": "Profilingizni ko'rish uchun quyidagi tugmani bosing 👇",
+}
+
 var msgSendResume = map[string]string{
 	"en": "📄 Send us your resume as a PDF, photo, or text file.\n\nOr simply tell us about yourself — your experience, skills, and interests. We'll create the resume for you!",
 	"ru": "📄 Отправьте нам резюме в формате PDF, фото или текстового файла.\n\nИли просто расскажите о себе — ваш опыт, навыки и интересы. Мы составим резюме за вас!",
@@ -385,6 +391,9 @@ func (tb *Bot) registerHandlers() {
 		// Handle menu button taps
 		text := c.Text()
 		if isMenuButton(text, menuBtnUpdateResume) {
+			if tb.webAppURL != "" {
+				return c.Send(msgOpenProfile[lang], profileViewInline(lang, tb.webAppURL))
+			}
 			return c.Send(msgSendResume[lang])
 		}
 		if isMenuButton(text, menuBtnCreateVacancy) ||
@@ -595,6 +604,14 @@ func searchVacanciesInline(lang, webAppURL string) *tele.ReplyMarkup {
 	markup := &tele.ReplyMarkup{}
 	markup.Inline(
 		markup.Row(tele.Btn{Text: menuBtnSearchVacancies[lang], WebApp: &tele.WebApp{URL: webAppURL}}),
+	)
+	return markup
+}
+
+func profileViewInline(lang, webAppURL string) *tele.ReplyMarkup {
+	markup := &tele.ReplyMarkup{}
+	markup.Inline(
+		markup.Row(tele.Btn{Text: menuBtnUpdateResume[lang], WebApp: &tele.WebApp{URL: webAppURL + "?view=profile"}}),
 	)
 	return markup
 }
