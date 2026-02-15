@@ -13,6 +13,7 @@ import (
 	"github.com/ruziba3vich/hr-ai/internal/config"
 	"github.com/ruziba3vich/hr-ai/internal/infrastructure/postgres"
 	httphandler "github.com/ruziba3vich/hr-ai/internal/interfaces/http"
+	"github.com/ruziba3vich/hr-ai/internal/telegram"
 
 	_ "github.com/ruziba3vich/hr-ai/docs"
 )
@@ -38,9 +39,22 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to init services: %v", err)
 	}
+	defer services.RedisClient.Close()
 
+	// Start Telegram bot in background
+	var tgBot *telegram.Bot
+	if cfg.TelegramBotToken != "" {
+		tgBot, err = telegram.NewBot(cfg.TelegramBotToken, services.Bot)
+		if err != nil {
+			log.Fatalf("failed to init telegram bot: %v", err)
+		}
+		go tgBot.Start()
+	} else {
+		log.Println("TELEGRAM_BOT_TOKEN not set, skipping bot")
+	}
+
+	// Start HTTP server
 	router := httphandler.NewRouter(services)
-
 	srv := &http.Server{
 		Addr:    ":" + cfg.ServerPort,
 		Handler: router,
@@ -53,12 +67,14 @@ func main() {
 		}
 	}()
 
-	defer services.RedisClient.Close()
-
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Println("shutting down server...")
+	log.Println("shutting down...")
+
+	if tgBot != nil {
+		tgBot.Stop()
+	}
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

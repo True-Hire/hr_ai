@@ -1,21 +1,15 @@
-package main
+package telegram
 
 import (
 	"context"
 	"fmt"
 	"io"
 	"log"
-	"os"
-	"os/signal"
 	"strconv"
-	"syscall"
 	"time"
 
-	"github.com/ruziba3vich/hr-ai/internal/app"
 	"github.com/ruziba3vich/hr-ai/internal/application"
-	"github.com/ruziba3vich/hr-ai/internal/config"
 	"github.com/ruziba3vich/hr-ai/internal/domain"
-	"github.com/ruziba3vich/hr-ai/internal/infrastructure/postgres"
 
 	tele "gopkg.in/telebot.v3"
 )
@@ -52,34 +46,40 @@ var chooseLangReminder = map[string]string{
 	"uz": "Iltimos, yuqoridagi tugmalardan tilni tanlang ☝️",
 }
 
-func main() {
-	cfg, err := config.Load()
-	if err != nil {
-		log.Fatalf("failed to load config: %v", err)
-	}
+type Bot struct {
+	bot    *tele.Bot
+	botSvc *application.BotService
+}
 
-	ctx := context.Background()
-	pool, err := postgres.NewPool(ctx, cfg.DatabaseURL)
-	if err != nil {
-		log.Fatalf("failed to connect to database: %v", err)
-	}
-	defer pool.Close()
-
-	services, err := app.NewServices(pool, cfg.GeminiAPIKey, cfg.JWTSecret, cfg.DatabaseURL, cfg.QdrantURL, cfg.QdrantAPIKey, cfg.RedisURL, cfg.MinioEndpoint, cfg.MinioAccessKey, cfg.MinioSecretKey, cfg.MinioBucket, cfg.MinioUseSSL)
-	if err != nil {
-		log.Fatalf("failed to init services: %v", err)
-	}
-	defer services.RedisClient.Close()
-
-	bot, err := tele.NewBot(tele.Settings{
-		Token:  cfg.TelegramBotToken,
+func NewBot(token string, botSvc *application.BotService) (*Bot, error) {
+	b, err := tele.NewBot(tele.Settings{
+		Token:  token,
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
 	})
 	if err != nil {
-		log.Fatalf("failed to create telegram bot: %v", err)
+		return nil, fmt.Errorf("create telegram bot: %w", err)
 	}
 
-	botSvc := services.Bot
+	tb := &Bot{bot: b, botSvc: botSvc}
+	tb.registerHandlers()
+	return tb, nil
+}
+
+func (tb *Bot) Start() {
+	log.Println("telegram bot starting...")
+	tb.bot.Start()
+}
+
+func (tb *Bot) Stop() {
+	log.Println("stopping telegram bot...")
+	tb.bot.Stop()
+	log.Println("telegram bot stopped")
+}
+
+func (tb *Bot) registerHandlers() {
+	ctx := context.Background()
+	bot := tb.bot
+	botSvc := tb.botSvc
 
 	// /start handler
 	bot.Handle("/start", func(c tele.Context) error {
@@ -113,7 +113,7 @@ func main() {
 		return c.Send(fmt.Sprintf(welcomeBackUser[lang], result.User.FirstName))
 	})
 
-	// Language selection callback (telebot routes "\flang|<code>" to this handler)
+	// Language selection callback
 	bot.Handle(&tele.Btn{Unique: "lang"}, func(c tele.Context) error {
 		language := c.Callback().Data
 		if language == "" {
@@ -261,18 +261,6 @@ func main() {
 			"Experience items: " + itoa(len(result.Experience)) + "\n" +
 			"Education items: " + itoa(len(result.Education)))
 	})
-
-	go func() {
-		log.Println("telegram bot starting...")
-		bot.Start()
-	}()
-
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-	log.Println("shutting down bot...")
-	bot.Stop()
-	log.Println("bot stopped")
 }
 
 func isChoosingLanguage(ctx context.Context, botSvc *application.BotService, senderID int64) bool {
