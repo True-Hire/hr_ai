@@ -176,6 +176,12 @@ var msgError = map[string]string{
 	"uz": "Xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.",
 }
 
+var msgOpenSearch = map[string]string{
+	"en": "Tap the button below to browse vacancies 👇",
+	"ru": "Нажмите кнопку ниже для поиска вакансий 👇",
+	"uz": "Vakansiyalarni ko'rish uchun quyidagi tugmani bosing 👇",
+}
+
 var msgSendResume = map[string]string{
 	"en": "📄 Send us your resume as a PDF, photo, or text file.\n\nOr simply tell us about yourself — your experience, skills, and interests. We'll create the resume for you!",
 	"ru": "📄 Отправьте нам резюме в формате PDF, фото или текстового файла.\n\nИли просто расскажите о себе — ваш опыт, навыки и интересы. Мы составим резюме за вас!",
@@ -249,7 +255,7 @@ func (tb *Bot) registerHandlers() {
 		}
 
 		lang := langOrDefault(result.User.Language)
-		return c.Send(fmt.Sprintf(msgWelcomeBackUser[lang], result.User.FirstName), userMenu(lang, tb.webAppURL))
+		return c.Send(fmt.Sprintf(msgWelcomeBackUser[lang], result.User.FirstName), userMenu(lang))
 	})
 
 	// Language selection callback
@@ -344,13 +350,13 @@ func (tb *Bot) registerHandlers() {
 		// Check if HR or user to send correct success message with menu
 		result, err := botSvc.HandleStart(ctx, sender.ID)
 		if err != nil {
-			return c.Send(fmt.Sprintf(msgRegisteredUser[lang], sender.FirstName), userMenu(lang, tb.webAppURL))
+			return c.Send(fmt.Sprintf(msgRegisteredUser[lang], sender.FirstName), userMenu(lang))
 		}
 
 		if result.IsHR {
 			return c.Send(fmt.Sprintf(msgRegisteredHR[lang], result.HR.FirstName), hrMenu(lang))
 		}
-		return c.Send(fmt.Sprintf(msgRegisteredUser[lang], result.User.FirstName), userMenu(lang, tb.webAppURL))
+		return c.Send(fmt.Sprintf(msgRegisteredUser[lang], result.User.FirstName), userMenu(lang))
 	})
 
 	// Text message handler
@@ -387,8 +393,10 @@ func (tb *Bot) registerHandlers() {
 			return nil
 		}
 		if isMenuButton(text, menuBtnSearchVacancies) {
-			// WebApp button not configured — resend menu with WebApp if possible
-			return c.Send(msgError[lang], userMenu(lang, tb.webAppURL))
+			if tb.webAppURL != "" {
+				return c.Send(msgOpenSearch[lang], searchVacanciesInline(lang, tb.webAppURL))
+			}
+			return nil
 		}
 
 		// Treat as resume text
@@ -574,15 +582,19 @@ func (tb *Bot) registerHandlers() {
 	})
 }
 
-func userMenu(lang, webAppURL string) *tele.ReplyMarkup {
+func userMenu(lang string) *tele.ReplyMarkup {
 	markup := &tele.ReplyMarkup{ResizeKeyboard: true}
-	searchBtn := tele.Btn{Text: menuBtnSearchVacancies[lang]}
-	if webAppURL != "" {
-		searchBtn.WebApp = &tele.WebApp{URL: webAppURL}
-	}
 	markup.Reply(
 		markup.Row(tele.Btn{Text: menuBtnUpdateResume[lang]}),
-		markup.Row(searchBtn),
+		markup.Row(tele.Btn{Text: menuBtnSearchVacancies[lang]}),
+	)
+	return markup
+}
+
+func searchVacanciesInline(lang, webAppURL string) *tele.ReplyMarkup {
+	markup := &tele.ReplyMarkup{}
+	markup.Inline(
+		markup.Row(tele.Btn{Text: menuBtnSearchVacancies[lang], WebApp: &tele.WebApp{URL: webAppURL}}),
 	)
 	return markup
 }
