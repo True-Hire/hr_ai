@@ -381,10 +381,14 @@ func (tb *Bot) registerHandlers() {
 		if isMenuButton(text, menuBtnUpdateResume) {
 			return c.Send(msgSendResume[lang])
 		}
-		if isMenuButton(text, menuBtnSearchVacancies) || isMenuButton(text, menuBtnCreateVacancy) ||
+		if isMenuButton(text, menuBtnCreateVacancy) ||
 			isMenuButton(text, menuBtnMyVacancies) || isMenuButton(text, menuBtnFindCandidates) {
 			// Placeholder for future functionality
 			return nil
+		}
+		if isMenuButton(text, menuBtnSearchVacancies) {
+			// WebApp button not configured — resend menu with WebApp if possible
+			return c.Send(msgError[lang], userMenu(lang, tb.webAppURL))
 		}
 
 		// Treat as resume text
