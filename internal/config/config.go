@@ -24,7 +24,7 @@ type Config struct {
 }
 
 func Load() (*Config, error) {
-	_ = godotenv.Load()
+	_ = godotenv.Overload()
 
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
