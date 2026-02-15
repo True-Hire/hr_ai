@@ -201,6 +201,16 @@ type Vacancy struct {
 	CountryID      pgtype.UUID
 }
 
+type VacancyApplication struct {
+	ID          pgtype.UUID
+	UserID      pgtype.UUID
+	VacancyID   pgtype.UUID
+	Status      string
+	CoverLetter pgtype.Text
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
+}
+
 type VacancySkill struct {
 	VacancyID pgtype.UUID
 	SkillID   pgtype.UUID

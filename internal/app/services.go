@@ -35,8 +35,9 @@ type Services struct {
 	VacancyText      *application.VacancyTextService
 	VectorIndex      *application.VectorIndexService
 	Search           *application.SearchService
-	VacancySearch    *application.VacancySearchService
-	Bot              *application.BotService
+	VacancySearch       *application.VacancySearchService
+	VacancyApplication  *application.VacancyApplicationService
+	Bot                 *application.BotService
 	Storage          *application.StorageService
 	CasbinEnforcer   *casbinlib.Enforcer
 	RedisClient      *redisclient.Client
@@ -81,6 +82,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 
 	vacancyRepo := repository.NewVacancyRepository(pool)
 	vacancyTextRepo := repository.NewVacancyTextRepository(pool)
+	vacancyAppRepo := repository.NewVacancyApplicationRepository(pool)
 
 	qdrantClient := qdrant.NewClient(qdrantURL, qdrantAPIKey)
 	if err := qdrantClient.EnsureCollection(context.Background(), "user_profile_vectors", 768); err != nil {
@@ -104,6 +106,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 
 	vacancySvc := application.NewVacancyService(vacancyRepo, vacancyTextRepo, skillSvc, companySvc, geminiClient, vectorIndexSvc)
 	vacancySearchSvc := application.NewVacancySearchService(qdrantClient, geminiClient, vacancySvc, pfSvc, pftSvc, skillSvc)
+	vacancyAppSvc := application.NewVacancyApplicationService(vacancyAppRepo)
 
 	companyHRSvc := application.NewCompanyHRService(companyHRRepo)
 	botStateSvc := application.NewBotStateService(rc)
@@ -127,8 +130,9 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 		VacancyText:      application.NewVacancyTextService(vacancyTextRepo),
 		VectorIndex:      vectorIndexSvc,
 		Search:           searchSvc,
-		VacancySearch:    vacancySearchSvc,
-		Bot:              application.NewBotService(userSvc, companyHRSvc, profileParseSvc, storageSvc, botStateSvc),
+		VacancySearch:      vacancySearchSvc,
+		VacancyApplication: vacancyAppSvc,
+		Bot:                application.NewBotService(userSvc, companyHRSvc, profileParseSvc, storageSvc, botStateSvc),
 		Storage:          storageSvc,
 		CasbinEnforcer:   enforcer,
 		RedisClient:      rc,
