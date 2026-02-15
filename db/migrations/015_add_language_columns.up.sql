@@ -1,0 +1,2 @@
+ALTER TABLE users ADD COLUMN language TEXT NOT NULL DEFAULT 'en';
+ALTER TABLE company_hrs ADD COLUMN language TEXT NOT NULL DEFAULT 'en';
