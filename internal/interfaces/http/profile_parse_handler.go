@@ -19,6 +19,11 @@ var allowedMimeTypes = map[string]bool{
 	"image/png":       true,
 	"image/jpeg":      true,
 	"text/plain":      true,
+	"audio/ogg":       true,
+	"audio/mpeg":      true,
+	"audio/wav":       true,
+	"audio/mp4":       true,
+	"audio/webm":      true,
 }
 
 const maxFileSize = 20 << 20 // 20 MB
@@ -116,7 +121,7 @@ func (h *ProfileParseHandler) handleMultipart(c *gin.Context, userID uuid.UUID) 
 	mimeType := fileHeader.Header.Get("Content-Type")
 	if !allowedMimeTypes[mimeType] {
 		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: "unsupported file type; allowed: PDF, PNG, JPG/JPEG, TXT",
+			Error: "unsupported file type; allowed: PDF, PNG, JPG/JPEG, TXT, audio (OGG, MP3, WAV, MP4, WEBM)",
 		})
 		return
 	}
