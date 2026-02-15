@@ -97,6 +97,9 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 
 	profileParseSvc := application.NewProfileParseService(geminiClient, pfSvc, pftSvc, expSvc, eduSvc, itSvc, skillSvc, userSvc, vectorIndexSvc)
 
+	companyHRSvc := application.NewCompanyHRService(companyHRRepo)
+	botStateSvc := application.NewBotStateService(rc)
+
 	return &Services{
 		User:             userSvc,
 		ProfileField:     pfSvc,
@@ -107,7 +110,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 		Skill:            skillSvc,
 		ProfileParse:     profileParseSvc,
 		Auth:             application.NewAuthService(userRepo, sessionRepo, jwtSecret),
-		CompanyHR:        application.NewCompanyHRService(companyHRRepo),
+		CompanyHR:        companyHRSvc,
 		HRAuth:           application.NewHRAuthService(companyHRRepo, hrSessionRepo, jwtSecret),
 		Country:          application.NewCountryService(countryRepo, countryTextRepo, geminiClient, cacheSvc),
 		Company:          companySvc,
@@ -116,7 +119,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 		VacancyText:      application.NewVacancyTextService(vacancyTextRepo),
 		VectorIndex:      vectorIndexSvc,
 		Search:           searchSvc,
-		Bot:              application.NewBotService(userSvc, profileParseSvc, storageSvc),
+		Bot:              application.NewBotService(userSvc, companyHRSvc, profileParseSvc, storageSvc, botStateSvc),
 		Storage:          storageSvc,
 		CasbinEnforcer:   enforcer,
 		RedisClient:      rc,
