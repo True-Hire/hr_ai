@@ -2,6 +2,7 @@ package http
 
 import (
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -84,6 +85,7 @@ func (h *VacancyHandler) Create(c *gin.Context) {
 
 	result, err := h.service.CreateVacancy(c.Request.Context(), input)
 	if err != nil {
+		log.Printf("create vacancy error: %v", err)
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to create vacancy"})
 		return
 	}
