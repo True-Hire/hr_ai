@@ -40,6 +40,42 @@ var msgBtnHirer = map[string]string{
 	"uz": "🏢 Ish beruvchi",
 }
 
+var msgSharePhone = map[string]string{
+	"en": "📱 Almost done! Please share your phone number so employers can reach you.",
+	"ru": "📱 Почти готово! Пожалуйста, поделитесь номером телефона, чтобы работодатели могли с вами связаться.",
+	"uz": "📱 Deyarli tayyor! Iltimos, telefon raqamingizni ulashing, shunda ish beruvchilar siz bilan bog'lanishi mumkin.",
+}
+
+var msgSharePhoneHR = map[string]string{
+	"en": "📱 Almost done! Please share your phone number so candidates can reach you.",
+	"ru": "📱 Почти готово! Пожалуйста, поделитесь номером телефона, чтобы кандидаты могли с вами связаться.",
+	"uz": "📱 Deyarli tayyor! Iltimos, telefon raqamingizni ulashing, shunda nomzodlar siz bilan bog'lanishi mumkin.",
+}
+
+var msgBtnSharePhone = map[string]string{
+	"en": "📞 Share phone number",
+	"ru": "📞 Поделиться номером",
+	"uz": "📞 Telefon raqamini ulashish",
+}
+
+var msgPhoneReminder = map[string]string{
+	"en": "Please share your phone number using the button below 👇",
+	"ru": "Пожалуйста, поделитесь номером телефона, нажав кнопку ниже 👇",
+	"uz": "Iltimos, quyidagi tugma orqali telefon raqamingizni ulashing 👇",
+}
+
+var msgRegisteredUser = map[string]string{
+	"en": "✅ Registration complete, %s! Welcome aboard!\n\nSend your resume as text, photo, or document and we'll parse it for you 👇",
+	"ru": "✅ Регистрация завершена, %s! Добро пожаловать!\n\nОтправьте резюме текстом, фото или документом, и мы его обработаем 👇",
+	"uz": "✅ Ro'yxatdan o'tish yakunlandi, %s! Xush kelibsiz!\n\nRezyumeni matn, rasm yoki hujjat sifatida yuboring va biz uni tahlil qilamiz 👇",
+}
+
+var msgRegisteredHR = map[string]string{
+	"en": "✅ Registration complete, %s! Welcome aboard!\n\nYou can now create vacancies and search for candidates 👇",
+	"ru": "✅ Регистрация завершена, %s! Добро пожаловать!\n\nТеперь вы можете создавать вакансии и искать кандидатов 👇",
+	"uz": "✅ Ro'yxatdan o'tish yakunlandi, %s! Xush kelibsiz!\n\nEndi vakansiyalar yaratishingiz va nomzodlarni qidirishingiz mumkin 👇",
+}
+
 var msgWelcomeBackUser = map[string]string{
 	"en": "👋 Welcome back %s! Glad to see you again.\n\nWhat would you like to do today?\n\n🔹 Update your profile or resume\n🔹 Find new job opportunities\n\nJust choose an option from the menu 👇",
 	"ru": "👋 С возвращением, %s! Рады снова вас видеть.\n\nЧем вы хотите заняться сегодня?\n\n🔹 Обновить профиль или резюме\n🔹 Найти новые вакансии\n\nВыберите нужный пункт в меню 👇",
@@ -50,18 +86,6 @@ var msgWelcomeBackHR = map[string]string{
 	"en": "👋 Welcome back %s! Glad to see you again.\n\nWhat would you like to do today?\n\n🔹 Create or manage vacancies\n🔹 Search for candidates\n\nJust choose an option from the menu 👇",
 	"ru": "👋 С возвращением, %s! Рады снова вас видеть.\n\nЧем вы хотите заняться сегодня?\n\n🔹 Создать или управлять вакансиями\n🔹 Найти подходящих кандидатов\n\nВыберите нужный пункт в меню 👇",
 	"uz": "👋 Qaytganingiz bilan, %s! Sizni yana ko'rib turganimizdan xursandmiz.\n\nBugun nimani qilmoqchisiz?\n\n🔹 Vakansiyalar yaratish yoki boshqarish\n🔹 Mos nomzodlarni topish\n\nQuyidagi menyudan tanlang 👇",
-}
-
-var msgRegisteredUser = map[string]string{
-	"en": "✅ You're all set, %s! Your profile has been created as a job seeker.\n\nSend your resume as text, photo, or document and we'll parse it for you 👇",
-	"ru": "✅ Готово, %s! Ваш профиль создан как соискатель.\n\nОтправьте резюме текстом, фото или документом, и мы его обработаем 👇",
-	"uz": "✅ Tayyor, %s! Profilingiz ish izlovchi sifatida yaratildi.\n\nRezyumeni matn, rasm yoki hujjat sifatida yuboring va biz uni tahlil qilamiz 👇",
-}
-
-var msgRegisteredHR = map[string]string{
-	"en": "✅ You're all set, %s! Your profile has been created as a hirer.\n\nYou can now create vacancies and search for candidates 👇",
-	"ru": "✅ Готово, %s! Ваш профиль создан как работодатель.\n\nТеперь вы можете создавать вакансии и искать кандидатов 👇",
-	"uz": "✅ Tayyor, %s! Profilingiz ish beruvchi sifatida yaratildi.\n\nEndi vakansiyalar yaratishingiz va nomzodlarni qidirishingiz mumkin 👇",
 }
 
 var msgChooseLangReminder = map[string]string{
@@ -166,7 +190,6 @@ func (tb *Bot) registerHandlers() {
 		}
 
 		if result.IsNew {
-			// Show the welcome message in all 3 languages since user hasn't chosen yet
 			markup := &tele.ReplyMarkup{}
 			btnEn := markup.Data("🇬🇧 English", "lang", "en")
 			btnRu := markup.Data("🇷🇺 Русский", "lang", "ru")
@@ -206,7 +229,6 @@ func (tb *Bot) registerHandlers() {
 		_ = c.Respond(&tele.CallbackResponse{})
 		_ = c.Delete()
 
-		// Now ask the role question in the chosen language
 		markup := &tele.ReplyMarkup{}
 		btnSeeker := markup.Data(msgBtnJobSeeker[lang], "role", "seeker")
 		btnHirer := markup.Data(msgBtnHirer[lang], "role", "hr")
@@ -246,16 +268,57 @@ func (tb *Bot) registerHandlers() {
 		_ = c.Delete()
 
 		lang = langOrDefault(lang)
+
+		// Ask for phone number via reply keyboard
+		phoneMsg := msgSharePhone[lang]
 		if isHR {
-			return c.Send(fmt.Sprintf(msgRegisteredHR[lang], sender.FirstName))
+			phoneMsg = msgSharePhoneHR[lang]
 		}
-		return c.Send(fmt.Sprintf(msgRegisteredUser[lang], sender.FirstName))
+
+		markup := &tele.ReplyMarkup{ResizeKeyboard: true, OneTimeKeyboard: true}
+		btnPhone := markup.Contact(msgBtnSharePhone[lang])
+		markup.Reply(markup.Row(btnPhone))
+
+		return c.Send(phoneMsg, markup)
+	})
+
+	// Contact (phone number) handler
+	bot.Handle(tele.OnContact, func(c tele.Context) error {
+		sender := c.Sender()
+		contact := c.Message().Contact
+
+		if contact == nil || contact.PhoneNumber == "" {
+			return nil
+		}
+
+		lang, err := botSvc.HandlePhoneShared(ctx, sender.ID, contact.PhoneNumber)
+		if err != nil {
+			log.Printf("phone shared error for %d: %v", sender.ID, err)
+			lang = langOrDefault(lang)
+			return c.Send(msgError[lang])
+		}
+
+		lang = langOrDefault(lang)
+
+		// Remove the reply keyboard
+		removeKb := &tele.ReplyMarkup{RemoveKeyboard: true}
+
+		// Check if HR or user to send correct success message
+		result, err := botSvc.HandleStart(ctx, sender.ID)
+		if err != nil {
+			return c.Send(fmt.Sprintf(msgRegisteredUser[lang], sender.FirstName), removeKb)
+		}
+
+		if result.IsHR {
+			return c.Send(fmt.Sprintf(msgRegisteredHR[lang], result.HR.FirstName), removeKb)
+		}
+		return c.Send(fmt.Sprintf(msgRegisteredUser[lang], result.User.FirstName), removeKb)
 	})
 
 	// Text message handler
 	bot.Handle(tele.OnText, func(c tele.Context) error {
 		sender := c.Sender()
-		lang := getUserLang(ctx, botSvc, sender.ID)
+		lang := getStateLang(ctx, botSvc, sender.ID)
 
 		state, _ := botSvc.GetBotState(ctx, sender.ID)
 		if state != nil {
@@ -264,6 +327,8 @@ func (tb *Bot) registerHandlers() {
 				return c.Send(msgChooseLangReminder["en"] + "\n" + msgChooseLangReminder["ru"] + "\n" + msgChooseLangReminder["uz"])
 			case domain.BotStateChoosingRole:
 				return c.Send(msgChooseRoleReminder[langOrDefault(state.Data["language"])])
+			case domain.BotStateSharingPhone:
+				return c.Send(msgPhoneReminder[langOrDefault(state.Data["language"])])
 			}
 		}
 
@@ -292,7 +357,7 @@ func (tb *Bot) registerHandlers() {
 	bot.Handle(tele.OnDocument, func(c tele.Context) error {
 		sender := c.Sender()
 		doc := c.Message().Document
-		lang := getUserLang(ctx, botSvc, sender.ID)
+		lang := getStateLang(ctx, botSvc, sender.ID)
 
 		state, _ := botSvc.GetBotState(ctx, sender.ID)
 		if state != nil {
@@ -301,6 +366,8 @@ func (tb *Bot) registerHandlers() {
 				return c.Send(msgChooseLangReminder["en"] + "\n" + msgChooseLangReminder["ru"] + "\n" + msgChooseLangReminder["uz"])
 			case domain.BotStateChoosingRole:
 				return c.Send(msgChooseRoleReminder[langOrDefault(state.Data["language"])])
+			case domain.BotStateSharingPhone:
+				return c.Send(msgPhoneReminder[langOrDefault(state.Data["language"])])
 			}
 		}
 
@@ -347,7 +414,7 @@ func (tb *Bot) registerHandlers() {
 	bot.Handle(tele.OnPhoto, func(c tele.Context) error {
 		sender := c.Sender()
 		photo := c.Message().Photo
-		lang := getUserLang(ctx, botSvc, sender.ID)
+		lang := getStateLang(ctx, botSvc, sender.ID)
 
 		state, _ := botSvc.GetBotState(ctx, sender.ID)
 		if state != nil {
@@ -356,6 +423,8 @@ func (tb *Bot) registerHandlers() {
 				return c.Send(msgChooseLangReminder["en"] + "\n" + msgChooseLangReminder["ru"] + "\n" + msgChooseLangReminder["uz"])
 			case domain.BotStateChoosingRole:
 				return c.Send(msgChooseRoleReminder[langOrDefault(state.Data["language"])])
+			case domain.BotStateSharingPhone:
+				return c.Send(msgPhoneReminder[langOrDefault(state.Data["language"])])
 			}
 		}
 
@@ -394,8 +463,8 @@ func (tb *Bot) registerHandlers() {
 	})
 }
 
-// getUserLang tries to get the user's saved language, falls back to "en".
-func getUserLang(ctx context.Context, botSvc *application.BotService, senderID int64) string {
+// getStateLang tries to get the language from bot state data, falls back to "en".
+func getStateLang(ctx context.Context, botSvc *application.BotService, senderID int64) string {
 	state, err := botSvc.GetBotState(ctx, senderID)
 	if err == nil && state != nil && state.Data["language"] != "" {
 		return langOrDefault(state.Data["language"])
