@@ -35,12 +35,32 @@ func (c *Client) ModelVersion() string {
 	return modelVersion
 }
 
+// LangStringSlice can unmarshal from both a JSON object (map) and an empty array.
+// Gemini sometimes returns [] instead of {} when there are no entries.
+type LangStringSlice map[string][]string
+
+func (l *LangStringSlice) UnmarshalJSON(data []byte) error {
+	// Try map first
+	var m map[string][]string
+	if err := json.Unmarshal(data, &m); err == nil {
+		*l = m
+		return nil
+	}
+	// If it's an empty array, return empty map
+	var arr []json.RawMessage
+	if err := json.Unmarshal(data, &arr); err == nil {
+		*l = make(map[string][]string)
+		return nil
+	}
+	return fmt.Errorf("certifications: expected object or array, got %s", string(data))
+}
+
 // ParsedProfile is the structured result from Gemini profile parsing.
 type ParsedProfile struct {
 	SourceLang     string                       `json:"source_lang"`
 	Fields         map[string]map[string]string `json:"fields"`
-	Skills         map[string][]string          `json:"skills"`
-	Certifications map[string][]string          `json:"certifications"`
+	Skills         LangStringSlice              `json:"skills"`
+	Certifications LangStringSlice              `json:"certifications"`
 	Languages      []ParsedLanguageItem         `json:"languages"`
 	Experience     []ParsedExperienceItem       `json:"experience"`
 	Education      []ParsedEducationItem        `json:"education"`
