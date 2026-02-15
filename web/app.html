@@ -185,13 +185,18 @@ body {
 <div class="detail-view" id="detailView"></div>
 
 <script>
-const tg = window.Telegram.WebApp;
-tg.ready();
-tg.expand();
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg) {
+  tg.ready();
+  tg.expand();
+}
 
 const API_BASE = window.location.origin + '/api/v1/miniapp';
-const initData = tg.initData || '';
-const userLang = (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.language_code) || 'en';
+const initData = (tg && tg.initData) || '';
+const userLang = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.language_code) || 'en';
+
+// Debug: show auth status
+console.log('initData length:', initData.length, 'initData:', initData.substring(0, 100));
 
 // Map language to our supported languages
 function getLang() {
@@ -285,7 +290,7 @@ async function loadVacancies() {
       list.appendChild(renderCard(v));
     });
   } catch (e) {
-    list.innerHTML = '<div class="empty">' + escapeHtml(e.message) + '</div>';
+    list.innerHTML = '<div class="empty">' + escapeHtml(e.message) + '<br><br><small>initData length: ' + initData.length + '</small></div>';
     console.error(e);
   }
 }
