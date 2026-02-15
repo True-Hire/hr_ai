@@ -2,27 +2,27 @@
 INSERT INTO users (
     id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at
+    status, tariff_type, job_status, activity_type, specializations, language, created_at
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8,
     $9, $10, $11, $12, $13,
-    $14, $15, $16, $17, $18, now()
+    $14, $15, $16, $17, $18, $19, now()
 )
 RETURNING id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id;
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language;
 
 -- name: GetUserByID :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language
 FROM users
 WHERE id = $1;
 
 -- name: ListUsers :many
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language
 FROM users
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2;
@@ -48,11 +48,12 @@ SET first_name = COALESCE(NULLIF(sqlc.arg(first_name), ''), first_name),
     tariff_type = COALESCE(NULLIF(sqlc.arg(tariff_type), ''), tariff_type),
     job_status = COALESCE(NULLIF(sqlc.arg(job_status), ''), job_status),
     activity_type = COALESCE(NULLIF(sqlc.arg(activity_type), ''), activity_type),
-    specializations = CASE WHEN sqlc.arg(specializations)::TEXT[] = '{}' THEN specializations ELSE sqlc.arg(specializations) END
+    specializations = CASE WHEN sqlc.arg(specializations)::TEXT[] = '{}' THEN specializations ELSE sqlc.arg(specializations) END,
+    language = COALESCE(NULLIF(sqlc.arg(language), ''), language)
 WHERE id = sqlc.arg(id)
 RETURNING id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id;
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language;
 
 -- name: DeleteUser :exec
 DELETE FROM users
@@ -61,21 +62,21 @@ WHERE id = $1;
 -- name: GetUserByPhone :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language
 FROM users
 WHERE phone = $1;
 
 -- name: GetUserByEmail :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language
 FROM users
 WHERE email = $1;
 
 -- name: GetUserByTelegramID :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language
 FROM users
 WHERE telegram_id = $1;
 
