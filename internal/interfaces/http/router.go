@@ -24,6 +24,7 @@ func NewRouter(svc *app.Services) *gin.Engine {
 	companyHandler := NewCompanyHandler(svc.Company)
 	vacancyHandler := NewVacancyHandler(svc.Vacancy)
 	countryHandler := NewCountryHandler(svc.Country)
+	storageHandler := NewStorageHandler(svc.Storage)
 	searchHandler := NewSearchHandler(svc.Search, svc.VectorIndex, userHandler)
 
 	v1 := router.Group("/api/v1")
@@ -98,6 +99,13 @@ func NewRouter(svc *app.Services) *gin.Engine {
 		{
 			search.GET("/users", searchHandler.SearchUsers)
 			search.POST("/reindex", HRAuthMiddleware(svc.JWTSecret), searchHandler.ReindexAll)
+		}
+
+		files := v1.Group("/files")
+		{
+			files.POST("", storageHandler.Upload)
+			files.GET("", storageHandler.Get)
+			files.DELETE("", storageHandler.Delete)
 		}
 
 		profileFields := v1.Group("/profile-fields")
