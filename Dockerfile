@@ -18,6 +18,7 @@ RUN apk add --no-cache ca-certificates
 WORKDIR /app
 COPY --from=builder /app/hr-ai .
 COPY db/migrations ./db/migrations
+COPY web ./web
 
 EXPOSE 11911
 
