@@ -62,20 +62,45 @@ func (s *BotService) HandleStart(ctx context.Context, telegramID int64) (*StartR
 	return &StartResult{IsNew: true}, nil
 }
 
-func (s *BotService) HandleLanguageSelection(ctx context.Context, telegramID int64, language, firstName, lastName, username string, photoData []byte) (*domain.User, error) {
+// HandleLanguageSelection transitions from choosing_language to choosing_role.
+// Stores the chosen language in state data for use when creating the account.
+func (s *BotService) HandleLanguageSelection(ctx context.Context, telegramID int64, language string) (string, error) {
 	tgID := strconv.FormatInt(telegramID, 10)
 
 	if language != "en" && language != "ru" && language != "uz" {
-		return nil, fmt.Errorf("invalid language: %s", language)
+		return "", fmt.Errorf("invalid language: %s", language)
+	}
+
+	data := map[string]string{"language": language}
+	if err := s.stateSvc.SetStateWithData(ctx, tgID, domain.BotStateChoosingRole, data); err != nil {
+		return "", fmt.Errorf("set role selection state: %w", err)
+	}
+
+	return language, nil
+}
+
+// HandleRoleSelection creates either a User or CompanyHR based on the chosen role.
+// Returns the language, whether the user chose HR, and any error.
+func (s *BotService) HandleRoleSelection(ctx context.Context, telegramID int64, role, firstName, lastName, username string, photoData []byte) (string, bool, error) {
+	tgID := strconv.FormatInt(telegramID, 10)
+
+	state, err := s.stateSvc.GetState(ctx, tgID)
+	if err != nil || state == nil {
+		return "", false, fmt.Errorf("no active state for role selection")
+	}
+
+	language := state.Data["language"]
+	if language == "" {
+		language = "en"
 	}
 
 	if err := s.stateSvc.ClearState(ctx, tgID); err != nil {
-		return nil, fmt.Errorf("clear state: %w", err)
+		return "", false, fmt.Errorf("clear state: %w", err)
 	}
 
-	var telegram string
+	var tg string
 	if username != "" {
-		telegram = "@" + username
+		tg = "@" + username
 	}
 
 	var photoURL string
@@ -86,21 +111,32 @@ func (s *BotService) HandleLanguageSelection(ctx context.Context, telegramID int
 		}
 	}
 
+	if role == "hr" {
+		hr := &domain.CompanyHR{
+			FirstName:  firstName,
+			LastName:   lastName,
+			Telegram:   tg,
+			TelegramID: tgID,
+			Language:   language,
+		}
+		if _, err := s.hrSvc.CreateCompanyHR(ctx, hr); err != nil {
+			return "", false, fmt.Errorf("create hr: %w", err)
+		}
+		return language, true, nil
+	}
+
 	user := &domain.User{
 		FirstName:     firstName,
 		LastName:      lastName,
-		Telegram:      telegram,
+		Telegram:      tg,
 		TelegramID:    tgID,
 		ProfilePicURL: photoURL,
 		Language:      language,
 	}
-
-	created, err := s.userSvc.CreateUser(ctx, user)
-	if err != nil {
-		return nil, fmt.Errorf("create user: %w", err)
+	if _, err := s.userSvc.CreateUser(ctx, user); err != nil {
+		return "", false, fmt.Errorf("create user: %w", err)
 	}
-
-	return created, nil
+	return language, false, nil
 }
 
 func (s *BotService) GetBotState(ctx context.Context, telegramID int64) (*domain.BotState, error) {
