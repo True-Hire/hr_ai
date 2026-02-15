@@ -8,4 +8,5 @@ type BotState struct {
 const (
 	BotStateChoosingLanguage = "choosing_language"
 	BotStateChoosingRole     = "choosing_role"
+	BotStateSharingPhone     = "sharing_phone"
 )
