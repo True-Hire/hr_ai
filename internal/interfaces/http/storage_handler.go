@@ -23,7 +23,7 @@ func NewStorageHandler(service *application.StorageService) *StorageHandler {
 // @Tags files
 // @Accept multipart/form-data
 // @Produce json
-// @Param folder formData string true "Storage folder (profile-photos, resumes, company-logos)"
+// @Param folder formData string true "Storage folder prefix (e.g. profile-photos, resumes)"
 // @Param file formData file true "File to upload"
 // @Success 201 {object} UploadResponse
 // @Failure 400 {object} ErrorResponse
@@ -33,11 +33,6 @@ func (h *StorageHandler) Upload(c *gin.Context) {
 	folder := c.PostForm("folder")
 	if folder == "" {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "folder is required"})
-		return
-	}
-
-	if !isAllowedFolder(folder) {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid folder, allowed: profile-photos, resumes, company-logos"})
 		return
 	}
 
@@ -133,10 +128,3 @@ type UploadResponse struct {
 	URL        string `json:"url"`
 }
 
-func isAllowedFolder(folder string) bool {
-	switch folder {
-	case "profile-photos", "resumes", "company-logos":
-		return true
-	}
-	return false
-}
