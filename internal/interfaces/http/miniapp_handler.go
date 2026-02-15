@@ -2,17 +2,21 @@ package http
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
 	"github.com/ruziba3vich/hr-ai/internal/application"
+	"github.com/ruziba3vich/hr-ai/internal/domain"
 )
 
 type MiniAppHandler struct {
 	vacancySearchSvc *application.VacancySearchService
 	vacancySvc       *application.VacancyService
+	vacancyAppSvc    *application.VacancyApplicationService
 	userSvc          *application.UserService
 	profileFieldSvc  *application.ProfileFieldService
 	profileTextSvc   *application.ProfileFieldTextService
@@ -25,6 +29,7 @@ type MiniAppHandler struct {
 func NewMiniAppHandler(
 	vacancySearchSvc *application.VacancySearchService,
 	vacancySvc *application.VacancyService,
+	vacancyAppSvc *application.VacancyApplicationService,
 	userSvc *application.UserService,
 	profileFieldSvc *application.ProfileFieldService,
 	profileTextSvc *application.ProfileFieldTextService,
@@ -36,6 +41,7 @@ func NewMiniAppHandler(
 	return &MiniAppHandler{
 		vacancySearchSvc: vacancySearchSvc,
 		vacancySvc:       vacancySvc,
+		vacancyAppSvc:    vacancyAppSvc,
 		userSvc:          userSvc,
 		profileFieldSvc:  profileFieldSvc,
 		profileTextSvc:   profileTextSvc,
@@ -284,5 +290,122 @@ func (h *MiniAppHandler) buildUserProfile(c *gin.Context, userID uuid.UUID, lang
 		Achievements:   fieldMap["achievements"],
 		Experience:     experience,
 		Education:      education,
+	}
+}
+
+// Apply creates a vacancy application for the authenticated user.
+func (h *MiniAppHandler) Apply(c *gin.Context) {
+	userIDStr := c.GetString("user_id")
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "invalid user"})
+		return
+	}
+
+	vacancyID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid vacancy id"})
+		return
+	}
+
+	var req struct {
+		CoverLetter string `json:"cover_letter"`
+	}
+	_ = c.ShouldBindJSON(&req)
+
+	va, err := h.vacancyAppSvc.Apply(c.Request.Context(), userID, vacancyID, req.CoverLetter)
+	if err != nil {
+		if errors.Is(err, domain.ErrAlreadyApplied) {
+			c.JSON(http.StatusConflict, ErrorResponse{Error: "already applied"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to apply"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, vacancyApplicationResponse(va))
+}
+
+// GetApplicationStatus checks if the authenticated user has applied to a vacancy.
+func (h *MiniAppHandler) GetApplicationStatus(c *gin.Context) {
+	userIDStr := c.GetString("user_id")
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "invalid user"})
+		return
+	}
+
+	vacancyID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid vacancy id"})
+		return
+	}
+
+	va, err := h.vacancyAppSvc.GetByUserAndVacancy(c.Request.Context(), userID, vacancyID)
+	if err != nil {
+		if errors.Is(err, domain.ErrVacancyApplicationNotFound) {
+			c.JSON(http.StatusNotFound, ErrorResponse{Error: "not applied"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to check application"})
+		return
+	}
+
+	c.JSON(http.StatusOK, vacancyApplicationResponse(va))
+}
+
+// ListMyApplications returns the authenticated user's vacancy applications.
+func (h *MiniAppHandler) ListMyApplications(c *gin.Context) {
+	userIDStr := c.GetString("user_id")
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "invalid user"})
+		return
+	}
+
+	page := parseQueryInt32(c, "page", 1)
+	pageSize := parseQueryInt32(c, "page_size", 20)
+	offset := (page - 1) * pageSize
+
+	apps, err := h.vacancyAppSvc.ListByUser(c.Request.Context(), userID, pageSize, offset)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to list applications"})
+		return
+	}
+
+	total, _ := h.vacancyAppSvc.CountByUser(c.Request.Context(), userID)
+
+	resp := make([]vacancyApplicationResponseDTO, 0, len(apps))
+	for _, a := range apps {
+		resp = append(resp, vacancyApplicationResponse(&a))
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"applications": resp,
+		"total":        total,
+		"page":         page,
+		"page_size":    pageSize,
+	})
+}
+
+type vacancyApplicationResponseDTO struct {
+	ID          string `json:"id"`
+	UserID      string `json:"user_id"`
+	VacancyID   string `json:"vacancy_id"`
+	Status      string `json:"status"`
+	CoverLetter string `json:"cover_letter,omitempty"`
+	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
+}
+
+func vacancyApplicationResponse(va *domain.VacancyApplication) vacancyApplicationResponseDTO {
+	return vacancyApplicationResponseDTO{
+		ID:          va.ID.String(),
+		UserID:      va.UserID.String(),
+		VacancyID:   va.VacancyID.String(),
+		Status:      va.Status,
+		CoverLetter: va.CoverLetter,
+		CreatedAt:   va.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:   va.UpdatedAt.Format(time.RFC3339),
 	}
 }
