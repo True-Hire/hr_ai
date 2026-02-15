@@ -103,12 +103,36 @@ func (r *VacancyRepository) ListByHR(ctx context.Context, hrID uuid.UUID, limit,
 	return result, nil
 }
 
+func (r *VacancyRepository) Search(ctx context.Context, lang, query string, limit, offset int32) ([]domain.Vacancy, error) {
+	rows, err := r.q.SearchVacancies(ctx, vacanciesdb.SearchVacanciesParams{
+		Lang:  lang,
+		Query: textToPgtype(query),
+		Lim:   limit,
+		Off:   offset,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("search vacancies: %w", err)
+	}
+	result := make([]domain.Vacancy, 0, len(rows))
+	for _, row := range rows {
+		result = append(result, *vacancyFromSearchRow(row))
+	}
+	return result, nil
+}
+
 func (r *VacancyRepository) Count(ctx context.Context) (int64, error) {
 	return r.q.CountVacancies(ctx)
 }
 
 func (r *VacancyRepository) CountByCompany(ctx context.Context, companyID uuid.UUID) (int64, error) {
 	return r.q.CountVacanciesByCompany(ctx, uuidToPgtype(companyID))
+}
+
+func (r *VacancyRepository) CountSearch(ctx context.Context, lang, query string) (int64, error) {
+	return r.q.CountSearchVacancies(ctx, vacanciesdb.CountSearchVacanciesParams{
+		Lang:  lang,
+		Query: textToPgtype(query),
+	})
 }
 
 func (r *VacancyRepository) Update(ctx context.Context, v *domain.Vacancy) (*domain.Vacancy, error) {
@@ -241,6 +265,29 @@ func vacancyFromListByCompanyRow(row vacanciesdb.ListVacanciesByCompanyRow) *dom
 }
 
 func vacancyFromListByHRRow(row vacanciesdb.ListVacanciesByHRRow) *domain.Vacancy {
+	return &domain.Vacancy{
+		ID:             pgtypeToUUID(row.ID),
+		HRID:           pgtypeToUUID(row.HrID),
+		CompanyID:      pgtypeToUUID(row.CompanyID),
+		CountryID:      pgtypeUUIDToNullable(row.CountryID),
+		SalaryMin:      pgtypeToInt32(row.SalaryMin),
+		SalaryMax:      pgtypeToInt32(row.SalaryMax),
+		SalaryCurrency: row.SalaryCurrency,
+		ExperienceMin:  pgtypeToInt32(row.ExperienceMin),
+		ExperienceMax:  pgtypeToInt32(row.ExperienceMax),
+		Format:         row.Format,
+		Schedule:       row.Schedule,
+		Phone:          pgtypeToString(row.Phone),
+		Telegram:       pgtypeToString(row.Telegram),
+		Email:          pgtypeToString(row.Email),
+		Address:        pgtypeToString(row.Address),
+		Status:         row.Status,
+		SourceLang:     row.SourceLang,
+		CreatedAt:      row.CreatedAt.Time,
+	}
+}
+
+func vacancyFromSearchRow(row vacanciesdb.SearchVacanciesRow) *domain.Vacancy {
 	return &domain.Vacancy{
 		ID:             pgtypeToUUID(row.ID),
 		HRID:           pgtypeToUUID(row.HrID),

@@ -21,6 +21,7 @@ type Config struct {
 	MinioSecretKey   string
 	MinioBucket      string
 	MinioUseSSL      bool
+	WebAppURL        string
 }
 
 func Load() (*Config, error) {
@@ -80,6 +81,7 @@ func Load() (*Config, error) {
 		minioBucket = "hr-ai"
 	}
 	minioUseSSL := os.Getenv("MINIO_USE_SSL") == "true"
+	webAppURL := os.Getenv("WEBAPP_URL")
 
 	return &Config{
 		DatabaseURL:      dbURL,
@@ -95,5 +97,6 @@ func Load() (*Config, error) {
 		MinioSecretKey:   minioSecretKey,
 		MinioBucket:      minioBucket,
 		MinioUseSSL:      minioUseSSL,
+		WebAppURL:        webAppURL,
 	}, nil
 }

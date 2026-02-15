@@ -11,6 +11,25 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const countSearchVacancies = `-- name: CountSearchVacancies :one
+SELECT COUNT(DISTINCT v.id) FROM vacancies v
+JOIN vacancy_texts vt ON vt.vacancy_id = v.id
+WHERE vt.lang = $1
+  AND (vt.title ILIKE '%' || $2 || '%' OR vt.description ILIKE '%' || $2 || '%')
+`
+
+type CountSearchVacanciesParams struct {
+	Lang  string
+	Query pgtype.Text
+}
+
+func (q *Queries) CountSearchVacancies(ctx context.Context, arg CountSearchVacanciesParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countSearchVacancies, arg.Lang, arg.Query)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countVacancies = `-- name: CountVacancies :one
 SELECT count(*) FROM vacancies
 `
@@ -393,6 +412,90 @@ func (q *Queries) ListVacanciesByHR(ctx context.Context, arg ListVacanciesByHRPa
 	var items []ListVacanciesByHRRow
 	for rows.Next() {
 		var i ListVacanciesByHRRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.HrID,
+			&i.CompanyID,
+			&i.CountryID,
+			&i.SalaryMin,
+			&i.SalaryMax,
+			&i.SalaryCurrency,
+			&i.ExperienceMin,
+			&i.ExperienceMax,
+			&i.Format,
+			&i.Schedule,
+			&i.Phone,
+			&i.Telegram,
+			&i.Email,
+			&i.Address,
+			&i.Status,
+			&i.SourceLang,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const searchVacancies = `-- name: SearchVacancies :many
+SELECT DISTINCT v.id, v.hr_id, v.company_id, v.country_id, v.salary_min, v.salary_max, v.salary_currency,
+    v.experience_min, v.experience_max, v.format, v.schedule,
+    v.phone, v.telegram, v.email, v.address, v.status, v.source_lang, v.created_at
+FROM vacancies v
+JOIN vacancy_texts vt ON vt.vacancy_id = v.id
+WHERE vt.lang = $1
+  AND (vt.title ILIKE '%' || $2 || '%' OR vt.description ILIKE '%' || $2 || '%')
+ORDER BY v.created_at DESC
+LIMIT $4 OFFSET $3
+`
+
+type SearchVacanciesParams struct {
+	Lang  string
+	Query pgtype.Text
+	Off   int32
+	Lim   int32
+}
+
+type SearchVacanciesRow struct {
+	ID             pgtype.UUID
+	HrID           pgtype.UUID
+	CompanyID      pgtype.UUID
+	CountryID      pgtype.UUID
+	SalaryMin      pgtype.Int4
+	SalaryMax      pgtype.Int4
+	SalaryCurrency string
+	ExperienceMin  pgtype.Int4
+	ExperienceMax  pgtype.Int4
+	Format         string
+	Schedule       string
+	Phone          pgtype.Text
+	Telegram       pgtype.Text
+	Email          pgtype.Text
+	Address        pgtype.Text
+	Status         string
+	SourceLang     string
+	CreatedAt      pgtype.Timestamp
+}
+
+func (q *Queries) SearchVacancies(ctx context.Context, arg SearchVacanciesParams) ([]SearchVacanciesRow, error) {
+	rows, err := q.db.Query(ctx, searchVacancies,
+		arg.Lang,
+		arg.Query,
+		arg.Off,
+		arg.Lim,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SearchVacanciesRow
+	for rows.Next() {
+		var i SearchVacanciesRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.HrID,

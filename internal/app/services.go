@@ -35,14 +35,16 @@ type Services struct {
 	VacancyText      *application.VacancyTextService
 	VectorIndex      *application.VectorIndexService
 	Search           *application.SearchService
+	VacancySearch    *application.VacancySearchService
 	Bot              *application.BotService
 	Storage          *application.StorageService
 	CasbinEnforcer   *casbinlib.Enforcer
 	RedisClient      *redisclient.Client
 	JWTSecret        string
+	TelegramBotToken string
 }
 
-func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdrantURL, qdrantAPIKey, redisURL, minioEndpoint, minioAccessKey, minioSecretKey, minioBucket string, minioUseSSL bool) (*Services, error) {
+func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdrantURL, qdrantAPIKey, redisURL, minioEndpoint, minioAccessKey, minioSecretKey, minioBucket string, minioUseSSL bool, telegramBotToken string) (*Services, error) {
 	rc, err := redisclient.NewClient(redisURL)
 	if err != nil {
 		return nil, fmt.Errorf("init redis: %w", err)
@@ -84,8 +86,11 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 	if err := qdrantClient.EnsureCollection(context.Background(), "user_profile_vectors", 768); err != nil {
 		return nil, fmt.Errorf("ensure qdrant collection: %w", err)
 	}
+	if err := qdrantClient.EnsureCollection(context.Background(), "vacancy_vectors", 768); err != nil {
+		return nil, fmt.Errorf("ensure vacancy qdrant collection: %w", err)
+	}
 
-	vectorIndexSvc := application.NewVectorIndexService(qdrantClient, geminiClient, pfSvc, pftSvc, expSvc, itSvc, skillSvc, userSvc)
+	vectorIndexSvc := application.NewVectorIndexService(qdrantClient, geminiClient, pfSvc, pftSvc, expSvc, itSvc, skillSvc, userSvc, vacancyRepo, vacancyTextRepo)
 	searchSvc := application.NewSearchService(qdrantClient, geminiClient, userSvc)
 
 	companySvc := application.NewCompanyService(companyRepo, companyTextRepo, geminiClient, cacheSvc)
@@ -96,6 +101,9 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 	}
 
 	profileParseSvc := application.NewProfileParseService(geminiClient, pfSvc, pftSvc, expSvc, eduSvc, itSvc, skillSvc, userSvc, vectorIndexSvc)
+
+	vacancySvc := application.NewVacancyService(vacancyRepo, vacancyTextRepo, skillSvc, companySvc, geminiClient, vectorIndexSvc)
+	vacancySearchSvc := application.NewVacancySearchService(qdrantClient, geminiClient, vacancySvc, pfSvc, pftSvc, skillSvc)
 
 	companyHRSvc := application.NewCompanyHRService(companyHRRepo)
 	botStateSvc := application.NewBotStateService(rc)
@@ -115,14 +123,16 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 		Country:          application.NewCountryService(countryRepo, countryTextRepo, geminiClient, cacheSvc),
 		Company:          companySvc,
 		CompanyText:      application.NewCompanyTextService(companyTextRepo),
-		Vacancy:          application.NewVacancyService(vacancyRepo, vacancyTextRepo, skillSvc, companySvc, geminiClient),
+		Vacancy:          vacancySvc,
 		VacancyText:      application.NewVacancyTextService(vacancyTextRepo),
 		VectorIndex:      vectorIndexSvc,
 		Search:           searchSvc,
+		VacancySearch:    vacancySearchSvc,
 		Bot:              application.NewBotService(userSvc, companyHRSvc, profileParseSvc, storageSvc, botStateSvc),
 		Storage:          storageSvc,
 		CasbinEnforcer:   enforcer,
 		RedisClient:      rc,
 		JWTSecret:        jwtSecret,
+		TelegramBotToken: telegramBotToken,
 	}, nil
 }

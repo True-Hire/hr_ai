@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Search Vacancies</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #fff;
+  color: #1a1a1a;
+  min-height: 100vh;
+}
+.search-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #fff;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e5e5;
+}
+.search-bar input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  background: #f5f5f5;
+}
+.search-bar input:focus {
+  border-color: #007aff;
+  background: #fff;
+}
+.vacancy-list {
+  padding: 8px 16px 80px;
+}
+.vacancy-card {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+.vacancy-card:active {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.vacancy-card .title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.vacancy-card .company {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 6px;
+}
+.vacancy-card .meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.vacancy-card .meta span {
+  font-size: 12px;
+  color: #555;
+  background: #f0f0f0;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+.vacancy-card .skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.vacancy-card .skills span {
+  font-size: 11px;
+  color: #007aff;
+  background: #e8f0fe;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* Detail view */
+.detail-view {
+  display: none;
+  padding: 16px;
+  padding-bottom: 80px;
+}
+.detail-view.active {
+  display: block;
+}
+.detail-view .detail-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.detail-view .detail-company {
+  font-size: 15px;
+  color: #666;
+  margin-bottom: 12px;
+}
+.detail-view .detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.detail-view .detail-meta span {
+  font-size: 13px;
+  background: #f0f0f0;
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+.detail-view .detail-section {
+  margin-bottom: 16px;
+}
+.detail-view .detail-section h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.detail-view .detail-section p {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+.detail-view .detail-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.detail-view .detail-skills span {
+  font-size: 13px;
+  color: #007aff;
+  background: #e8f0fe;
+  padding: 4px 12px;
+  border-radius: 12px;
+}
+.detail-view .contact-info {
+  background: #f8f8f8;
+  border-radius: 12px;
+  padding: 12px;
+}
+.detail-view .contact-info div {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-size: 14px;
+}
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+  font-size: 15px;
+}
+</style>
+</head>
+<body>
+
+<div id="listView">
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search vacancies...">
+  </div>
+  <div class="vacancy-list" id="vacancyList">
+    <div class="loading" id="loadingIndicator">Loading...</div>
+  </div>
+</div>
+
+<div class="detail-view" id="detailView"></div>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
+
+const API_BASE = window.location.origin + '/api/v1/miniapp';
+const initData = tg.initData || '';
+const userLang = (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.language_code) || 'en';
+
+// Map language to our supported languages
+function getLang() {
+  if (userLang === 'ru') return 'ru';
+  if (userLang === 'uz') return 'uz';
+  return 'en';
+}
+
+const lang = getLang();
+let currentView = 'list';
+let debounceTimer = null;
+
+// Auth header
+function authHeaders() {
+  return { 'Authorization': 'tma ' + initData };
+}
+
+async function apiFetch(url) {
+  const resp = await fetch(url, { headers: authHeaders() });
+  if (!resp.ok) throw new Error('API error: ' + resp.status);
+  return resp.json();
+}
+
+// Render vacancy card
+function renderCard(v) {
+  const card = document.createElement('div');
+  card.className = 'vacancy-card';
+  card.onclick = () => showDetail(v.id);
+
+  let html = '';
+  const title = (v.text && v.text.title) || 'Untitled';
+  const company = (v.company && v.company.name) || '';
+
+  html += '<div class="title">' + escapeHtml(title) + '</div>';
+  if (company) {
+    html += '<div class="company">' + escapeHtml(company) + '</div>';
+  }
+
+  // Meta info
+  const meta = [];
+  if (v.salary_min || v.salary_max) {
+    let salary = '';
+    if (v.salary_min && v.salary_max) salary = v.salary_min + '-' + v.salary_max;
+    else if (v.salary_min) salary = 'from ' + v.salary_min;
+    else salary = 'up to ' + v.salary_max;
+    salary += ' ' + (v.salary_currency || 'USD');
+    meta.push(salary);
+  }
+  if (v.format && v.format !== 'office') meta.push(v.format);
+  if (v.schedule && v.schedule !== 'full-time') meta.push(v.schedule);
+  if (v.experience_min || v.experience_max) {
+    let exp = '';
+    if (v.experience_min && v.experience_max) exp = v.experience_min + '-' + v.experience_max + ' yrs';
+    else if (v.experience_min) exp = v.experience_min + '+ yrs';
+    else exp = 'up to ' + v.experience_max + ' yrs';
+    meta.push(exp);
+  }
+
+  if (meta.length) {
+    html += '<div class="meta">' + meta.map(m => '<span>' + escapeHtml(m) + '</span>').join('') + '</div>';
+  }
+
+  // Skills
+  if (v.skills && v.skills.length) {
+    const skillTags = v.skills.slice(0, 5).map(s => '<span>' + escapeHtml(s.name) + '</span>').join('');
+    html += '<div class="skills">' + skillTags + '</div>';
+  }
+
+  card.innerHTML = html;
+  return card;
+}
+
+// Load vacancies (default = matched to user profile)
+async function loadVacancies() {
+  const list = document.getElementById('vacancyList');
+  list.innerHTML = '<div class="loading">Loading...</div>';
+
+  try {
+    const data = await apiFetch(API_BASE + '/vacancies?lang=' + lang + '&page=1&page_size=50');
+    list.innerHTML = '';
+
+    if (!data.vacancies || data.vacancies.length === 0) {
+      list.innerHTML = '<div class="empty">No vacancies found</div>';
+      return;
+    }
+
+    data.vacancies.forEach(v => {
+      list.appendChild(renderCard(v));
+    });
+  } catch (e) {
+    list.innerHTML = '<div class="empty">Failed to load vacancies</div>';
+    console.error(e);
+  }
+}
+
+// Search vacancies
+async function searchVacancies(query) {
+  const list = document.getElementById('vacancyList');
+  list.innerHTML = '<div class="loading">Searching...</div>';
+
+  try {
+    let url = API_BASE + '/vacancies/search?lang=' + lang + '&page=1&page_size=50';
+    if (query) url += '&q=' + encodeURIComponent(query);
+
+    const data = await apiFetch(url);
+    list.innerHTML = '';
+
+    if (!data.vacancies || data.vacancies.length === 0) {
+      list.innerHTML = '<div class="empty">No vacancies found</div>';
+      return;
+    }
+
+    data.vacancies.forEach(v => {
+      list.appendChild(renderCard(v));
+    });
+  } catch (e) {
+    list.innerHTML = '<div class="empty">Search failed</div>';
+    console.error(e);
+  }
+}
+
+// Show vacancy detail
+async function showDetail(id) {
+  currentView = 'detail';
+  document.getElementById('listView').style.display = 'none';
+  const detail = document.getElementById('detailView');
+  detail.className = 'detail-view active';
+  detail.innerHTML = '<div class="loading">Loading...</div>';
+
+  tg.BackButton.show();
+
+  try {
+    const v = await apiFetch(API_BASE + '/vacancies/' + id + '?lang=' + lang);
+
+    let html = '';
+    const title = (v.text && v.text.title) || 'Untitled';
+    const company = (v.company && v.company.name) || '';
+
+    html += '<div class="detail-title">' + escapeHtml(title) + '</div>';
+    if (company) {
+      html += '<div class="detail-company">' + escapeHtml(company) + '</div>';
+    }
+
+    // Meta
+    const meta = [];
+    if (v.salary_min || v.salary_max) {
+      let salary = '';
+      if (v.salary_min && v.salary_max) salary = v.salary_min + '-' + v.salary_max;
+      else if (v.salary_min) salary = 'from ' + v.salary_min;
+      else salary = 'up to ' + v.salary_max;
+      salary += ' ' + (v.salary_currency || 'USD');
+      meta.push(salary);
+    }
+    if (v.format) meta.push(v.format);
+    if (v.schedule) meta.push(v.schedule);
+    if (v.experience_min || v.experience_max) {
+      let exp = '';
+      if (v.experience_min && v.experience_max) exp = v.experience_min + '-' + v.experience_max + ' years';
+      else if (v.experience_min) exp = v.experience_min + '+ years';
+      else exp = 'up to ' + v.experience_max + ' years';
+      meta.push(exp);
+    }
+    if (meta.length) {
+      html += '<div class="detail-meta">' + meta.map(m => '<span>' + escapeHtml(m) + '</span>').join('') + '</div>';
+    }
+
+    // Skills
+    if (v.skills && v.skills.length) {
+      html += '<div class="detail-skills">' + v.skills.map(s => '<span>' + escapeHtml(s.name) + '</span>').join('') + '</div>';
+    }
+
+    // Text sections
+    if (v.text) {
+      if (v.text.description) {
+        html += '<div class="detail-section"><h3>Description</h3><p>' + escapeHtml(v.text.description) + '</p></div>';
+      }
+      if (v.text.responsibilities) {
+        html += '<div class="detail-section"><h3>Responsibilities</h3><p>' + escapeHtml(v.text.responsibilities) + '</p></div>';
+      }
+      if (v.text.requirements) {
+        html += '<div class="detail-section"><h3>Requirements</h3><p>' + escapeHtml(v.text.requirements) + '</p></div>';
+      }
+      if (v.text.benefits) {
+        html += '<div class="detail-section"><h3>Benefits</h3><p>' + escapeHtml(v.text.benefits) + '</p></div>';
+      }
+    }
+
+    // Contact info
+    const contacts = [];
+    if (v.phone) contacts.push('<div>Phone: ' + escapeHtml(v.phone) + '</div>');
+    if (v.telegram) contacts.push('<div>Telegram: ' + escapeHtml(v.telegram) + '</div>');
+    if (v.email) contacts.push('<div>Email: ' + escapeHtml(v.email) + '</div>');
+    if (v.address) contacts.push('<div>Address: ' + escapeHtml(v.address) + '</div>');
+    if (contacts.length) {
+      html += '<div class="detail-section"><h3>Contact</h3><div class="contact-info">' + contacts.join('') + '</div></div>';
+    }
+
+    detail.innerHTML = html;
+  } catch (e) {
+    detail.innerHTML = '<div class="empty">Failed to load vacancy</div>';
+    console.error(e);
+  }
+}
+
+// Back button handler
+tg.BackButton.onClick(function() {
+  if (currentView === 'detail') {
+    currentView = 'list';
+    document.getElementById('detailView').className = 'detail-view';
+    document.getElementById('listView').style.display = 'block';
+    tg.BackButton.hide();
+  }
+});
+
+// Search input handler (debounced)
+document.getElementById('searchInput').addEventListener('input', function(e) {
+  clearTimeout(debounceTimer);
+  const query = e.target.value.trim();
+  debounceTimer = setTimeout(() => {
+    if (query.length === 0) {
+      loadVacancies();
+    } else {
+      searchVacancies(query);
+    }
+  }, 500);
+});
+
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Initial load
+loadVacancies();
+</script>
+</body>
+</html>
