@@ -65,27 +65,61 @@ var msgPhoneReminder = map[string]string{
 }
 
 var msgRegisteredUser = map[string]string{
-	"en": "✅ Registration complete, %s! Welcome aboard!\n\nSend your resume as text, photo, or document and we'll parse it for you 👇",
-	"ru": "✅ Регистрация завершена, %s! Добро пожаловать!\n\nОтправьте резюме текстом, фото или документом, и мы его обработаем 👇",
-	"uz": "✅ Ro'yxatdan o'tish yakunlandi, %s! Xush kelibsiz!\n\nRezyumeni matn, rasm yoki hujjat sifatida yuboring va biz uni tahlil qilamiz 👇",
+	"en": "✅ Registration complete, %s! Welcome aboard!\n\nYou can now use the menu below to get started 👇",
+	"ru": "✅ Регистрация завершена, %s! Добро пожаловать!\n\nИспользуйте меню ниже, чтобы начать 👇",
+	"uz": "✅ Ro'yxatdan o'tish yakunlandi, %s! Xush kelibsiz!\n\nBoshlash uchun quyidagi menyudan foydalaning 👇",
 }
 
 var msgRegisteredHR = map[string]string{
-	"en": "✅ Registration complete, %s! Welcome aboard!\n\nYou can now create vacancies and search for candidates 👇",
-	"ru": "✅ Регистрация завершена, %s! Добро пожаловать!\n\nТеперь вы можете создавать вакансии и искать кандидатов 👇",
-	"uz": "✅ Ro'yxatdan o'tish yakunlandi, %s! Xush kelibsiz!\n\nEndi vakansiyalar yaratishingiz va nomzodlarni qidirishingiz mumkin 👇",
+	"en": "✅ Registration complete, %s! Welcome aboard!\n\nYou can now use the menu below to get started 👇",
+	"ru": "✅ Регистрация завершена, %s! Добро пожаловать!\n\nИспользуйте меню ниже, чтобы начать 👇",
+	"uz": "✅ Ro'yxatdan o'tish yakunlandi, %s! Xush kelibsiz!\n\nBoshlash uchun quyidagi menyudan foydalaning 👇",
+}
+
+// -- Menu buttons for job seekers --
+
+var menuBtnUpdateResume = map[string]string{
+	"en": "📄 Update Resume",
+	"ru": "📄 Обновить резюме",
+	"uz": "📄 Rezyumeni yangilash",
+}
+
+var menuBtnSearchVacancies = map[string]string{
+	"en": "🔍 Search Vacancies",
+	"ru": "🔍 Поиск вакансий",
+	"uz": "🔍 Vakansiyalarni qidirish",
+}
+
+// -- Menu buttons for HRs --
+
+var menuBtnCreateVacancy = map[string]string{
+	"en": "📝 Create Vacancy",
+	"ru": "📝 Создать вакансию",
+	"uz": "📝 Vakansiya yaratish",
+}
+
+var menuBtnMyVacancies = map[string]string{
+	"en": "📋 My Vacancies",
+	"ru": "📋 Мои вакансии",
+	"uz": "📋 Mening vakansiyalarim",
+}
+
+var menuBtnFindCandidates = map[string]string{
+	"en": "👥 Find Candidates",
+	"ru": "👥 Найти кандидатов",
+	"uz": "👥 Nomzodlarni topish",
 }
 
 var msgWelcomeBackUser = map[string]string{
-	"en": "👋 Welcome back %s! Glad to see you again.\n\nWhat would you like to do today?\n\n🔹 Update your profile or resume\n🔹 Find new job opportunities\n\nJust choose an option from the menu 👇",
-	"ru": "👋 С возвращением, %s! Рады снова вас видеть.\n\nЧем вы хотите заняться сегодня?\n\n🔹 Обновить профиль или резюме\n🔹 Найти новые вакансии\n\nВыберите нужный пункт в меню 👇",
-	"uz": "👋 Qaytganingiz bilan, %s! Sizni yana ko'rib turganimizdan xursandmiz.\n\nBugun nimani qilmoqchisiz?\n\n🔹 Profil yoki rezyumeni yangilash\n🔹 Yangi ish imkoniyatlarini topish\n\nQuyidagi menyudan tanlang 👇",
+	"en": "👋 Welcome back %s! Glad to see you again.\n\nChoose an option from the menu below 👇",
+	"ru": "👋 С возвращением, %s! Рады снова вас видеть.\n\nВыберите нужный пункт в меню ниже 👇",
+	"uz": "👋 Qaytganingiz bilan, %s! Sizni yana ko'rib turganimizdan xursandmiz.\n\nQuyidagi menyudan tanlang 👇",
 }
 
 var msgWelcomeBackHR = map[string]string{
-	"en": "👋 Welcome back %s! Glad to see you again.\n\nWhat would you like to do today?\n\n🔹 Create or manage vacancies\n🔹 Search for candidates\n\nJust choose an option from the menu 👇",
-	"ru": "👋 С возвращением, %s! Рады снова вас видеть.\n\nЧем вы хотите заняться сегодня?\n\n🔹 Создать или управлять вакансиями\n🔹 Найти подходящих кандидатов\n\nВыберите нужный пункт в меню 👇",
-	"uz": "👋 Qaytganingiz bilan, %s! Sizni yana ko'rib turganimizdan xursandmiz.\n\nBugun nimani qilmoqchisiz?\n\n🔹 Vakansiyalar yaratish yoki boshqarish\n🔹 Mos nomzodlarni topish\n\nQuyidagi menyudan tanlang 👇",
+	"en": "👋 Welcome back %s! Glad to see you again.\n\nChoose an option from the menu below 👇",
+	"ru": "👋 С возвращением, %s! Рады снова вас видеть.\n\nВыберите нужный пункт в меню ниже 👇",
+	"uz": "👋 Qaytganingiz bilan, %s! Sizni yana ko'rib turganimizdan xursandmiz.\n\nQuyidagi menyudan tanlang 👇",
 }
 
 var msgChooseLangReminder = map[string]string{
@@ -204,11 +238,11 @@ func (tb *Bot) registerHandlers() {
 
 		if result.IsHR {
 			lang := langOrDefault(result.HR.Language)
-			return c.Send(fmt.Sprintf(msgWelcomeBackHR[lang], result.HR.FirstName))
+			return c.Send(fmt.Sprintf(msgWelcomeBackHR[lang], result.HR.FirstName), hrMenu(lang))
 		}
 
 		lang := langOrDefault(result.User.Language)
-		return c.Send(fmt.Sprintf(msgWelcomeBackUser[lang], result.User.FirstName))
+		return c.Send(fmt.Sprintf(msgWelcomeBackUser[lang], result.User.FirstName), userMenu(lang))
 	})
 
 	// Language selection callback
@@ -300,19 +334,16 @@ func (tb *Bot) registerHandlers() {
 
 		lang = langOrDefault(lang)
 
-		// Remove the reply keyboard
-		removeKb := &tele.ReplyMarkup{RemoveKeyboard: true}
-
-		// Check if HR or user to send correct success message
+		// Check if HR or user to send correct success message with menu
 		result, err := botSvc.HandleStart(ctx, sender.ID)
 		if err != nil {
-			return c.Send(fmt.Sprintf(msgRegisteredUser[lang], sender.FirstName), removeKb)
+			return c.Send(fmt.Sprintf(msgRegisteredUser[lang], sender.FirstName), userMenu(lang))
 		}
 
 		if result.IsHR {
-			return c.Send(fmt.Sprintf(msgRegisteredHR[lang], result.HR.FirstName), removeKb)
+			return c.Send(fmt.Sprintf(msgRegisteredHR[lang], result.HR.FirstName), hrMenu(lang))
 		}
-		return c.Send(fmt.Sprintf(msgRegisteredUser[lang], result.User.FirstName), removeKb)
+		return c.Send(fmt.Sprintf(msgRegisteredUser[lang], result.User.FirstName), userMenu(lang))
 	})
 
 	// Text message handler
@@ -461,6 +492,25 @@ func (tb *Bot) registerHandlers() {
 			itoa(len(result.Experience)),
 			itoa(len(result.Education))))
 	})
+}
+
+func userMenu(lang string) *tele.ReplyMarkup {
+	markup := &tele.ReplyMarkup{ResizeKeyboard: true}
+	markup.Reply(
+		markup.Row(tele.Btn{Text: menuBtnUpdateResume[lang]}),
+		markup.Row(tele.Btn{Text: menuBtnSearchVacancies[lang]}),
+	)
+	return markup
+}
+
+func hrMenu(lang string) *tele.ReplyMarkup {
+	markup := &tele.ReplyMarkup{ResizeKeyboard: true}
+	markup.Reply(
+		markup.Row(tele.Btn{Text: menuBtnCreateVacancy[lang]}),
+		markup.Row(tele.Btn{Text: menuBtnMyVacancies[lang]}),
+		markup.Row(tele.Btn{Text: menuBtnFindCandidates[lang]}),
+	)
+	return markup
 }
 
 // getStateLang tries to get the language from bot state data, falls back to "en".
