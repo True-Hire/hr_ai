@@ -176,6 +176,12 @@ var msgError = map[string]string{
 	"uz": "Xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.",
 }
 
+var msgSendResume = map[string]string{
+	"en": "📄 Send your resume as text, PDF, image (PNG/JPG), or text file.\n\nYou can also just paste the text of your resume right here 👇",
+	"ru": "📄 Отправьте резюме текстом, PDF, изображением (PNG/JPG) или текстовым файлом.\n\nМожете также просто вставить текст резюме прямо сюда 👇",
+	"uz": "📄 Rezyumeni matn, PDF, rasm (PNG/JPG) yoki matn fayli sifatida yuboring.\n\nShuningdek, rezyume matnini shu yerga joylashtirishingiz mumkin 👇",
+}
+
 // -- Bot --
 
 type Bot struct {
@@ -369,6 +375,18 @@ func (tb *Bot) registerHandlers() {
 		}
 		lang = langOrDefault(user.Language)
 
+		// Handle menu button taps
+		text := c.Text()
+		if isMenuButton(text, menuBtnUpdateResume) {
+			return c.Send(msgSendResume[lang])
+		}
+		if isMenuButton(text, menuBtnSearchVacancies) || isMenuButton(text, menuBtnCreateVacancy) ||
+			isMenuButton(text, menuBtnMyVacancies) || isMenuButton(text, menuBtnFindCandidates) {
+			// Placeholder for future functionality
+			return nil
+		}
+
+		// Treat as resume text
 		_ = c.Send(msgParsingResume[lang])
 
 		result, err := botSvc.HandleResumeText(ctx, user.ID, c.Text())
@@ -550,4 +568,13 @@ func langOrDefault(lang string) string {
 		return lang
 	}
 	return "en"
+}
+
+func isMenuButton(text string, btnTexts map[string]string) bool {
+	for _, v := range btnTexts {
+		if text == v {
+			return true
+		}
+	}
+	return false
 }
