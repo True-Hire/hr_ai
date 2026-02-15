@@ -26,7 +26,7 @@ func NewRouter(svc *app.Services) *gin.Engine {
 	countryHandler := NewCountryHandler(svc.Country)
 	storageHandler := NewStorageHandler(svc.Storage)
 	searchHandler := NewSearchHandler(svc.Search, svc.VectorIndex, userHandler)
-	miniAppHandler := NewMiniAppHandler(svc.VacancySearch, svc.Vacancy,
+	miniAppHandler := NewMiniAppHandler(svc.VacancySearch, svc.Vacancy, svc.VacancyApplication,
 		svc.User, svc.ProfileField, svc.ProfileFieldText,
 		svc.ExperienceItem, svc.EducationItem, svc.ItemText, svc.Skill)
 
@@ -135,6 +135,9 @@ func NewRouter(svc *app.Services) *gin.Engine {
 			miniapp.GET("/vacancies", miniAppHandler.ListForUser)
 			miniapp.GET("/vacancies/search", miniAppHandler.Search)
 			miniapp.GET("/vacancies/:id", miniAppHandler.GetByID)
+			miniapp.POST("/vacancies/:id/apply", miniAppHandler.Apply)
+			miniapp.GET("/vacancies/:id/application", miniAppHandler.GetApplicationStatus)
+			miniapp.GET("/applications", miniAppHandler.ListMyApplications)
 		}
 	}
 

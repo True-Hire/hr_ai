@@ -162,6 +162,34 @@ body {
   color: #555;
   margin-bottom: 4px;
 }
+.apply-btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: opacity 0.15s;
+}
+.apply-btn.apply {
+  background: #007aff;
+  color: #fff;
+}
+.apply-btn.apply:active {
+  opacity: 0.8;
+}
+.apply-btn.applied {
+  background: #e8f0fe;
+  color: #007aff;
+  cursor: default;
+}
+.apply-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
 
 /* Profile view */
 .profile-view {
@@ -391,7 +419,7 @@ const labels = {
     education: 'Education', languages: 'Languages',
     certifications: 'Certifications', achievements: 'Achievements',
     contact: 'Contact', noProfile: 'No profile yet.\nSend your resume in the chat to get started!',
-    loading: 'Loading...'
+    loading: 'Loading...', apply: 'Apply', applied: 'Applied', applying: 'Applying...'
   },
   ru: {
     title: 'Вакансии', search: 'Поиск вакансий...',
@@ -400,7 +428,7 @@ const labels = {
     education: 'Образование', languages: 'Языки',
     certifications: 'Сертификаты', achievements: 'Достижения',
     contact: 'Контакты', noProfile: 'Профиль пока пуст.\nОтправьте резюме в чат, чтобы начать!',
-    loading: 'Загрузка...'
+    loading: 'Загрузка...', apply: 'Откликнуться', applied: 'Отклик отправлен', applying: 'Отправка...'
   },
   uz: {
     title: 'Vakansiyalar', search: 'Vakansiyalarni qidirish...',
@@ -409,7 +437,7 @@ const labels = {
     education: 'Ta\'lim', languages: 'Tillar',
     certifications: 'Sertifikatlar', achievements: 'Yutuqlar',
     contact: 'Aloqa', noProfile: 'Profil hali bo\'sh.\nBoshlash uchun chatda rezyume yuboring!',
-    loading: 'Yuklanmoqda...'
+    loading: 'Yuklanmoqda...', apply: 'Ariza berish', applied: 'Ariza yuborildi', applying: 'Yuborilmoqda...'
   },
 };
 const l = labels[lang] || labels.en;
@@ -620,9 +648,62 @@ async function showDetail(id) {
       html += '<div class="detail-section"><h3>Contact</h3><div class="contact-info">' + contacts.join('') + '</div></div>';
     }
 
+    // Apply button
+    html += '<button id="applyBtn" class="apply-btn apply" onclick="applyToVacancy(\'' + id + '\')">' + escapeHtml(l.apply) + '</button>';
+
     detail.innerHTML = html;
+
+    // Check if already applied
+    checkApplicationStatus(id);
   } catch (e) {
     detail.innerHTML = '<div class="empty">Failed to load vacancy</div>';
+    console.error(e);
+  }
+}
+
+// ==================== APPLY ====================
+
+async function checkApplicationStatus(vacancyId) {
+  try {
+    await apiFetch(API_BASE + '/vacancies/' + vacancyId + '/application');
+    // If we get here, user has already applied
+    setAppliedState();
+  } catch (e) {
+    // 404 means not applied — leave button as "Apply"
+  }
+}
+
+function setAppliedState() {
+  const btn = document.getElementById('applyBtn');
+  if (btn) {
+    btn.className = 'apply-btn applied';
+    btn.textContent = l.applied;
+    btn.disabled = true;
+    btn.onclick = null;
+  }
+}
+
+async function applyToVacancy(vacancyId) {
+  const btn = document.getElementById('applyBtn');
+  if (!btn || btn.disabled) return;
+
+  btn.disabled = true;
+  btn.textContent = l.applying;
+
+  try {
+    await fetch(API_BASE + '/vacancies/' + vacancyId + '/apply', {
+      method: 'POST',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    }).then(resp => {
+      if (!resp.ok && resp.status !== 409) throw new Error('Failed');
+      return resp;
+    });
+    setAppliedState();
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = l.apply;
+    btn.className = 'apply-btn apply';
     console.error(e);
   }
 }
