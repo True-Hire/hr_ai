@@ -1,0 +1,2 @@
+ALTER TABLE company_hrs DROP COLUMN IF EXISTS language;
+ALTER TABLE users DROP COLUMN IF EXISTS language;

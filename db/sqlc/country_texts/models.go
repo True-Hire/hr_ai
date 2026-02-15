@@ -38,6 +38,7 @@ type CompanyHr struct {
 	PasswordHash pgtype.Text
 	CreatedAt    pgtype.Timestamp
 	CompanyID    pgtype.UUID
+	Language     string
 }
 
 type CompanyText struct {
@@ -160,6 +161,7 @@ type User struct {
 	CreatedAt       pgtype.Timestamp
 	PasswordHash    pgtype.Text
 	TelegramID      pgtype.Text
+	Language        string
 }
 
 type UserSession struct {

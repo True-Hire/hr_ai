@@ -23,6 +23,7 @@ type CompanyHR struct {
 	Status       string
 	PasswordHash string
 	CompanyID    uuid.UUID
+	Language     string
 	CreatedAt    time.Time
 }
 
@@ -35,5 +36,6 @@ type CompanyHRRepository interface {
 	Delete(ctx context.Context, id uuid.UUID) error
 	GetByPhone(ctx context.Context, phone string) (*CompanyHR, error)
 	GetByEmail(ctx context.Context, email string) (*CompanyHR, error)
+	GetByTelegramID(ctx context.Context, telegramID string) (*CompanyHR, error)
 	SetPassword(ctx context.Context, id uuid.UUID, hash string) error
 }

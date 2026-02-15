@@ -64,6 +64,19 @@ func (s *CompanyHRService) UpdateCompanyHR(ctx context.Context, hr *domain.Compa
 	return s.repo.Update(ctx, hr)
 }
 
+func (s *CompanyHRService) GetByTelegramID(ctx context.Context, telegramID string) (*domain.CompanyHR, error) {
+	return s.repo.GetByTelegramID(ctx, telegramID)
+}
+
+func (s *CompanyHRService) UpdateLanguage(ctx context.Context, id uuid.UUID, language string) (*domain.CompanyHR, error) {
+	hr, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	hr.Language = language
+	return s.repo.Update(ctx, hr)
+}
+
 func (s *CompanyHRService) DeleteCompanyHR(ctx context.Context, id uuid.UUID) error {
 	return s.repo.Delete(ctx, id)
 }
