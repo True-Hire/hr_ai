@@ -510,6 +510,63 @@ func (tb *Bot) registerHandlers() {
 			itoa(len(result.Experience)),
 			itoa(len(result.Education))))
 	})
+
+	// Voice message handler
+	bot.Handle(tele.OnVoice, func(c tele.Context) error {
+		sender := c.Sender()
+		voice := c.Message().Voice
+		lang := getStateLang(ctx, botSvc, sender.ID)
+
+		state, _ := botSvc.GetBotState(ctx, sender.ID)
+		if state != nil {
+			switch state.State {
+			case domain.BotStateChoosingLanguage:
+				return c.Send(msgChooseLangReminder["en"] + "\n" + msgChooseLangReminder["ru"] + "\n" + msgChooseLangReminder["uz"])
+			case domain.BotStateChoosingRole:
+				return c.Send(msgChooseRoleReminder[langOrDefault(state.Data["language"])])
+			case domain.BotStateSharingPhone:
+				return c.Send(msgPhoneReminder[langOrDefault(state.Data["language"])])
+			}
+		}
+
+		user, err := ensureUser(ctx, botSvc, sender)
+		if err != nil {
+			return c.Send(msgStartFirst[lang])
+		}
+		lang = langOrDefault(user.Language)
+
+		reader, err := bot.File(&voice.File)
+		if err != nil {
+			log.Printf("download voice error: %v", err)
+			return c.Send(msgDownloadFailed[lang])
+		}
+		defer reader.Close()
+
+		fileData, err := io.ReadAll(reader)
+		if err != nil {
+			log.Printf("read voice error: %v", err)
+			return c.Send(msgDownloadFailed[lang])
+		}
+
+		mimeType := voice.MIME
+		if mimeType == "" {
+			mimeType = "audio/ogg"
+		}
+
+		_ = c.Send(msgParsingResume[lang])
+
+		result, err := botSvc.HandleResumeFile(ctx, user.ID, fileData, mimeType)
+		if err != nil {
+			log.Printf("parse resume voice error for %s: %v", user.ID, err)
+			return c.Send(msgResumeFailed[lang])
+		}
+
+		return c.Send(fmt.Sprintf(msgResumeSuccess[lang],
+			result.SourceLang,
+			itoa(len(result.Fields)),
+			itoa(len(result.Experience)),
+			itoa(len(result.Education))))
+	})
 }
 
 func userMenu(lang string) *tele.ReplyMarkup {
@@ -553,7 +610,8 @@ func ensureUser(ctx context.Context, botSvc *application.BotService, sender *tel
 
 func isAllowedMIME(mime string) bool {
 	switch mime {
-	case "application/pdf", "image/png", "image/jpeg", "text/plain":
+	case "application/pdf", "image/png", "image/jpeg", "text/plain",
+		"audio/ogg", "audio/mpeg", "audio/wav", "audio/mp4", "audio/webm":
 		return true
 	}
 	return false
