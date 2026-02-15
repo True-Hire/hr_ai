@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"net/url"
+	"io"
 
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
@@ -16,6 +16,12 @@ type Client struct {
 	bucket   string
 	endpoint string
 	useSSL   bool
+}
+
+type FileInfo struct {
+	Data        []byte
+	ContentType string
+	Size        int64
 }
 
 func NewClient(endpoint, accessKey, secretKey, bucket string, useSSL bool) (*Client, error) {
@@ -56,12 +62,31 @@ func (c *Client) Upload(ctx context.Context, folder string, data []byte, content
 		return "", fmt.Errorf("minio put object: %w", err)
 	}
 
-	scheme := "http"
-	if c.useSSL {
-		scheme = "https"
+	return objectName, nil
+}
+
+func (c *Client) Get(ctx context.Context, objectName string) (*FileInfo, error) {
+	obj, err := c.mc.GetObject(ctx, c.bucket, objectName, minio.GetObjectOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("minio get object: %w", err)
 	}
-	objectURL := fmt.Sprintf("%s://%s/%s/%s", scheme, c.endpoint, c.bucket, url.PathEscape(objectName))
-	return objectURL, nil
+	defer obj.Close()
+
+	stat, err := obj.Stat()
+	if err != nil {
+		return nil, fmt.Errorf("minio stat object: %w", err)
+	}
+
+	data, err := io.ReadAll(obj)
+	if err != nil {
+		return nil, fmt.Errorf("minio read object: %w", err)
+	}
+
+	return &FileInfo{
+		Data:        data,
+		ContentType: stat.ContentType,
+		Size:        stat.Size,
+	}, nil
 }
 
 func (c *Client) Delete(ctx context.Context, objectName string) error {
@@ -70,4 +95,12 @@ func (c *Client) Delete(ctx context.Context, objectName string) error {
 		return fmt.Errorf("minio remove object: %w", err)
 	}
 	return nil
+}
+
+func (c *Client) PublicURL(objectName string) string {
+	scheme := "http"
+	if c.useSSL {
+		scheme = "https"
+	}
+	return fmt.Sprintf("%s://%s/%s/%s", scheme, c.endpoint, c.bucket, objectName)
 }
