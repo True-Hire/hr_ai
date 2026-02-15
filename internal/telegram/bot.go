@@ -176,6 +176,12 @@ var msgError = map[string]string{
 	"uz": "Xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.",
 }
 
+var msgSendResume = map[string]string{
+	"en": "📄 Send us your resume as a PDF, photo, or text file.\n\nOr simply tell us about yourself — your experience, skills, and interests. We'll create the resume for you!",
+	"ru": "📄 Отправьте нам резюме в формате PDF, фото или текстового файла.\n\nИли просто расскажите о себе — ваш опыт, навыки и интересы. Мы составим резюме за вас!",
+	"uz": "📄 Rezyumeni PDF, rasm yoki matn fayli sifatida yuboring.\n\nYoki shunchaki o'zingiz haqingizda gapirib bering — tajribangiz, ko'nikmalaringiz va qiziqishlaringiz. Biz rezyumeni siz uchun tuzib beramiz!",
+}
+
 // -- Bot --
 
 type Bot struct {
@@ -369,6 +375,18 @@ func (tb *Bot) registerHandlers() {
 		}
 		lang = langOrDefault(user.Language)
 
+		// Handle menu button taps
+		text := c.Text()
+		if isMenuButton(text, menuBtnUpdateResume) {
+			return c.Send(msgSendResume[lang])
+		}
+		if isMenuButton(text, menuBtnSearchVacancies) || isMenuButton(text, menuBtnCreateVacancy) ||
+			isMenuButton(text, menuBtnMyVacancies) || isMenuButton(text, menuBtnFindCandidates) {
+			// Placeholder for future functionality
+			return nil
+		}
+
+		// Treat as resume text
 		_ = c.Send(msgParsingResume[lang])
 
 		result, err := botSvc.HandleResumeText(ctx, user.ID, c.Text())
@@ -492,6 +510,63 @@ func (tb *Bot) registerHandlers() {
 			itoa(len(result.Experience)),
 			itoa(len(result.Education))))
 	})
+
+	// Voice message handler
+	bot.Handle(tele.OnVoice, func(c tele.Context) error {
+		sender := c.Sender()
+		voice := c.Message().Voice
+		lang := getStateLang(ctx, botSvc, sender.ID)
+
+		state, _ := botSvc.GetBotState(ctx, sender.ID)
+		if state != nil {
+			switch state.State {
+			case domain.BotStateChoosingLanguage:
+				return c.Send(msgChooseLangReminder["en"] + "\n" + msgChooseLangReminder["ru"] + "\n" + msgChooseLangReminder["uz"])
+			case domain.BotStateChoosingRole:
+				return c.Send(msgChooseRoleReminder[langOrDefault(state.Data["language"])])
+			case domain.BotStateSharingPhone:
+				return c.Send(msgPhoneReminder[langOrDefault(state.Data["language"])])
+			}
+		}
+
+		user, err := ensureUser(ctx, botSvc, sender)
+		if err != nil {
+			return c.Send(msgStartFirst[lang])
+		}
+		lang = langOrDefault(user.Language)
+
+		reader, err := bot.File(&voice.File)
+		if err != nil {
+			log.Printf("download voice error: %v", err)
+			return c.Send(msgDownloadFailed[lang])
+		}
+		defer reader.Close()
+
+		fileData, err := io.ReadAll(reader)
+		if err != nil {
+			log.Printf("read voice error: %v", err)
+			return c.Send(msgDownloadFailed[lang])
+		}
+
+		mimeType := voice.MIME
+		if mimeType == "" {
+			mimeType = "audio/ogg"
+		}
+
+		_ = c.Send(msgParsingResume[lang])
+
+		result, err := botSvc.HandleResumeFile(ctx, user.ID, fileData, mimeType)
+		if err != nil {
+			log.Printf("parse resume voice error for %s: %v", user.ID, err)
+			return c.Send(msgResumeFailed[lang])
+		}
+
+		return c.Send(fmt.Sprintf(msgResumeSuccess[lang],
+			result.SourceLang,
+			itoa(len(result.Fields)),
+			itoa(len(result.Experience)),
+			itoa(len(result.Education))))
+	})
 }
 
 func userMenu(lang string) *tele.ReplyMarkup {
@@ -535,7 +610,8 @@ func ensureUser(ctx context.Context, botSvc *application.BotService, sender *tel
 
 func isAllowedMIME(mime string) bool {
 	switch mime {
-	case "application/pdf", "image/png", "image/jpeg", "text/plain":
+	case "application/pdf", "image/png", "image/jpeg", "text/plain",
+		"audio/ogg", "audio/mpeg", "audio/wav", "audio/mp4", "audio/webm":
 		return true
 	}
 	return false
@@ -550,4 +626,13 @@ func langOrDefault(lang string) string {
 		return lang
 	}
 	return "en"
+}
+
+func isMenuButton(text string, btnTexts map[string]string) bool {
+	for _, v := range btnTexts {
+		if text == v {
+			return true
+		}
+	}
+	return false
 }
