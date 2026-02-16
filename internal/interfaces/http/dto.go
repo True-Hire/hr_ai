@@ -38,7 +38,6 @@ type UpdateUserRequest struct {
 	TelegramID      string   `json:"telegram_id"`
 	Email           string   `json:"email" binding:"omitempty,email"`
 	Gender          string   `json:"gender"`
-	Country         string   `json:"country"`
 	Region          string   `json:"region"`
 	Nationality     string   `json:"nationality"`
 	ProfilePicURL   string   `json:"profile_pic_url"`
@@ -82,7 +81,6 @@ func (r *UpdateUserRequest) ToDomain(id uuid.UUID) *domain.User {
 		TelegramID:      r.TelegramID,
 		Email:           r.Email,
 		Gender:          r.Gender,
-		Country:         r.Country,
 		Region:          r.Region,
 		Nationality:     r.Nationality,
 		ProfilePicURL:   r.ProfilePicURL,
