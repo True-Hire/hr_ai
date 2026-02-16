@@ -40,6 +40,12 @@ var msgBtnFindJob = map[string]string{
 	"uz": "🔘 Ish topish",
 }
 
+var msgDetermineSalary = map[string]string{
+	"en": "To determine your real salary and find offers, just tell me about yourself in free form. You can:\n\n• ✍️ write as text\n• 🎤 send a voice message\n• 📎 attach a resume / portfolio / PDF\n• 🔗 send a link\n\nIt's good to mention:\n— your role\n— years of experience\n— what exactly you do\n— skills\n— current income\n\nI'll analyze everything and show you the result.",
+	"ru": "Чтобы определить твою реальную зарплату и подобрать предложения, просто расскажи о себе в свободной форме. Можно:\n\n• ✍️ написать текстом\n• 🎤 отправить голосовое\n• 📎 прикрепить резюме / портфолио / PDF\n• 🔗 отправить ссылку\n\nЖелательно указать:\n— кем работаешь\n— сколько лет опыта\n— чем конкретно занимаешься\n— навыки\n— текущий доход\n\nЯ всё разберу и покажу результат.",
+	"uz": "Haqiqiy maoshingizni aniqlash va takliflar topish uchun o'zingiz haqingizda erkin shaklda gapirib bering. Mumkin:\n\n• ✍️ matn yozish\n• 🎤 ovozli xabar yuborish\n• 📎 rezyume / portfolio / PDF biriktirish\n• 🔗 havola yuborish\n\nQuyidagilarni ko'rsatish yaxshi:\n— kim bo'lib ishlaysiz\n— necha yillik tajriba\n— aniq nima bilan shug'ullanasiz\n— ko'nikmalar\n— hozirgi daromad\n\nHammasini tahlil qilib, natijani ko'rsataman.",
+}
+
 var msgSharePhone = map[string]string{
 	"en": "📱 Almost done! Please share your phone number so employers can reach you.",
 	"ru": "📱 Почти готово! Пожалуйста, поделитесь номером телефона, чтобы работодатели могли с вами связаться.",
@@ -268,12 +274,15 @@ func (tb *Bot) registerHandlers() {
 			}
 		}
 
-		// Always create as job seeker
+		// Always create as job seeker, pass goal so state preserves it
 		lang, _, err := botSvc.HandleRoleSelection(ctx, sender.ID, "seeker", sender.FirstName, sender.LastName, sender.Username, photoData)
 		if err != nil {
 			log.Printf("goal selection error for %d: %v", sender.ID, err)
 			return c.Respond(&tele.CallbackResponse{Text: msgError[langOrDefault(lang)]})
 		}
+
+		// Store the goal in state data
+		botSvc.SetGoal(ctx, sender.ID, goal)
 
 		_ = c.Respond(&tele.CallbackResponse{})
 		_ = c.Delete()
@@ -297,14 +306,21 @@ func (tb *Bot) registerHandlers() {
 			return nil
 		}
 
-		lang, err := botSvc.HandlePhoneShared(ctx, sender.ID, contact.PhoneNumber)
+		result, err := botSvc.HandlePhoneShared(ctx, sender.ID, contact.PhoneNumber)
 		if err != nil {
 			log.Printf("phone shared error for %d: %v", sender.ID, err)
-			lang = langOrDefault(lang)
+			lang := "en"
+			if result != nil {
+				lang = langOrDefault(result.Language)
+			}
 			return c.Send(msgError[lang])
 		}
 
-		lang = langOrDefault(lang)
+		lang := langOrDefault(result.Language)
+
+		if result.Goal == "salary" {
+			return c.Send(msgDetermineSalary[lang], &tele.ReplyMarkup{RemoveKeyboard: true})
+		}
 
 		return c.Send(fmt.Sprintf(msgRegisteredUser[lang], sender.FirstName), userMenu(lang))
 	})
