@@ -148,6 +148,10 @@ func (s *BotService) GetBotState(ctx context.Context, telegramID int64) (*domain
 	return s.stateSvc.GetState(ctx, tgID)
 }
 
+func (s *BotService) UpdateLanguage(ctx context.Context, userID uuid.UUID, language string) (*domain.User, error) {
+	return s.userSvc.UpdateLanguage(ctx, userID, language)
+}
+
 
 // HandleGoalSelection transitions based on the selected goal.
 // "salary" → collecting_resume state; "job" → clears state.
