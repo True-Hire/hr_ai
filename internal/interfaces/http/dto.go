@@ -113,6 +113,7 @@ type UserResponse struct {
 	JobStatus       string               `json:"job_status,omitempty"`
 	ActivityType    string               `json:"activity_type,omitempty"`
 	Specializations []string             `json:"specializations"`
+	ProfileScore    int32                `json:"profile_score"`
 	CreatedAt       string               `json:"created_at"`
 	Profile         *UserProfileResponse `json:"profile,omitempty"`
 	SearchScore     *float64             `json:"search_score,omitempty"`
@@ -200,6 +201,7 @@ func toUserResponseWithProfile(u *domain.User, profile *UserProfileResponse) Use
 		JobStatus:       u.JobStatus,
 		ActivityType:    u.ActivityType,
 		Specializations: specs,
+		ProfileScore:    u.ProfileScore,
 		CreatedAt:       u.CreatedAt.Format(time.RFC3339),
 		Profile:         profile,
 	}
