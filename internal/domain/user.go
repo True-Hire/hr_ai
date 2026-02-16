@@ -29,10 +29,13 @@ type User struct {
 	JobStatus       string
 	ActivityType    string
 	Specializations []string
-	PasswordHash    string
-	Language        string
-	ProfileScore    int32
-	CreatedAt       time.Time
+	PasswordHash            string
+	Language                string
+	ProfileScore            int32
+	EstimatedSalaryMin      int32
+	EstimatedSalaryMax      int32
+	EstimatedSalaryCurrency string
+	CreatedAt               time.Time
 }
 
 type UserRepository interface {
@@ -47,4 +50,5 @@ type UserRepository interface {
 	GetByTelegramID(ctx context.Context, telegramID string) (*User, error)
 	SetPassword(ctx context.Context, id uuid.UUID, hash string) error
 	SetProfileScore(ctx context.Context, id uuid.UUID, score int32) error
+	SetEstimatedSalary(ctx context.Context, id uuid.UUID, min, max int32, currency string) error
 }
