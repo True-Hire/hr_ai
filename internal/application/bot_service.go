@@ -62,33 +62,12 @@ func (s *BotService) HandleStart(ctx context.Context, telegramID int64) (*StartR
 	return &StartResult{IsNew: true}, nil
 }
 
-func (s *BotService) HandleLanguageSelection(ctx context.Context, telegramID int64, language string) (string, error) {
+// HandleLanguageSelection creates the user and transitions to sharing_phone state.
+func (s *BotService) HandleLanguageSelection(ctx context.Context, telegramID int64, language, firstName, lastName, username string, photoData []byte) (string, error) {
 	tgID := strconv.FormatInt(telegramID, 10)
 
 	if language != "en" && language != "ru" && language != "uz" {
 		return "", fmt.Errorf("invalid language: %s", language)
-	}
-
-	data := map[string]string{"language": language}
-	if err := s.stateSvc.SetStateWithData(ctx, tgID, domain.BotStateChoosingRole, data); err != nil {
-		return "", fmt.Errorf("set role selection state: %w", err)
-	}
-
-	return language, nil
-}
-
-// HandleRoleSelection creates either a User or CompanyHR and transitions to sharing_phone state.
-func (s *BotService) HandleRoleSelection(ctx context.Context, telegramID int64, role, firstName, lastName, username string, photoData []byte) (string, bool, error) {
-	tgID := strconv.FormatInt(telegramID, 10)
-
-	state, err := s.stateSvc.GetState(ctx, tgID)
-	if err != nil || state == nil {
-		return "", false, fmt.Errorf("no active state for role selection")
-	}
-
-	language := state.Data["language"]
-	if language == "" {
-		language = "en"
 	}
 
 	var tg string
@@ -104,80 +83,57 @@ func (s *BotService) HandleRoleSelection(ctx context.Context, telegramID int64, 
 		}
 	}
 
-	isHR := role == "hr"
-
-	if isHR {
-		hr := &domain.CompanyHR{
-			FirstName:  firstName,
-			LastName:   lastName,
-			Telegram:   tg,
-			TelegramID: tgID,
-			Language:   language,
-		}
-		if _, err := s.hrSvc.CreateCompanyHR(ctx, hr); err != nil {
-			return "", false, fmt.Errorf("create hr: %w", err)
-		}
-	} else {
-		user := &domain.User{
-			FirstName:     firstName,
-			LastName:      lastName,
-			Telegram:      tg,
-			TelegramID:    tgID,
-			ProfilePicURL: photoURL,
-			Language:      language,
-		}
-		if _, err := s.userSvc.CreateUser(ctx, user); err != nil {
-			return "", false, fmt.Errorf("create user: %w", err)
-		}
+	user := &domain.User{
+		FirstName:     firstName,
+		LastName:      lastName,
+		Telegram:      tg,
+		TelegramID:    tgID,
+		ProfilePicURL: photoURL,
+		Language:      language,
+	}
+	if _, err := s.userSvc.CreateUser(ctx, user); err != nil {
+		return "", fmt.Errorf("create user: %w", err)
 	}
 
 	// Transition to sharing_phone state
-	data := map[string]string{
-		"language": language,
-		"role":     role,
-	}
+	data := map[string]string{"language": language}
 	if err := s.stateSvc.SetStateWithData(ctx, tgID, domain.BotStateSharingPhone, data); err != nil {
-		return "", false, fmt.Errorf("set sharing phone state: %w", err)
+		return "", fmt.Errorf("set sharing phone state: %w", err)
 	}
 
-	return language, isHR, nil
+	return language, nil
 }
 
-// PhoneSharedResult holds the result of phone sharing step.
-type PhoneSharedResult struct {
-	Language string
-	Goal     string
-}
-
-// HandlePhoneShared updates the phone number on the user record and clears state.
-func (s *BotService) HandlePhoneShared(ctx context.Context, telegramID int64, phone string) (*PhoneSharedResult, error) {
+// HandlePhoneShared updates the phone number on the user record and transitions to choosing_role state.
+func (s *BotService) HandlePhoneShared(ctx context.Context, telegramID int64, phone string) (string, error) {
 	tgID := strconv.FormatInt(telegramID, 10)
 
 	state, err := s.stateSvc.GetState(ctx, tgID)
 	if err != nil || state == nil {
-		return nil, fmt.Errorf("no active state for phone sharing")
+		return "", fmt.Errorf("no active state for phone sharing")
 	}
 
 	language := state.Data["language"]
 	if language == "" {
 		language = "en"
 	}
-	goal := state.Data["goal"]
-
-	if err := s.stateSvc.ClearState(ctx, tgID); err != nil {
-		return nil, fmt.Errorf("clear state: %w", err)
-	}
 
 	user, err := s.userSvc.GetByTelegramID(ctx, tgID)
 	if err != nil {
-		return &PhoneSharedResult{Language: language, Goal: goal}, fmt.Errorf("get user for phone update: %w", err)
+		return language, fmt.Errorf("get user for phone update: %w", err)
 	}
 	user.Phone = phone
 	if _, err := s.userSvc.UpdateUser(ctx, user); err != nil {
-		return &PhoneSharedResult{Language: language, Goal: goal}, fmt.Errorf("update user phone: %w", err)
+		return language, fmt.Errorf("update user phone: %w", err)
 	}
 
-	return &PhoneSharedResult{Language: language, Goal: goal}, nil
+	// Transition to choosing_role (goal selection)
+	data := map[string]string{"language": language}
+	if err := s.stateSvc.SetStateWithData(ctx, tgID, domain.BotStateChoosingRole, data); err != nil {
+		return language, fmt.Errorf("set choosing role state: %w", err)
+	}
+
+	return language, nil
 }
 
 func (s *BotService) GetBotState(ctx context.Context, telegramID int64) (*domain.BotState, error) {
@@ -185,15 +141,26 @@ func (s *BotService) GetBotState(ctx context.Context, telegramID int64) (*domain
 	return s.stateSvc.GetState(ctx, tgID)
 }
 
-// SetGoal stores the user's selected goal (salary/job) in the bot state data.
-func (s *BotService) SetGoal(ctx context.Context, telegramID int64, goal string) {
+
+// HandleGoalSelection clears the bot state after the user picks a goal.
+func (s *BotService) HandleGoalSelection(ctx context.Context, telegramID int64) (string, error) {
 	tgID := strconv.FormatInt(telegramID, 10)
+
 	state, err := s.stateSvc.GetState(ctx, tgID)
 	if err != nil || state == nil {
-		return
+		return "", fmt.Errorf("no active state for goal selection")
 	}
-	state.Data["goal"] = goal
-	_ = s.stateSvc.SetStateWithData(ctx, tgID, state.State, state.Data)
+
+	language := state.Data["language"]
+	if language == "" {
+		language = "en"
+	}
+
+	if err := s.stateSvc.ClearState(ctx, tgID); err != nil {
+		return language, fmt.Errorf("clear state: %w", err)
+	}
+
+	return language, nil
 }
 
 func (s *BotService) HandleResumeText(ctx context.Context, userID uuid.UUID, text string) (*ParseResult, error) {
