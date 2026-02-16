@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 
@@ -123,6 +124,7 @@ func (s *BotService) HandlePhoneShared(ctx context.Context, telegramID int64, ph
 		return language, fmt.Errorf("get user for phone update: %w", err)
 	}
 	user.Phone = phone
+	user.Country = countryFromPhone(phone)
 	if _, err := s.userSvc.UpdateUser(ctx, user); err != nil {
 		return language, fmt.Errorf("update user phone: %w", err)
 	}
@@ -169,4 +171,62 @@ func (s *BotService) HandleResumeText(ctx context.Context, userID uuid.UUID, tex
 
 func (s *BotService) HandleResumeFile(ctx context.Context, userID uuid.UUID, fileData []byte, mimeType string) (*ParseResult, error) {
 	return s.profileParse.ParseFromFile(ctx, userID, fileData, mimeType)
+}
+
+// countryFromPhone returns an ISO 3166-1 alpha-2 country code based on phone number prefix.
+func countryFromPhone(phone string) string {
+	p := strings.TrimLeft(phone, "+")
+
+	// Longest prefixes first to avoid ambiguity
+	prefixes := []struct {
+		prefix, code string
+	}{
+		// 4-digit
+		{"9989", "UZ"}, // Uzbekistan mobile
+		{"9987", "UZ"},
+		{"9971", "UZ"},
+		// 3-digit
+		{"998", "UZ"},  // Uzbekistan
+		{"996", "KG"},  // Kyrgyzstan
+		{"995", "GE"},  // Georgia
+		{"994", "AZ"},  // Azerbaijan
+		{"993", "TM"},  // Turkmenistan
+		{"992", "TJ"},  // Tajikistan
+		{"971", "AE"},  // UAE
+		{"966", "SA"},  // Saudi Arabia
+		{"420", "CZ"},  // Czech Republic
+		{"380", "UA"},  // Ukraine
+		{"375", "BY"},  // Belarus
+		{"374", "AM"},  // Armenia
+		{"373", "MD"},  // Moldova
+		{"372", "EE"},  // Estonia
+		{"371", "LV"},  // Latvia
+		{"370", "LT"},  // Lithuania
+		// 2-digit
+		{"77", "KZ"},  // Kazakhstan
+		{"79", "RU"},  // Russia mobile
+		{"78", "RU"},  // Russia
+		{"74", "RU"},  // Russia
+		{"73", "RU"},  // Russia
+		{"91", "IN"},  // India
+		{"90", "TR"},  // Turkey
+		{"86", "CN"},  // China
+		{"82", "KR"},  // South Korea
+		{"81", "JP"},  // Japan
+		{"49", "DE"},  // Germany
+		{"48", "PL"},  // Poland
+		{"44", "GB"},  // UK
+		{"33", "FR"},  // France
+		// 1-digit
+		{"7", "RU"},   // Russia/KZ fallback
+		{"1", "US"},   // USA/Canada
+	}
+
+	for _, entry := range prefixes {
+		if strings.HasPrefix(p, entry.prefix) {
+			return entry.code
+		}
+	}
+
+	return ""
 }
