@@ -198,6 +198,12 @@ var msgSalaryTips = map[string]string{
 	"uz": "📈 Maoshni oshirish uchun shaxsiy maslahatlar:\n\n1. **Profilni to'liq to'ldiring** — tafsilotlar qancha ko'p bo'lsa, ball shuncha yuqori\n2. **O'lchanadigan yutuqlarni qo'shing** — raqamlar so'zlardan kuchli\n3. **Barcha ko'nikmalaringizni ko'rsating** — ayniqsa talab yuqori texnologiyalar\n4. **Rezyumeni yangilab turing** — yangi profillar yuqoriroq ko'rsatiladi\n5. **Yangi ko'nikmalar o'rganing** — sertifikatlar bozor qiymatini oshiradi\n6. **Bozorni o'rganing** — mintaqangizdagi narxlarni biling\n7. **Portfolio yarating** — faqat gapirib emas, ko'rsating\n\nProfil balingiz: **%d/100**\nTaxminiy maosh: **%s %s – %s %s**\n\nProfil bali qancha yuqori bo'lsa, takliflar shuncha yaxshi bo'ladi!",
 }
 
+var msgMenuUpdated = map[string]string{
+	"en": "🔄 Bot updated! Check out the menu below 👇",
+	"ru": "🔄 Бот обновлён! Используй меню ниже 👇",
+	"uz": "🔄 Bot yangilandi! Quyidagi menyudan foydalaning 👇",
+}
+
 var msgResumeSuccess = map[string]string{
 	"en": "Your resume has been parsed successfully!\n\nSource language: %s\nProfile fields: %s\nExperience items: %s\nEducation items: %s",
 	"ru": "Ваше резюме успешно обработано!\n\nИсходный язык: %s\nПоля профиля: %s\nОпыт работы: %s\nОбразование: %s",
@@ -283,6 +289,40 @@ func (tb *Bot) Stop() {
 	log.Println("stopping telegram bot...")
 	tb.bot.Stop()
 	log.Println("telegram bot stopped")
+}
+
+// BroadcastMenu sends the updated menu to all existing users.
+// Should be called in a goroutine after bot.Start().
+func (tb *Bot) BroadcastMenu() {
+	time.Sleep(3 * time.Second)
+
+	ctx := context.Background()
+	users, err := tb.botSvc.ListAllUsers(ctx)
+	if err != nil {
+		log.Printf("broadcast menu: failed to list users: %v", err)
+		return
+	}
+
+	log.Printf("broadcast menu: sending to %d users", len(users))
+	sent := 0
+	for _, user := range users {
+		if user.TelegramID == "" {
+			continue
+		}
+		tgID, err := strconv.ParseInt(user.TelegramID, 10, 64)
+		if err != nil {
+			continue
+		}
+		lang := langOrDefault(user.Language)
+		_, err = tb.bot.Send(&tele.User{ID: tgID}, msgMenuUpdated[lang], userMenu(lang))
+		if err != nil {
+			log.Printf("broadcast menu: failed to send to %s: %v", user.TelegramID, err)
+			continue
+		}
+		sent++
+		time.Sleep(50 * time.Millisecond)
+	}
+	log.Printf("broadcast menu: sent to %d/%d users", sent, len(users))
 }
 
 func (tb *Bot) registerHandlers() {
