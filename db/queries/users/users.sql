@@ -2,27 +2,27 @@
 INSERT INTO users (
     id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, language, created_at
+    status, tariff_type, job_status, activity_type, specializations, language, profile_score, created_at
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8,
     $9, $10, $11, $12, $13,
-    $14, $15, $16, $17, $18, $19, now()
+    $14, $15, $16, $17, $18, $19, $20, now()
 )
 RETURNING id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language;
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score;
 
 -- name: GetUserByID :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score
 FROM users
 WHERE id = $1;
 
 -- name: ListUsers :many
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score
 FROM users
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2;
@@ -53,7 +53,7 @@ SET first_name = COALESCE(NULLIF(sqlc.arg(first_name), ''), first_name),
 WHERE id = sqlc.arg(id)
 RETURNING id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language;
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score;
 
 -- name: DeleteUser :exec
 DELETE FROM users
@@ -62,23 +62,26 @@ WHERE id = $1;
 -- name: GetUserByPhone :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score
 FROM users
 WHERE phone = $1;
 
 -- name: GetUserByEmail :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score
 FROM users
 WHERE email = $1;
 
 -- name: GetUserByTelegramID :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score
 FROM users
 WHERE telegram_id = $1;
 
 -- name: SetUserPassword :exec
 UPDATE users SET password_hash = $2 WHERE id = $1;
+
+-- name: SetProfileScore :exec
+UPDATE users SET profile_score = $2 WHERE id = $1;
