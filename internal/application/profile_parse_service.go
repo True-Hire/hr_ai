@@ -369,6 +369,13 @@ func (s *ProfileParseService) storeResults(ctx context.Context, userID uuid.UUID
 		result.Education = append(result.Education, eduResult)
 	}
 
+	// Update user's profile score from Gemini evaluation
+	if parsed.ProfileScore > 0 {
+		if err := s.userSvc.SetProfileScore(ctx, userID, int32(parsed.ProfileScore)); err != nil {
+			log.Printf("set profile score for user %s: %v", userID, err)
+		}
+	}
+
 	return result, nil
 }
 
