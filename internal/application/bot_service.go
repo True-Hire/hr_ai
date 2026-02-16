@@ -152,6 +152,24 @@ func (s *BotService) UpdateLanguage(ctx context.Context, userID uuid.UUID, langu
 	return s.userSvc.UpdateLanguage(ctx, userID, language)
 }
 
+// ListAllUsers pages through all users in the database.
+func (s *BotService) ListAllUsers(ctx context.Context) ([]domain.User, error) {
+	var all []domain.User
+	var page int32 = 1
+	const pageSize int32 = 100
+	for {
+		result, err := s.userSvc.ListUsers(ctx, page, pageSize)
+		if err != nil {
+			return nil, err
+		}
+		all = append(all, result.Users...)
+		if int64(len(all)) >= result.Total {
+			break
+		}
+		page++
+	}
+	return all, nil
+}
 
 // HandleGoalSelection transitions based on the selected goal.
 // "salary" → collecting_resume state; "job" → clears state.
