@@ -126,18 +126,6 @@ var msgParsingText = map[string]string{
 	"uz": "Profilni tahlil qilmoqdaman… ⏳",
 }
 
-var msgParsingFile = map[string]string{
-	"en": "I received the file. Analyzing skills and experience…",
-	"ru": "Я получил файл. Анализирую навыки и опыт…",
-	"uz": "Faylni oldim. Ko'nikmalar va tajribani tahlil qilmoqdaman…",
-}
-
-var msgParsingVoice = map[string]string{
-	"en": "I transcribed your voice message and created a profile. If anything needs clarifying — just say.",
-	"ru": "Я расшифровал твоё голосовое сообщение и сформировал профиль. Если что-то нужно уточнить — скажи.",
-	"uz": "Ovozli xabaringizni yozib oldim va profil yaratdim. Biror narsani aniqlashtirish kerak bo'lsa — ayting.",
-}
-
 var msgCollectedText = map[string]string{
 	"en": "Got it ✅",
 	"ru": "Принял ✅",
@@ -198,16 +186,16 @@ var msgSalaryTips = map[string]string{
 	"uz": "📈 Maoshni oshirish uchun shaxsiy maslahatlar:\n\n1. **Profilni to'liq to'ldiring** — tafsilotlar qancha ko'p bo'lsa, ball shuncha yuqori\n2. **O'lchanadigan yutuqlarni qo'shing** — raqamlar so'zlardan kuchli\n3. **Barcha ko'nikmalaringizni ko'rsating** — ayniqsa talab yuqori texnologiyalar\n4. **Rezyumeni yangilab turing** — yangi profillar yuqoriroq ko'rsatiladi\n5. **Yangi ko'nikmalar o'rganing** — sertifikatlar bozor qiymatini oshiradi\n6. **Bozorni o'rganing** — mintaqangizdagi narxlarni biling\n7. **Portfolio yarating** — faqat gapirib emas, ko'rsating\n\nProfil balingiz: **%d/100**\nTaxminiy maosh: **%s %s – %s %s**\n\nProfil bali qancha yuqori bo'lsa, takliflar shuncha yaxshi bo'ladi!",
 }
 
+var msgUseMenu = map[string]string{
+	"en": "🤔 I didn't quite understand that. Use the menu below 👇",
+	"ru": "🤔 Не совсем понял. Используй меню ниже 👇",
+	"uz": "🤔 Tushunmadim. Quyidagi menyudan foydalaning 👇",
+}
+
 var msgMenuUpdated = map[string]string{
 	"en": "🔄 Bot updated! Check out the menu below 👇",
 	"ru": "🔄 Бот обновлён! Используй меню ниже 👇",
 	"uz": "🔄 Bot yangilandi! Quyidagi menyudan foydalaning 👇",
-}
-
-var msgResumeSuccess = map[string]string{
-	"en": "Your resume has been parsed successfully!\n\nSource language: %s\nProfile fields: %s\nExperience items: %s\nEducation items: %s",
-	"ru": "Ваше резюме успешно обработано!\n\nИсходный язык: %s\nПоля профиля: %s\nОпыт работы: %s\nОбразование: %s",
-	"uz": "Rezyumengiz muvaffaqiyatli tahlil qilindi!\n\nManba tili: %s\nProfil maydonlari: %s\nIsh tajribasi: %s\nTa'lim: %s",
 }
 
 var msgResumeFailed = map[string]string{
@@ -564,20 +552,8 @@ func (tb *Bot) registerHandlers() {
 			return c.Send(fmt.Sprintf(msgSalaryTips[lang], user.ProfileScore, minStr, currency, maxStr, currency), &tele.SendOptions{ParseMode: tele.ModeMarkdown})
 		}
 
-		// Treat as resume text
-		_ = c.Send(msgParsingText[lang])
-
-		result, err := botSvc.HandleResumeText(ctx, user.ID, c.Text())
-		if err != nil {
-			log.Printf("parse resume text error for %s: %v", user.ID, err)
-			return c.Send(msgResumeFailed[lang])
-		}
-
-		return c.Send(fmt.Sprintf(msgResumeSuccess[lang],
-			result.SourceLang,
-			itoa(len(result.Fields)),
-			itoa(len(result.Experience)),
-			itoa(len(result.Education))))
+		// Unknown text — suggest using menu
+		return c.Send(msgUseMenu[lang], userMenu(lang))
 	})
 
 	// Document handler
@@ -622,37 +598,7 @@ func (tb *Bot) registerHandlers() {
 		}
 		lang = langOrDefault(user.Language)
 
-		mimeType := doc.MIME
-		if !isAllowedMIME(mimeType) {
-			return c.Send(msgUnsupportedFile[lang])
-		}
-
-		reader, err := bot.File(&doc.File)
-		if err != nil {
-			log.Printf("download file error: %v", err)
-			return c.Send(msgDownloadFailed[lang])
-		}
-		defer reader.Close()
-
-		fileData, err := io.ReadAll(reader)
-		if err != nil {
-			log.Printf("read file error: %v", err)
-			return c.Send(msgDownloadFailed[lang])
-		}
-
-		_ = c.Send(msgParsingFile[lang])
-
-		result, err := botSvc.HandleResumeFile(ctx, user.ID, fileData, mimeType)
-		if err != nil {
-			log.Printf("parse resume file error for %s: %v", user.ID, err)
-			return c.Send(msgResumeFailed[lang])
-		}
-
-		return c.Send(fmt.Sprintf(msgResumeSuccess[lang],
-			result.SourceLang,
-			itoa(len(result.Fields)),
-			itoa(len(result.Experience)),
-			itoa(len(result.Education))))
+		return c.Send(msgUseMenu[lang], userMenu(lang))
 	})
 
 	// Photo handler
@@ -693,32 +639,7 @@ func (tb *Bot) registerHandlers() {
 		}
 		lang = langOrDefault(user.Language)
 
-		reader, err := bot.File(&photo.File)
-		if err != nil {
-			log.Printf("download photo error: %v", err)
-			return c.Send(msgDownloadFailed[lang])
-		}
-		defer reader.Close()
-
-		fileData, err := io.ReadAll(reader)
-		if err != nil {
-			log.Printf("read photo error: %v", err)
-			return c.Send(msgDownloadFailed[lang])
-		}
-
-		_ = c.Send(msgParsingFile[lang])
-
-		result, err := botSvc.HandleResumeFile(ctx, user.ID, fileData, "image/jpeg")
-		if err != nil {
-			log.Printf("parse resume photo error for %s: %v", user.ID, err)
-			return c.Send(msgResumeFailed[lang])
-		}
-
-		return c.Send(fmt.Sprintf(msgResumeSuccess[lang],
-			result.SourceLang,
-			itoa(len(result.Fields)),
-			itoa(len(result.Experience)),
-			itoa(len(result.Education))))
+		return c.Send(msgUseMenu[lang], userMenu(lang))
 	})
 
 	// Voice message handler
@@ -763,37 +684,7 @@ func (tb *Bot) registerHandlers() {
 		}
 		lang = langOrDefault(user.Language)
 
-		reader, err := bot.File(&voice.File)
-		if err != nil {
-			log.Printf("download voice error: %v", err)
-			return c.Send(msgDownloadFailed[lang])
-		}
-		defer reader.Close()
-
-		fileData, err := io.ReadAll(reader)
-		if err != nil {
-			log.Printf("read voice error: %v", err)
-			return c.Send(msgDownloadFailed[lang])
-		}
-
-		mimeType := voice.MIME
-		if mimeType == "" {
-			mimeType = "audio/ogg"
-		}
-
-		_ = c.Send(msgParsingVoice[lang])
-
-		result, err := botSvc.HandleResumeFile(ctx, user.ID, fileData, mimeType)
-		if err != nil {
-			log.Printf("parse resume voice error for %s: %v", user.ID, err)
-			return c.Send(msgResumeFailed[lang])
-		}
-
-		return c.Send(fmt.Sprintf(msgResumeSuccess[lang],
-			result.SourceLang,
-			itoa(len(result.Fields)),
-			itoa(len(result.Experience)),
-			itoa(len(result.Education))))
+		return c.Send(msgUseMenu[lang], userMenu(lang))
 	})
 }
 
@@ -875,9 +766,7 @@ func isAllowedMIME(mime string) bool {
 	return false
 }
 
-func itoa(n int) string {
-	return strconv.Itoa(n)
-}
+
 
 func langOrDefault(lang string) string {
 	if lang == "en" || lang == "ru" || lang == "uz" {
