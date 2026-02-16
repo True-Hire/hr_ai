@@ -120,6 +120,48 @@ var msgParsingVoice = map[string]string{
 	"uz": "Ovozli xabaringizni yozib oldim va profil yaratdim. Biror narsani aniqlashtirish kerak bo'lsa — ayting.",
 }
 
+var msgCollectedText = map[string]string{
+	"en": "Got it ✅",
+	"ru": "Принял ✅",
+	"uz": "Qabul qildim ✅",
+}
+
+var msgCollectedFile = map[string]string{
+	"en": "I received the file ✅",
+	"ru": "Я получил файл ✅",
+	"uz": "Faylni oldim ✅",
+}
+
+var msgCollectedVoice = map[string]string{
+	"en": "I transcribed your voice message ✅",
+	"ru": "Я расшифровал твоё голосовое сообщение ✅",
+	"uz": "Ovozli xabaringizni yozib oldim ✅",
+}
+
+var msgAnythingElse = map[string]string{
+	"en": "Would you like to add anything else?\nThe more information you provide, the more accurate my answer will be.",
+	"ru": "Ещё что-нибудь добавишь?\nЧем больше информации, тем точнее я смогу ответить.",
+	"uz": "Yana biror narsa qo'shasizmi?\nMa'lumot qancha ko'p bo'lsa, shuncha aniqroq javob bera olaman.",
+}
+
+var msgBtnDone = map[string]string{
+	"en": "✅ Everything is ready, continue",
+	"ru": "✅ Всё готово, продолжить",
+	"uz": "✅ Hammasi tayyor, davom etish",
+}
+
+var msgProfileReady = map[string]string{
+	"en": "✅ Your profile has been created! Tap below to view it 👇",
+	"ru": "✅ Твой профиль готов! Нажми ниже, чтобы посмотреть 👇",
+	"uz": "✅ Profilingiz tayyor! Ko'rish uchun quyidagini bosing 👇",
+}
+
+var msgBtnViewProfile = map[string]string{
+	"en": "👤 View my profile",
+	"ru": "👤 Посмотреть мой профиль",
+	"uz": "👤 Profilimni ko'rish",
+}
+
 var msgResumeSuccess = map[string]string{
 	"en": "Your resume has been parsed successfully!\n\nSource language: %s\nProfile fields: %s\nExperience items: %s\nEducation items: %s",
 	"ru": "Ваше резюме успешно обработано!\n\nИсходный язык: %s\nПоля профиля: %s\nОпыт работы: %s\nОбразование: %s",
@@ -282,7 +324,7 @@ func (tb *Bot) registerHandlers() {
 			return c.Respond(&tele.CallbackResponse{Text: "Unknown action"})
 		}
 
-		lang, err := botSvc.HandleGoalSelection(ctx, c.Sender().ID)
+		lang, err := botSvc.HandleGoalSelection(ctx, c.Sender().ID, goal)
 		if err != nil {
 			log.Printf("goal selection error for %d: %v", c.Sender().ID, err)
 			return c.Respond(&tele.CallbackResponse{Text: msgError[langOrDefault(lang)]})
@@ -298,6 +340,34 @@ func (tb *Bot) registerHandlers() {
 		}
 
 		return c.Send(fmt.Sprintf(msgRegisteredUser[lang], c.Sender().FirstName), userMenu(lang))
+	})
+
+	// "Done" button — process collected resume data
+	bot.Handle(&tele.Btn{Unique: "done"}, func(c tele.Context) error {
+		sender := c.Sender()
+
+		_ = c.Respond(&tele.CallbackResponse{})
+		_ = c.Delete()
+
+		lang := getStateLang(ctx, botSvc, sender.ID)
+		_ = c.Send(msgParsingText[lang])
+
+		result, err := botSvc.ProcessCollectedResume(ctx, sender.ID)
+		if err != nil {
+			log.Printf("process collected resume error for %d: %v", sender.ID, err)
+			return c.Send(msgResumeFailed[lang])
+		}
+
+		_ = result // result stored in DB
+
+		if tb.webAppURL != "" {
+			markup := &tele.ReplyMarkup{}
+			markup.Inline(
+				markup.Row(tele.Btn{Text: msgBtnViewProfile[lang], WebApp: &tele.WebApp{URL: tb.webAppURL + "?view=profile"}}),
+			)
+			return c.Send(msgProfileReady[lang], markup)
+		}
+		return c.Send(msgProfileReady[lang])
 	})
 
 	// Contact (phone number) handler — after phone, show goal buttons
@@ -341,6 +411,14 @@ func (tb *Bot) registerHandlers() {
 				return c.Send(msgChooseRoleReminder[langOrDefault(state.Data["language"])])
 			case domain.BotStateSharingPhone:
 				return c.Send(msgPhoneReminder[langOrDefault(state.Data["language"])])
+			case domain.BotStateCollectingResume:
+				lang = langOrDefault(state.Data["language"])
+				if err := botSvc.AddResumeText(ctx, sender.ID, c.Text()); err != nil {
+					log.Printf("add resume text error for %d: %v", sender.ID, err)
+					return c.Send(msgError[lang])
+				}
+				_ = c.Send(msgCollectedText[lang])
+				return c.Send(msgAnythingElse[lang], anythingElseMarkup(lang))
 			}
 		}
 
@@ -396,6 +474,24 @@ func (tb *Bot) registerHandlers() {
 				return c.Send(msgChooseRoleReminder[langOrDefault(state.Data["language"])])
 			case domain.BotStateSharingPhone:
 				return c.Send(msgPhoneReminder[langOrDefault(state.Data["language"])])
+			case domain.BotStateCollectingResume:
+				lang = langOrDefault(state.Data["language"])
+				mimeType := doc.MIME
+				if !isAllowedMIME(mimeType) {
+					return c.Send(msgUnsupportedFile[lang])
+				}
+				reader, err := bot.File(&doc.File)
+				if err != nil {
+					return c.Send(msgDownloadFailed[lang])
+				}
+				fileData, _ := io.ReadAll(reader)
+				reader.Close()
+				if err := botSvc.AddResumeFile(ctx, sender.ID, fileData, mimeType); err != nil {
+					log.Printf("add resume file error for %d: %v", sender.ID, err)
+					return c.Send(msgError[lang])
+				}
+				_ = c.Send(msgCollectedFile[lang])
+				return c.Send(msgAnythingElse[lang], anythingElseMarkup(lang))
 			}
 		}
 
@@ -453,6 +549,20 @@ func (tb *Bot) registerHandlers() {
 				return c.Send(msgChooseRoleReminder[langOrDefault(state.Data["language"])])
 			case domain.BotStateSharingPhone:
 				return c.Send(msgPhoneReminder[langOrDefault(state.Data["language"])])
+			case domain.BotStateCollectingResume:
+				lang = langOrDefault(state.Data["language"])
+				reader, err := bot.File(&photo.File)
+				if err != nil {
+					return c.Send(msgDownloadFailed[lang])
+				}
+				fileData, _ := io.ReadAll(reader)
+				reader.Close()
+				if err := botSvc.AddResumeFile(ctx, sender.ID, fileData, "image/jpeg"); err != nil {
+					log.Printf("add resume photo error for %d: %v", sender.ID, err)
+					return c.Send(msgError[lang])
+				}
+				_ = c.Send(msgCollectedFile[lang])
+				return c.Send(msgAnythingElse[lang], anythingElseMarkup(lang))
 			}
 		}
 
@@ -505,6 +615,24 @@ func (tb *Bot) registerHandlers() {
 				return c.Send(msgChooseRoleReminder[langOrDefault(state.Data["language"])])
 			case domain.BotStateSharingPhone:
 				return c.Send(msgPhoneReminder[langOrDefault(state.Data["language"])])
+			case domain.BotStateCollectingResume:
+				lang = langOrDefault(state.Data["language"])
+				reader, err := bot.File(&voice.File)
+				if err != nil {
+					return c.Send(msgDownloadFailed[lang])
+				}
+				fileData, _ := io.ReadAll(reader)
+				reader.Close()
+				mimeType := voice.MIME
+				if mimeType == "" {
+					mimeType = "audio/ogg"
+				}
+				if err := botSvc.AddResumeFile(ctx, sender.ID, fileData, mimeType); err != nil {
+					log.Printf("add resume voice error for %d: %v", sender.ID, err)
+					return c.Send(msgError[lang])
+				}
+				_ = c.Send(msgCollectedVoice[lang])
+				return c.Send(msgAnythingElse[lang], anythingElseMarkup(lang))
 			}
 		}
 
@@ -546,6 +674,13 @@ func (tb *Bot) registerHandlers() {
 			itoa(len(result.Experience)),
 			itoa(len(result.Education))))
 	})
+}
+
+func anythingElseMarkup(lang string) *tele.ReplyMarkup {
+	markup := &tele.ReplyMarkup{}
+	btn := markup.Data(msgBtnDone[lang], "done")
+	markup.Inline(markup.Row(btn))
+	return markup
 }
 
 func userMenu(lang string) *tele.ReplyMarkup {

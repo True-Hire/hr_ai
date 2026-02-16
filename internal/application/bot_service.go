@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"strconv"
@@ -144,8 +145,9 @@ func (s *BotService) GetBotState(ctx context.Context, telegramID int64) (*domain
 }
 
 
-// HandleGoalSelection clears the bot state after the user picks a goal.
-func (s *BotService) HandleGoalSelection(ctx context.Context, telegramID int64) (string, error) {
+// HandleGoalSelection transitions based on the selected goal.
+// "salary" → collecting_resume state; "job" → clears state.
+func (s *BotService) HandleGoalSelection(ctx context.Context, telegramID int64, goal string) (string, error) {
 	tgID := strconv.FormatInt(telegramID, 10)
 
 	state, err := s.stateSvc.GetState(ctx, tgID)
@@ -158,11 +160,102 @@ func (s *BotService) HandleGoalSelection(ctx context.Context, telegramID int64) 
 		language = "en"
 	}
 
+	if goal == "salary" {
+		data := map[string]string{"language": language}
+		if err := s.stateSvc.SetStateWithData(ctx, tgID, domain.BotStateCollectingResume, data); err != nil {
+			return language, fmt.Errorf("set collecting resume state: %w", err)
+		}
+		return language, nil
+	}
+
 	if err := s.stateSvc.ClearState(ctx, tgID); err != nil {
 		return language, fmt.Errorf("clear state: %w", err)
 	}
 
 	return language, nil
+}
+
+// AddResumeText stores a text entry for later processing.
+func (s *BotService) AddResumeText(ctx context.Context, telegramID int64, text string) error {
+	tgID := strconv.FormatInt(telegramID, 10)
+	return s.stateSvc.AddResumeEntry(ctx, tgID, &ResumeEntry{
+		Type: "text",
+		Text: text,
+	})
+}
+
+// AddResumeFile stores a file entry (base64-encoded) for later processing.
+func (s *BotService) AddResumeFile(ctx context.Context, telegramID int64, data []byte, mimeType string) error {
+	tgID := strconv.FormatInt(telegramID, 10)
+	encoded := base64.StdEncoding.EncodeToString(data)
+	return s.stateSvc.AddResumeEntry(ctx, tgID, &ResumeEntry{
+		Type:     "file",
+		Data:     encoded,
+		MimeType: mimeType,
+	})
+}
+
+// ProcessCollectedResume sends all collected resume data to Gemini and stores the result.
+func (s *BotService) ProcessCollectedResume(ctx context.Context, telegramID int64) (*ParseResult, error) {
+	tgID := strconv.FormatInt(telegramID, 10)
+
+	user, err := s.userSvc.GetByTelegramID(ctx, tgID)
+	if err != nil {
+		return nil, fmt.Errorf("get user: %w", err)
+	}
+
+	entries, err := s.stateSvc.GetResumeEntries(ctx, tgID)
+	if err != nil || len(entries) == 0 {
+		return nil, fmt.Errorf("no resume data collected")
+	}
+
+	// Separate text and file entries
+	var texts []string
+	var fileData []byte
+	var fileMime string
+	for _, e := range entries {
+		switch e.Type {
+		case "text":
+			texts = append(texts, e.Text)
+		case "file":
+			if fileData == nil {
+				decoded, decErr := base64.StdEncoding.DecodeString(e.Data)
+				if decErr == nil {
+					fileData = decoded
+					fileMime = e.MimeType
+				}
+			}
+		}
+	}
+
+	var result *ParseResult
+
+	if fileData != nil && len(texts) > 0 {
+		// Combine: prepend text context, then parse the file
+		combinedText := strings.Join(texts, "\n\n") + "\n\n[Additional context from user messages above. The file below is the main resume.]"
+		result, err = s.profileParse.ParseFromText(ctx, user.ID, combinedText)
+		if err != nil {
+			// Fallback: try just the file
+			result, err = s.profileParse.ParseFromFile(ctx, user.ID, fileData, fileMime)
+		}
+	} else if fileData != nil {
+		result, err = s.profileParse.ParseFromFile(ctx, user.ID, fileData, fileMime)
+	} else if len(texts) > 0 {
+		combinedText := strings.Join(texts, "\n\n")
+		result, err = s.profileParse.ParseFromText(ctx, user.ID, combinedText)
+	} else {
+		return nil, fmt.Errorf("no resume data to process")
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Clean up
+	_ = s.stateSvc.ClearResumeEntries(ctx, tgID)
+	_ = s.stateSvc.ClearState(ctx, tgID)
+
+	return result, nil
 }
 
 func (s *BotService) HandleResumeText(ctx context.Context, userID uuid.UUID, text string) (*ParseResult, error) {
