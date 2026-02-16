@@ -150,6 +150,12 @@ var msgBtnDone = map[string]string{
 	"uz": "✅ Hammasi tayyor, davom etish",
 }
 
+var msgSalaryResult = map[string]string{
+	"en": "💰 Based on your profile and country, your estimated monthly salary:\n\n%s %s – %s %s",
+	"ru": "💰 На основе твоего профиля и страны, твоя ориентировочная месячная зарплата:\n\n%s %s – %s %s",
+	"uz": "💰 Profilingiz va mamlakatingiz asosida, taxminiy oylik maoshingiz:\n\n%s %s – %s %s",
+}
+
 var msgProfileReady = map[string]string{
 	"en": "✅ Your profile has been created! Tap below to view it 👇",
 	"ru": "✅ Твой профиль готов! Нажми ниже, чтобы посмотреть 👇",
@@ -358,7 +364,12 @@ func (tb *Bot) registerHandlers() {
 			return c.Send(msgResumeFailed[lang])
 		}
 
-		_ = result // result stored in DB
+		// Show salary estimation if available
+		if result.Salary != nil && result.Salary.SalaryMin > 0 {
+			minStr := formatNumber(int64(result.Salary.SalaryMin))
+			maxStr := formatNumber(int64(result.Salary.SalaryMax))
+			_ = c.Send(fmt.Sprintf(msgSalaryResult[lang], minStr, result.Salary.Currency, maxStr, result.Salary.Currency))
+		}
 
 		if tb.webAppURL != "" {
 			markup := &tele.ReplyMarkup{}
@@ -706,6 +717,22 @@ func profileViewInline(lang, webAppURL string) *tele.ReplyMarkup {
 		markup.Row(tele.Btn{Text: menuBtnUpdateResume[lang], WebApp: &tele.WebApp{URL: webAppURL + "?view=profile"}}),
 	)
 	return markup
+}
+
+// formatNumber formats an integer with space-separated thousands (e.g. 5000000 → "5 000 000").
+func formatNumber(n int64) string {
+	s := strconv.FormatInt(n, 10)
+	if len(s) <= 3 {
+		return s
+	}
+	var result []byte
+	for i, c := range s {
+		if i > 0 && (len(s)-i)%3 == 0 {
+			result = append(result, ' ')
+		}
+		result = append(result, byte(c))
+	}
+	return string(result)
 }
 
 // getStateLang tries to get the language from bot state data, falls back to "en".
