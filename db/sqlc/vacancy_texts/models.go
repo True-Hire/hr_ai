@@ -162,6 +162,7 @@ type User struct {
 	PasswordHash    pgtype.Text
 	TelegramID      pgtype.Text
 	Language        string
+	ProfileScore    int32
 }
 
 type UserSession struct {
