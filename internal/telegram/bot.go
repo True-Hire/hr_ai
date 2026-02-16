@@ -72,6 +72,12 @@ var msgRegisteredUser = map[string]string{
 
 // -- Menu buttons for job seekers --
 
+var menuBtnViewProfile = map[string]string{
+	"en": "👤 My Profile",
+	"ru": "👤 Мой профиль",
+	"uz": "👤 Mening profilim",
+}
+
 var menuBtnUpdateResume = map[string]string{
 	"en": "📄 Update Resume",
 	"ru": "📄 Обновить резюме",
@@ -79,9 +85,21 @@ var menuBtnUpdateResume = map[string]string{
 }
 
 var menuBtnSearchVacancies = map[string]string{
-	"en": "🔍 Search Vacancies",
-	"ru": "🔍 Поиск вакансий",
-	"uz": "🔍 Vakansiyalarni qidirish",
+	"en": "🔍 Search Jobs",
+	"ru": "🔍 Найти работу",
+	"uz": "🔍 Ish topish",
+}
+
+var menuBtnChangeLang = map[string]string{
+	"en": "🌍 Change Language",
+	"ru": "🌍 Сменить язык",
+	"uz": "🌍 Tilni o'zgartirish",
+}
+
+var menuBtnSalaryTips = map[string]string{
+	"en": "📈 Salary Growth Tips",
+	"ru": "📈 Как повысить зарплату",
+	"uz": "📈 Maoshni oshirish bo'yicha maslahatlar",
 }
 
 var msgWelcomeBackUser = map[string]string{
@@ -157,15 +175,33 @@ var msgSalaryResult = map[string]string{
 }
 
 var msgProfileReady = map[string]string{
-	"en": "✅ Your profile has been created! Tap below to view it 👇",
-	"ru": "✅ Твой профиль готов! Нажми ниже, чтобы посмотреть 👇",
-	"uz": "✅ Profilingiz tayyor! Ko'rish uchun quyidagini bosing 👇",
+	"en": "✅ Your profile is ready!\n\nUse the menu below to explore all features 👇",
+	"ru": "✅ Твой профиль готов!\n\nИспользуй меню ниже, чтобы начать 👇",
+	"uz": "✅ Profilingiz tayyor!\n\nBarcha imkoniyatlarni ko'rish uchun quyidagi menyudan foydalaning 👇",
 }
 
-var msgBtnViewProfile = map[string]string{
-	"en": "👤 View my profile",
-	"ru": "👤 Посмотреть мой профиль",
-	"uz": "👤 Profilimni ko'rish",
+var msgChooseLang = map[string]string{
+	"en": "🌍 Choose your new language:",
+	"ru": "🌍 Выберите новый язык:",
+	"uz": "🌍 Yangi tilni tanlang:",
+}
+
+var msgLangChanged = map[string]string{
+	"en": "✅ Language changed to English",
+	"ru": "✅ Язык изменён на русский",
+	"uz": "✅ Til o'zbekchaga o'zgartirildi",
+}
+
+var msgSalaryTips = map[string]string{
+	"en": "📈 Here are personalized tips to increase your salary:\n\n1. **Fill your profile completely** — the more details, the higher your score\n2. **Add measurable achievements** — numbers speak louder than words\n3. **List all your skills** — especially in-demand technologies\n4. **Keep your resume updated** — fresh profiles rank higher\n5. **Learn new skills** — certifications boost your market value\n6. **Research market rates** — know your worth in your region\n7. **Build a portfolio** — show, don't just tell\n\nYour current profile score: **%d/100**\nEstimated salary: **%s %s – %s %s**\n\nThe higher your profile score, the better offers you'll get!",
+	"ru": "📈 Персональные советы для роста зарплаты:\n\n1. **Заполни профиль полностью** — чем больше деталей, тем выше оценка\n2. **Добавь измеримые достижения** — цифры говорят убедительнее слов\n3. **Укажи все навыки** — особенно востребованные технологии\n4. **Обновляй резюме** — свежие профили ранжируются выше\n5. **Изучай новое** — сертификаты повышают рыночную стоимость\n6. **Изучи рынок** — знай свою цену в своём регионе\n7. **Создай портфолио** — показывай, а не только рассказывай\n\nТвоя оценка профиля: **%d/100**\nОриентировочная зарплата: **%s %s – %s %s**\n\nЧем выше оценка профиля, тем лучше будут предложения!",
+	"uz": "📈 Maoshni oshirish uchun shaxsiy maslahatlar:\n\n1. **Profilni to'liq to'ldiring** — tafsilotlar qancha ko'p bo'lsa, ball shuncha yuqori\n2. **O'lchanadigan yutuqlarni qo'shing** — raqamlar so'zlardan kuchli\n3. **Barcha ko'nikmalaringizni ko'rsating** — ayniqsa talab yuqori texnologiyalar\n4. **Rezyumeni yangilab turing** — yangi profillar yuqoriroq ko'rsatiladi\n5. **Yangi ko'nikmalar o'rganing** — sertifikatlar bozor qiymatini oshiradi\n6. **Bozorni o'rganing** — mintaqangizdagi narxlarni biling\n7. **Portfolio yarating** — faqat gapirib emas, ko'rsating\n\nProfil balingiz: **%d/100**\nTaxminiy maosh: **%s %s – %s %s**\n\nProfil bali qancha yuqori bo'lsa, takliflar shuncha yaxshi bo'ladi!",
+}
+
+var msgMenuUpdated = map[string]string{
+	"en": "🔄 Bot updated! Check out the menu below 👇",
+	"ru": "🔄 Бот обновлён! Используй меню ниже 👇",
+	"uz": "🔄 Bot yangilandi! Quyidagi menyudan foydalaning 👇",
 }
 
 var msgResumeSuccess = map[string]string{
@@ -253,6 +289,40 @@ func (tb *Bot) Stop() {
 	log.Println("stopping telegram bot...")
 	tb.bot.Stop()
 	log.Println("telegram bot stopped")
+}
+
+// BroadcastMenu sends the updated menu to all existing users.
+// Should be called in a goroutine after bot.Start().
+func (tb *Bot) BroadcastMenu() {
+	time.Sleep(3 * time.Second)
+
+	ctx := context.Background()
+	users, err := tb.botSvc.ListAllUsers(ctx)
+	if err != nil {
+		log.Printf("broadcast menu: failed to list users: %v", err)
+		return
+	}
+
+	log.Printf("broadcast menu: sending to %d users", len(users))
+	sent := 0
+	for _, user := range users {
+		if user.TelegramID == "" {
+			continue
+		}
+		tgID, err := strconv.ParseInt(user.TelegramID, 10, 64)
+		if err != nil {
+			continue
+		}
+		lang := langOrDefault(user.Language)
+		_, err = tb.bot.Send(&tele.User{ID: tgID}, msgMenuUpdated[lang], userMenu(lang))
+		if err != nil {
+			log.Printf("broadcast menu: failed to send to %s: %v", user.TelegramID, err)
+			continue
+		}
+		sent++
+		time.Sleep(50 * time.Millisecond)
+	}
+	log.Printf("broadcast menu: sent to %d/%d users", sent, len(users))
 }
 
 func (tb *Bot) registerHandlers() {
@@ -371,14 +441,31 @@ func (tb *Bot) registerHandlers() {
 			_ = c.Send(fmt.Sprintf(msgSalaryResult[lang], minStr, result.Salary.Currency, maxStr, result.Salary.Currency))
 		}
 
-		if tb.webAppURL != "" {
-			markup := &tele.ReplyMarkup{}
-			markup.Inline(
-				markup.Row(tele.Btn{Text: msgBtnViewProfile[lang], WebApp: &tele.WebApp{URL: tb.webAppURL + "?view=profile"}}),
-			)
-			return c.Send(msgProfileReady[lang], markup)
+		return c.Send(msgProfileReady[lang], userMenu(lang))
+	})
+
+	// Change language callback — updates user language and refreshes menu
+	bot.Handle(&tele.Btn{Unique: "chg_lang"}, func(c tele.Context) error {
+		sender := c.Sender()
+		newLang := c.Callback().Data
+		if newLang != "en" && newLang != "ru" && newLang != "uz" {
+			return c.Respond(&tele.CallbackResponse{Text: "Unknown language"})
 		}
-		return c.Send(msgProfileReady[lang])
+
+		_ = c.Respond(&tele.CallbackResponse{})
+		_ = c.Delete()
+
+		user, err := ensureUser(ctx, botSvc, sender)
+		if err != nil {
+			return c.Send(msgError[newLang])
+		}
+
+		if _, err := botSvc.UpdateLanguage(ctx, user.ID, newLang); err != nil {
+			log.Printf("change language error for %d: %v", sender.ID, err)
+			return c.Send(msgError[newLang])
+		}
+
+		return c.Send(msgLangChanged[newLang], userMenu(newLang))
 	})
 
 	// Contact (phone number) handler — after phone, show goal buttons
@@ -441,10 +528,13 @@ func (tb *Bot) registerHandlers() {
 
 		// Handle menu button taps
 		text := c.Text()
-		if isMenuButton(text, menuBtnUpdateResume) {
+		if isMenuButton(text, menuBtnViewProfile) {
 			if tb.webAppURL != "" {
 				return c.Send(msgOpenProfile[lang], profileViewInline(lang, tb.webAppURL))
 			}
+			return c.Send(msgOpenProfile[lang])
+		}
+		if isMenuButton(text, menuBtnUpdateResume) {
 			return c.Send(msgSendResume[lang])
 		}
 		if isMenuButton(text, menuBtnSearchVacancies) {
@@ -452,6 +542,26 @@ func (tb *Bot) registerHandlers() {
 				return c.Send(msgOpenSearch[lang], searchVacanciesInline(lang, tb.webAppURL))
 			}
 			return nil
+		}
+		if isMenuButton(text, menuBtnChangeLang) {
+			markup := &tele.ReplyMarkup{}
+			markup.Inline(
+				markup.Row(
+					markup.Data("🇬🇧 English", "chg_lang", "en"),
+					markup.Data("🇷🇺 Русский", "chg_lang", "ru"),
+					markup.Data("🇺🇿 O'zbek", "chg_lang", "uz"),
+				),
+			)
+			return c.Send(msgChooseLang[lang], markup)
+		}
+		if isMenuButton(text, menuBtnSalaryTips) {
+			minStr := formatNumber(int64(user.EstimatedSalaryMin))
+			maxStr := formatNumber(int64(user.EstimatedSalaryMax))
+			currency := user.EstimatedSalaryCurrency
+			if currency == "" {
+				currency = "USD"
+			}
+			return c.Send(fmt.Sprintf(msgSalaryTips[lang], user.ProfileScore, minStr, currency, maxStr, currency), &tele.SendOptions{ParseMode: tele.ModeMarkdown})
 		}
 
 		// Treat as resume text
@@ -697,8 +807,9 @@ func anythingElseMarkup(lang string) *tele.ReplyMarkup {
 func userMenu(lang string) *tele.ReplyMarkup {
 	markup := &tele.ReplyMarkup{ResizeKeyboard: true}
 	markup.Reply(
-		markup.Row(tele.Btn{Text: menuBtnUpdateResume[lang]}),
-		markup.Row(tele.Btn{Text: menuBtnSearchVacancies[lang]}),
+		markup.Row(tele.Btn{Text: menuBtnViewProfile[lang]}, tele.Btn{Text: menuBtnUpdateResume[lang]}),
+		markup.Row(tele.Btn{Text: menuBtnSearchVacancies[lang]}, tele.Btn{Text: menuBtnSalaryTips[lang]}),
+		markup.Row(tele.Btn{Text: menuBtnChangeLang[lang]}),
 	)
 	return markup
 }
