@@ -87,3 +87,7 @@ func (s *UserService) DeleteUser(ctx context.Context, id uuid.UUID) error {
 func (s *UserService) SetProfileScore(ctx context.Context, id uuid.UUID, score int32) error {
 	return s.repo.SetProfileScore(ctx, id, score)
 }
+
+func (s *UserService) SetEstimatedSalary(ctx context.Context, id uuid.UUID, min, max int32, currency string) error {
+	return s.repo.SetEstimatedSalary(ctx, id, min, max, currency)
+}
