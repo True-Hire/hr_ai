@@ -1,0 +1,3 @@
+ALTER TABLE users ADD COLUMN estimated_salary_min INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE users ADD COLUMN estimated_salary_max INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE users ADD COLUMN estimated_salary_currency TEXT NOT NULL DEFAULT 'USD';

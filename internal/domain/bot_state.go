@@ -9,4 +9,5 @@ const (
 	BotStateChoosingLanguage = "choosing_language"
 	BotStateChoosingRole     = "choosing_role"
 	BotStateSharingPhone     = "sharing_phone"
+	BotStateCollectingResume = "collecting_resume"
 )

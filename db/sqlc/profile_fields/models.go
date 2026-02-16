@@ -141,28 +141,31 @@ type Skill struct {
 }
 
 type User struct {
-	ID              pgtype.UUID
-	FirstName       string
-	LastName        string
-	Patronymic      pgtype.Text
-	Phone           pgtype.Text
-	Telegram        pgtype.Text
-	Email           pgtype.Text
-	Gender          pgtype.Text
-	Country         pgtype.Text
-	Region          pgtype.Text
-	Nationality     pgtype.Text
-	ProfilePicUrl   pgtype.Text
-	Status          string
-	TariffType      string
-	JobStatus       pgtype.Text
-	ActivityType    pgtype.Text
-	Specializations []string
-	CreatedAt       pgtype.Timestamp
-	PasswordHash    pgtype.Text
-	TelegramID      pgtype.Text
-	Language        string
-	ProfileScore    int32
+	ID                      pgtype.UUID
+	FirstName               string
+	LastName                string
+	Patronymic              pgtype.Text
+	Phone                   pgtype.Text
+	Telegram                pgtype.Text
+	Email                   pgtype.Text
+	Gender                  pgtype.Text
+	Country                 pgtype.Text
+	Region                  pgtype.Text
+	Nationality             pgtype.Text
+	ProfilePicUrl           pgtype.Text
+	Status                  string
+	TariffType              string
+	JobStatus               pgtype.Text
+	ActivityType            pgtype.Text
+	Specializations         []string
+	CreatedAt               pgtype.Timestamp
+	PasswordHash            pgtype.Text
+	TelegramID              pgtype.Text
+	Language                string
+	ProfileScore            int32
+	EstimatedSalaryMin      int32
+	EstimatedSalaryMax      int32
+	EstimatedSalaryCurrency string
 }
 
 type UserSession struct {

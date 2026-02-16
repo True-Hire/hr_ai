@@ -362,6 +362,25 @@ func (c *Client) ParseProfileFromFile(ctx context.Context, fileData []byte, mime
 	return c.callGemini(ctx, parts)
 }
 
+// SalaryEstimation is the result from Gemini salary estimation.
+type SalaryEstimation struct {
+	SalaryMin int32  `json:"salary_min"`
+	SalaryMax int32  `json:"salary_max"`
+	Currency  string `json:"currency"`
+}
+
+func (c *Client) EstimateSalary(ctx context.Context, profileSummary, country string) (*SalaryEstimation, error) {
+	text, err := c.generateJSON(ctx, []part{{Text: buildSalaryEstimationPrompt(profileSummary, country)}})
+	if err != nil {
+		return nil, err
+	}
+	var result SalaryEstimation
+	if err := json.Unmarshal([]byte(text), &result); err != nil {
+		return nil, fmt.Errorf("parse gemini salary JSON: %w (raw: %s)", err, text)
+	}
+	return &result, nil
+}
+
 func (c *Client) callGemini(ctx context.Context, parts []part) (*ParsedProfile, error) {
 	text, err := c.generateJSON(ctx, parts)
 	if err != nil {

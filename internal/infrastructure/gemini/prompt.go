@@ -306,6 +306,32 @@ Text to translate:
 %s`, text)
 }
 
+func buildSalaryEstimationPrompt(profileSummary, country string) string {
+	return fmt.Sprintf(`You are an expert salary analyst. Based on the professional profile below and the person's country of residence, estimate the average monthly salary range this person could realistically earn.
+
+PROFILE:
+%s
+
+COUNTRY: %s
+
+IMPORTANT RULES:
+- Estimate the salary for the person's COUNTRY, not US/EU rates (unless they live there)
+- Be REALISTIC — use actual market data for that country
+- Consider: experience level, skills, specialization, industry
+- Return salary in the most common currency for that country (e.g. UZS for Uzbekistan, RUB for Russia, USD for USA, KZT for Kazakhstan, etc.)
+- If the country is empty or unknown, default to USD and international remote rates
+- salary_min is the lower end of what this person could earn monthly
+- salary_max is the upper end of what this person could earn monthly
+- Be honest and realistic, not optimistic
+
+Return ONLY valid JSON:
+{
+  "salary_min": 5000000,
+  "salary_max": 8000000,
+  "currency": "UZS"
+}`, profileSummary, country)
+}
+
 func buildFilePrompt() string {
 	return `The uploaded file is a resume, CV, profile document, or voice/audio recording where a person describes their experience, skills, and background. Extract all information from it.
 
