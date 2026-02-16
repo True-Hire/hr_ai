@@ -90,6 +90,7 @@ func (f *FlexibleFields) UnmarshalJSON(data []byte) error {
 // ParsedProfile is the structured result from Gemini profile parsing.
 type ParsedProfile struct {
 	SourceLang     string               `json:"source_lang"`
+	ProfileScore   int                  `json:"profile_score"`
 	Fields         FlexibleFields       `json:"fields"`
 	Skills         LangStringSlice      `json:"skills"`
 	Certifications LangStringSlice      `json:"certifications"`

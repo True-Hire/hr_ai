@@ -83,3 +83,7 @@ func (s *UserService) UpdateLanguage(ctx context.Context, id uuid.UUID, language
 func (s *UserService) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	return s.repo.Delete(ctx, id)
 }
+
+func (s *UserService) SetProfileScore(ctx context.Context, id uuid.UUID, score int32) error {
+	return s.repo.SetProfileScore(ctx, id, score)
+}

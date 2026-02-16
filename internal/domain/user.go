@@ -31,6 +31,7 @@ type User struct {
 	Specializations []string
 	PasswordHash    string
 	Language        string
+	ProfileScore    int32
 	CreatedAt       time.Time
 }
 
@@ -45,4 +46,5 @@ type UserRepository interface {
 	GetByEmail(ctx context.Context, email string) (*User, error)
 	GetByTelegramID(ctx context.Context, telegramID string) (*User, error)
 	SetPassword(ctx context.Context, id uuid.UUID, hash string) error
+	SetProfileScore(ctx context.Context, id uuid.UUID, score int32) error
 }
