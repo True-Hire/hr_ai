@@ -44,6 +44,7 @@ func (r *UserRepository) Create(ctx context.Context, user *domain.User) (*domain
 		ActivityType:    textToPgtype(user.ActivityType),
 		Specializations: user.Specializations,
 		Language:        user.Language,
+		ProfileScore:    user.ProfileScore,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("create user: %w", err)
@@ -168,6 +169,17 @@ func (r *UserRepository) SetPassword(ctx context.Context, id uuid.UUID, hash str
 	return nil
 }
 
+func (r *UserRepository) SetProfileScore(ctx context.Context, id uuid.UUID, score int32) error {
+	err := r.q.SetProfileScore(ctx, usersdb.SetProfileScoreParams{
+		ID:           uuidToPgtype(id),
+		ProfileScore: score,
+	})
+	if err != nil {
+		return fmt.Errorf("set profile score: %w", err)
+	}
+	return nil
+}
+
 func userToDomain(row usersdb.User) *domain.User {
 	return &domain.User{
 		ID:              pgtypeToUUID(row.ID),
@@ -190,6 +202,7 @@ func userToDomain(row usersdb.User) *domain.User {
 		Specializations: row.Specializations,
 		PasswordHash:    pgtypeToString(row.PasswordHash),
 		Language:        row.Language,
+		ProfileScore:    row.ProfileScore,
 		CreatedAt:       row.CreatedAt.Time,
 	}
 }
