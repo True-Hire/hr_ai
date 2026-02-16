@@ -143,51 +143,57 @@ func (s *BotService) HandleRoleSelection(ctx context.Context, telegramID int64, 
 	return language, isHR, nil
 }
 
-// HandlePhoneShared updates the phone number on the user or HR record and clears state.
-func (s *BotService) HandlePhoneShared(ctx context.Context, telegramID int64, phone string) (string, error) {
+// PhoneSharedResult holds the result of phone sharing step.
+type PhoneSharedResult struct {
+	Language string
+	Goal     string
+}
+
+// HandlePhoneShared updates the phone number on the user record and clears state.
+func (s *BotService) HandlePhoneShared(ctx context.Context, telegramID int64, phone string) (*PhoneSharedResult, error) {
 	tgID := strconv.FormatInt(telegramID, 10)
 
 	state, err := s.stateSvc.GetState(ctx, tgID)
 	if err != nil || state == nil {
-		return "", fmt.Errorf("no active state for phone sharing")
+		return nil, fmt.Errorf("no active state for phone sharing")
 	}
 
 	language := state.Data["language"]
 	if language == "" {
 		language = "en"
 	}
-	role := state.Data["role"]
+	goal := state.Data["goal"]
 
 	if err := s.stateSvc.ClearState(ctx, tgID); err != nil {
-		return "", fmt.Errorf("clear state: %w", err)
+		return nil, fmt.Errorf("clear state: %w", err)
 	}
 
-	if role == "hr" {
-		hr, err := s.hrSvc.GetByTelegramID(ctx, tgID)
-		if err != nil {
-			return language, fmt.Errorf("get hr for phone update: %w", err)
-		}
-		hr.Phone = phone
-		if _, err := s.hrSvc.UpdateCompanyHR(ctx, hr); err != nil {
-			return language, fmt.Errorf("update hr phone: %w", err)
-		}
-	} else {
-		user, err := s.userSvc.GetByTelegramID(ctx, tgID)
-		if err != nil {
-			return language, fmt.Errorf("get user for phone update: %w", err)
-		}
-		user.Phone = phone
-		if _, err := s.userSvc.UpdateUser(ctx, user); err != nil {
-			return language, fmt.Errorf("update user phone: %w", err)
-		}
+	user, err := s.userSvc.GetByTelegramID(ctx, tgID)
+	if err != nil {
+		return &PhoneSharedResult{Language: language, Goal: goal}, fmt.Errorf("get user for phone update: %w", err)
+	}
+	user.Phone = phone
+	if _, err := s.userSvc.UpdateUser(ctx, user); err != nil {
+		return &PhoneSharedResult{Language: language, Goal: goal}, fmt.Errorf("update user phone: %w", err)
 	}
 
-	return language, nil
+	return &PhoneSharedResult{Language: language, Goal: goal}, nil
 }
 
 func (s *BotService) GetBotState(ctx context.Context, telegramID int64) (*domain.BotState, error) {
 	tgID := strconv.FormatInt(telegramID, 10)
 	return s.stateSvc.GetState(ctx, tgID)
+}
+
+// SetGoal stores the user's selected goal (salary/job) in the bot state data.
+func (s *BotService) SetGoal(ctx context.Context, telegramID int64, goal string) {
+	tgID := strconv.FormatInt(telegramID, 10)
+	state, err := s.stateSvc.GetState(ctx, tgID)
+	if err != nil || state == nil {
+		return
+	}
+	state.Data["goal"] = goal
+	_ = s.stateSvc.SetStateWithData(ctx, tgID, state.State, state.Data)
 }
 
 func (s *BotService) HandleResumeText(ctx context.Context, userID uuid.UUID, text string) (*ParseResult, error) {
