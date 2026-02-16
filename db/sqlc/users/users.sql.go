@@ -34,7 +34,7 @@ INSERT INTO users (
 )
 RETURNING id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score, estimated_salary_min, estimated_salary_max, estimated_salary_currency
 `
 
 type CreateUserParams struct {
@@ -107,6 +107,9 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.TelegramID,
 		&i.Language,
 		&i.ProfileScore,
+		&i.EstimatedSalaryMin,
+		&i.EstimatedSalaryMax,
+		&i.EstimatedSalaryCurrency,
 	)
 	return i, err
 }
@@ -124,7 +127,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score, estimated_salary_min, estimated_salary_max, estimated_salary_currency
 FROM users
 WHERE email = $1
 `
@@ -155,6 +158,9 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email pgtype.Text) (User, 
 		&i.TelegramID,
 		&i.Language,
 		&i.ProfileScore,
+		&i.EstimatedSalaryMin,
+		&i.EstimatedSalaryMax,
+		&i.EstimatedSalaryCurrency,
 	)
 	return i, err
 }
@@ -162,7 +168,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email pgtype.Text) (User, 
 const getUserByID = `-- name: GetUserByID :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score, estimated_salary_min, estimated_salary_max, estimated_salary_currency
 FROM users
 WHERE id = $1
 `
@@ -193,6 +199,9 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error)
 		&i.TelegramID,
 		&i.Language,
 		&i.ProfileScore,
+		&i.EstimatedSalaryMin,
+		&i.EstimatedSalaryMax,
+		&i.EstimatedSalaryCurrency,
 	)
 	return i, err
 }
@@ -200,7 +209,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error)
 const getUserByPhone = `-- name: GetUserByPhone :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score, estimated_salary_min, estimated_salary_max, estimated_salary_currency
 FROM users
 WHERE phone = $1
 `
@@ -231,6 +240,9 @@ func (q *Queries) GetUserByPhone(ctx context.Context, phone pgtype.Text) (User, 
 		&i.TelegramID,
 		&i.Language,
 		&i.ProfileScore,
+		&i.EstimatedSalaryMin,
+		&i.EstimatedSalaryMax,
+		&i.EstimatedSalaryCurrency,
 	)
 	return i, err
 }
@@ -238,7 +250,7 @@ func (q *Queries) GetUserByPhone(ctx context.Context, phone pgtype.Text) (User, 
 const getUserByTelegramID = `-- name: GetUserByTelegramID :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score, estimated_salary_min, estimated_salary_max, estimated_salary_currency
 FROM users
 WHERE telegram_id = $1
 `
@@ -269,6 +281,9 @@ func (q *Queries) GetUserByTelegramID(ctx context.Context, telegramID pgtype.Tex
 		&i.TelegramID,
 		&i.Language,
 		&i.ProfileScore,
+		&i.EstimatedSalaryMin,
+		&i.EstimatedSalaryMax,
+		&i.EstimatedSalaryCurrency,
 	)
 	return i, err
 }
@@ -276,7 +291,7 @@ func (q *Queries) GetUserByTelegramID(ctx context.Context, telegramID pgtype.Tex
 const listUsers = `-- name: ListUsers :many
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score, estimated_salary_min, estimated_salary_max, estimated_salary_currency
 FROM users
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2
@@ -319,6 +334,9 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 			&i.TelegramID,
 			&i.Language,
 			&i.ProfileScore,
+			&i.EstimatedSalaryMin,
+			&i.EstimatedSalaryMax,
+			&i.EstimatedSalaryCurrency,
 		); err != nil {
 			return nil, err
 		}
@@ -328,6 +346,27 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 		return nil, err
 	}
 	return items, nil
+}
+
+const setEstimatedSalary = `-- name: SetEstimatedSalary :exec
+UPDATE users SET estimated_salary_min = $2, estimated_salary_max = $3, estimated_salary_currency = $4 WHERE id = $1
+`
+
+type SetEstimatedSalaryParams struct {
+	ID                      pgtype.UUID
+	EstimatedSalaryMin      int32
+	EstimatedSalaryMax      int32
+	EstimatedSalaryCurrency string
+}
+
+func (q *Queries) SetEstimatedSalary(ctx context.Context, arg SetEstimatedSalaryParams) error {
+	_, err := q.db.Exec(ctx, setEstimatedSalary,
+		arg.ID,
+		arg.EstimatedSalaryMin,
+		arg.EstimatedSalaryMax,
+		arg.EstimatedSalaryCurrency,
+	)
+	return err
 }
 
 const setProfileScore = `-- name: SetProfileScore :exec
@@ -381,7 +420,7 @@ SET first_name = COALESCE(NULLIF($1, ''), first_name),
 WHERE id = $19
 RETURNING id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score, estimated_salary_min, estimated_salary_max, estimated_salary_currency
 `
 
 type UpdateUserParams struct {
@@ -452,6 +491,9 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.TelegramID,
 		&i.Language,
 		&i.ProfileScore,
+		&i.EstimatedSalaryMin,
+		&i.EstimatedSalaryMax,
+		&i.EstimatedSalaryCurrency,
 	)
 	return i, err
 }
