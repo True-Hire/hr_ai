@@ -227,38 +227,10 @@ func (tb *Bot) registerHandlers() {
 		return c.Send(fmt.Sprintf(msgWelcomeBackUser[lang], result.User.FirstName), userMenu(lang))
 	})
 
-	// Language selection callback
+	// Language selection callback — creates user and asks for phone
 	bot.Handle(&tele.Btn{Unique: "lang"}, func(c tele.Context) error {
 		language := c.Callback().Data
 		if language == "" {
-			return c.Respond(&tele.CallbackResponse{Text: "Unknown action"})
-		}
-
-		sender := c.Sender()
-
-		lang, err := botSvc.HandleLanguageSelection(ctx, sender.ID, language)
-		if err != nil {
-			log.Printf("language selection error for %d: %v", sender.ID, err)
-			return c.Respond(&tele.CallbackResponse{Text: msgError["en"]})
-		}
-
-		_ = c.Respond(&tele.CallbackResponse{})
-		_ = c.Delete()
-
-		markup := &tele.ReplyMarkup{}
-		btnSalary := markup.Data(msgBtnDetermineSalary[lang], "goal", "salary")
-		btnJob := markup.Data(msgBtnFindJob[lang], "goal", "job")
-		markup.Inline(
-			markup.Row(btnSalary),
-			markup.Row(btnJob),
-		)
-		return c.Send(msgChooseRole[lang], markup)
-	})
-
-	// Goal selection callback (salary / job)
-	bot.Handle(&tele.Btn{Unique: "goal"}, func(c tele.Context) error {
-		goal := c.Callback().Data
-		if goal != "salary" && goal != "job" {
 			return c.Respond(&tele.CallbackResponse{Text: "Unknown action"})
 		}
 
@@ -274,20 +246,14 @@ func (tb *Bot) registerHandlers() {
 			}
 		}
 
-		// Always create as job seeker, pass goal so state preserves it
-		lang, _, err := botSvc.HandleRoleSelection(ctx, sender.ID, "seeker", sender.FirstName, sender.LastName, sender.Username, photoData)
+		lang, err := botSvc.HandleLanguageSelection(ctx, sender.ID, language, sender.FirstName, sender.LastName, sender.Username, photoData)
 		if err != nil {
-			log.Printf("goal selection error for %d: %v", sender.ID, err)
-			return c.Respond(&tele.CallbackResponse{Text: msgError[langOrDefault(lang)]})
+			log.Printf("language selection error for %d: %v", sender.ID, err)
+			return c.Respond(&tele.CallbackResponse{Text: msgError["en"]})
 		}
-
-		// Store the goal in state data
-		botSvc.SetGoal(ctx, sender.ID, goal)
 
 		_ = c.Respond(&tele.CallbackResponse{})
 		_ = c.Delete()
-
-		lang = langOrDefault(lang)
 
 		// Ask for phone number via reply keyboard
 		markup := &tele.ReplyMarkup{ResizeKeyboard: true, OneTimeKeyboard: true}
@@ -297,7 +263,32 @@ func (tb *Bot) registerHandlers() {
 		return c.Send(msgSharePhone[lang], markup)
 	})
 
-	// Contact (phone number) handler
+	// Goal selection callback (salary / job)
+	bot.Handle(&tele.Btn{Unique: "goal"}, func(c tele.Context) error {
+		goal := c.Callback().Data
+		if goal != "salary" && goal != "job" {
+			return c.Respond(&tele.CallbackResponse{Text: "Unknown action"})
+		}
+
+		lang, err := botSvc.HandleGoalSelection(ctx, c.Sender().ID)
+		if err != nil {
+			log.Printf("goal selection error for %d: %v", c.Sender().ID, err)
+			return c.Respond(&tele.CallbackResponse{Text: msgError[langOrDefault(lang)]})
+		}
+
+		_ = c.Respond(&tele.CallbackResponse{})
+		_ = c.Delete()
+
+		lang = langOrDefault(lang)
+
+		if goal == "salary" {
+			return c.Send(msgDetermineSalary[lang])
+		}
+
+		return c.Send(fmt.Sprintf(msgRegisteredUser[lang], c.Sender().FirstName), userMenu(lang))
+	})
+
+	// Contact (phone number) handler — after phone, show goal buttons
 	bot.Handle(tele.OnContact, func(c tele.Context) error {
 		sender := c.Sender()
 		contact := c.Message().Contact
@@ -306,23 +297,22 @@ func (tb *Bot) registerHandlers() {
 			return nil
 		}
 
-		result, err := botSvc.HandlePhoneShared(ctx, sender.ID, contact.PhoneNumber)
+		lang, err := botSvc.HandlePhoneShared(ctx, sender.ID, contact.PhoneNumber)
 		if err != nil {
 			log.Printf("phone shared error for %d: %v", sender.ID, err)
-			lang := "en"
-			if result != nil {
-				lang = langOrDefault(result.Language)
-			}
-			return c.Send(msgError[lang])
+			return c.Send(msgError[langOrDefault(lang)])
 		}
 
-		lang := langOrDefault(result.Language)
+		lang = langOrDefault(lang)
 
-		if result.Goal == "salary" {
-			return c.Send(msgDetermineSalary[lang], &tele.ReplyMarkup{RemoveKeyboard: true})
-		}
-
-		return c.Send(fmt.Sprintf(msgRegisteredUser[lang], sender.FirstName), userMenu(lang))
+		markup := &tele.ReplyMarkup{}
+		btnSalary := markup.Data(msgBtnDetermineSalary[lang], "goal", "salary")
+		btnJob := markup.Data(msgBtnFindJob[lang], "goal", "job")
+		markup.Inline(
+			markup.Row(btnSalary),
+			markup.Row(btnJob),
+		)
+		return c.Send(msgChooseRole[lang], markup)
 	})
 
 	// Text message handler
