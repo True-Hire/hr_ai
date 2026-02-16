@@ -180,6 +180,19 @@ func (r *UserRepository) SetProfileScore(ctx context.Context, id uuid.UUID, scor
 	return nil
 }
 
+func (r *UserRepository) SetEstimatedSalary(ctx context.Context, id uuid.UUID, min, max int32, currency string) error {
+	err := r.q.SetEstimatedSalary(ctx, usersdb.SetEstimatedSalaryParams{
+		ID:                      uuidToPgtype(id),
+		EstimatedSalaryMin:      min,
+		EstimatedSalaryMax:      max,
+		EstimatedSalaryCurrency: currency,
+	})
+	if err != nil {
+		return fmt.Errorf("set estimated salary: %w", err)
+	}
+	return nil
+}
+
 func userToDomain(row usersdb.User) *domain.User {
 	return &domain.User{
 		ID:              pgtypeToUUID(row.ID),
@@ -200,9 +213,12 @@ func userToDomain(row usersdb.User) *domain.User {
 		JobStatus:       pgtypeToString(row.JobStatus),
 		ActivityType:    pgtypeToString(row.ActivityType),
 		Specializations: row.Specializations,
-		PasswordHash:    pgtypeToString(row.PasswordHash),
-		Language:        row.Language,
-		ProfileScore:    row.ProfileScore,
-		CreatedAt:       row.CreatedAt.Time,
+		PasswordHash:            pgtypeToString(row.PasswordHash),
+		Language:                row.Language,
+		ProfileScore:            row.ProfileScore,
+		EstimatedSalaryMin:      row.EstimatedSalaryMin,
+		EstimatedSalaryMax:      row.EstimatedSalaryMax,
+		EstimatedSalaryCurrency: row.EstimatedSalaryCurrency,
+		CreatedAt:               row.CreatedAt.Time,
 	}
 }
