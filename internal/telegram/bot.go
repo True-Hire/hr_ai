@@ -17,39 +17,33 @@ import (
 // -- Localized messages (all keys: en, ru, uz) --
 
 var msgWelcomeNew = map[string]string{
-	"en": "👋 Hi and welcome!\n\nThis bot helps people and companies find each other faster using AI.\n\n🔹 Looking for a job?\nUpload your resume and get matched with relevant positions.\n\n🔹 Hiring for your company?\nCreate vacancies and find the right candidates without endless searching.\n\nSmart search, multiple languages, better matches.\n\n🌍 Choose your language to get started:",
-	"ru": "👋 Привет и добро пожаловать!\n\nЭтот бот помогает людям и компаниям найти друг друга быстрее с помощью ИИ.\n\n🔹 Ищете работу?\nЗагрузите резюме и получите подходящие вакансии.\n\n🔹 Нанимаете сотрудников?\nСоздавайте вакансии и находите подходящих кандидатов без лишних поисков.\n\nУмный поиск, несколько языков, лучшие совпадения.\n\n🌍 Выберите язык для начала:",
-	"uz": "👋 Salom va xush kelibsiz!\n\nBu bot odamlar va kompaniyalarga sun'iy intellekt yordamida bir-birini tezroq topishga yordam beradi.\n\n🔹 Ish qidiryapsizmi?\nRezyumeni yuklang va mos vakansiyalarga ega bo'ling.\n\n🔹 Xodim yollamoqchimisiz?\nVakansiyalar yarating va mos nomzodlarni ortiqcha qidiruvlarsiz toping.\n\nAqlli qidiruv, bir nechta til, yaxshiroq natijalar.\n\n🌍 Boshlash uchun tilni tanlang:",
+	"en": "👋 Hi and welcome!\n\nI'm your AI-HR manager. I'll help you understand your real market value, find the right job, and earn more.\n\n🌍 Choose your language to get started:",
+	"ru": "👋 Привет и добро пожаловать!\n\nЯ твой AI-HR менеджер. Помогу понять твою реальную стоимость на рынке, найти подходящую работу и зарабатывать больше.\n\n🌍 Выбери язык для начала:",
+	"uz": "👋 Salom va xush kelibsiz!\n\nMen sizning AI-HR menejeringizman. Bozordagi haqiqiy qiymatni tushunishga, to'g'ri ish topishga va ko'proq ishlashga yordam beraman.\n\n🌍 Boshlash uchun tilni tanlang:",
 }
 
 var msgChooseRole = map[string]string{
-	"en": "Great! Now tell us — what brings you here?\n\n🔹 Looking for a job? Choose \"Job Seeker\"\n🔹 Hiring for your company? Choose \"Hirer\"",
-	"ru": "Отлично! Расскажите нам — что привело вас сюда?\n\n🔹 Ищете работу? Выберите «Соискатель»\n🔹 Нанимаете сотрудников? Выберите «Работодатель»",
-	"uz": "Ajoyib! Ayting-chi — sizni bu yerga nima olib keldi?\n\n🔹 Ish qidiryapsizmi? «Ish izlovchi» ni tanlang\n🔹 Xodim yollamoqchimisiz? «Ish beruvchi» ni tanlang",
+	"en": "Hi 👋\n\nI'm your AI-HR manager. I'll help you understand your real market value and earn more.\n\nChoose what you need 👇",
+	"ru": "Привет 👋\n\nЯ твой AI-HR менеджер. Помогу понять твою реальную стоимость на рынке и зарабатывать больше.\n\nВыбери, что тебе нужно 👇",
+	"uz": "Salom 👋\n\nMen sizning AI-HR menejeringizman. Bozordagi haqiqiy qiymatni tushunishga va ko'proq ishlashga yordam beraman.\n\nSizga nima kerakligini tanlang 👇",
 }
 
-var msgBtnJobSeeker = map[string]string{
-	"en": "🔍 Job Seeker",
-	"ru": "🔍 Соискатель",
-	"uz": "🔍 Ish izlovchi",
+var msgBtnDetermineSalary = map[string]string{
+	"en": "🔘 Determine salary",
+	"ru": "🔘 Определить зарплату",
+	"uz": "🔘 Maoshni aniqlash",
 }
 
-var msgBtnHirer = map[string]string{
-	"en": "🏢 Hirer",
-	"ru": "🏢 Работодатель",
-	"uz": "🏢 Ish beruvchi",
+var msgBtnFindJob = map[string]string{
+	"en": "🔘 Find a job",
+	"ru": "🔘 Найти работу",
+	"uz": "🔘 Ish topish",
 }
 
 var msgSharePhone = map[string]string{
 	"en": "📱 Almost done! Please share your phone number so employers can reach you.",
 	"ru": "📱 Почти готово! Пожалуйста, поделитесь номером телефона, чтобы работодатели могли с вами связаться.",
 	"uz": "📱 Deyarli tayyor! Iltimos, telefon raqamingizni ulashing, shunda ish beruvchilar siz bilan bog'lanishi mumkin.",
-}
-
-var msgSharePhoneHR = map[string]string{
-	"en": "📱 Almost done! Please share your phone number so candidates can reach you.",
-	"ru": "📱 Почти готово! Пожалуйста, поделитесь номером телефона, чтобы кандидаты могли с вами связаться.",
-	"uz": "📱 Deyarli tayyor! Iltimos, telefon raqamingizni ulashing, shunda nomzodlar siz bilan bog'lanishi mumkin.",
 }
 
 var msgBtnSharePhone = map[string]string{
@@ -70,12 +64,6 @@ var msgRegisteredUser = map[string]string{
 	"uz": "✅ Ro'yxatdan o'tish yakunlandi, %s! Xush kelibsiz!\n\nBoshlash uchun quyidagi menyudan foydalaning 👇",
 }
 
-var msgRegisteredHR = map[string]string{
-	"en": "✅ Registration complete, %s! Welcome aboard!\n\nYou can now use the menu below to get started 👇",
-	"ru": "✅ Регистрация завершена, %s! Добро пожаловать!\n\nИспользуйте меню ниже, чтобы начать 👇",
-	"uz": "✅ Ro'yxatdan o'tish yakunlandi, %s! Xush kelibsiz!\n\nBoshlash uchun quyidagi menyudan foydalaning 👇",
-}
-
 // -- Menu buttons for job seekers --
 
 var menuBtnUpdateResume = map[string]string{
@@ -90,33 +78,7 @@ var menuBtnSearchVacancies = map[string]string{
 	"uz": "🔍 Vakansiyalarni qidirish",
 }
 
-// -- Menu buttons for HRs --
-
-var menuBtnCreateVacancy = map[string]string{
-	"en": "📝 Create Vacancy",
-	"ru": "📝 Создать вакансию",
-	"uz": "📝 Vakansiya yaratish",
-}
-
-var menuBtnMyVacancies = map[string]string{
-	"en": "📋 My Vacancies",
-	"ru": "📋 Мои вакансии",
-	"uz": "📋 Mening vakansiyalarim",
-}
-
-var menuBtnFindCandidates = map[string]string{
-	"en": "👥 Find Candidates",
-	"ru": "👥 Найти кандидатов",
-	"uz": "👥 Nomzodlarni topish",
-}
-
 var msgWelcomeBackUser = map[string]string{
-	"en": "👋 Welcome back %s! Glad to see you again.\n\nChoose an option from the menu below 👇",
-	"ru": "👋 С возвращением, %s! Рады снова вас видеть.\n\nВыберите нужный пункт в меню ниже 👇",
-	"uz": "👋 Qaytganingiz bilan, %s! Sizni yana ko'rib turganimizdan xursandmiz.\n\nQuyidagi menyudan tanlang 👇",
-}
-
-var msgWelcomeBackHR = map[string]string{
 	"en": "👋 Welcome back %s! Glad to see you again.\n\nChoose an option from the menu below 👇",
 	"ru": "👋 С возвращением, %s! Рады снова вас видеть.\n\nВыберите нужный пункт в меню ниже 👇",
 	"uz": "👋 Qaytganingiz bilan, %s! Sizni yana ko'rib turganimizdan xursandmiz.\n\nQuyidagi menyudan tanlang 👇",
@@ -129,9 +91,9 @@ var msgChooseLangReminder = map[string]string{
 }
 
 var msgChooseRoleReminder = map[string]string{
-	"en": "Please choose your role from the buttons above ☝️",
-	"ru": "Пожалуйста, выберите вашу роль, нажав на кнопку выше ☝️",
-	"uz": "Iltimos, yuqoridagi tugmalardan rolingizni tanlang ☝️",
+	"en": "Please choose an option from the buttons above ☝️",
+	"ru": "Пожалуйста, выбери один из вариантов выше ☝️",
+	"uz": "Iltimos, yuqoridagi tugmalardan birini tanlang ☝️",
 }
 
 var msgParsingResume = map[string]string{
@@ -255,11 +217,6 @@ func (tb *Bot) registerHandlers() {
 			return c.Send(msgWelcomeNew["en"], markup)
 		}
 
-		if result.IsHR {
-			lang := langOrDefault(result.HR.Language)
-			return c.Send(fmt.Sprintf(msgWelcomeBackHR[lang], result.HR.FirstName), hrMenu(lang))
-		}
-
 		lang := langOrDefault(result.User.Language)
 		return c.Send(fmt.Sprintf(msgWelcomeBackUser[lang], result.User.FirstName), userMenu(lang))
 	})
@@ -283,19 +240,19 @@ func (tb *Bot) registerHandlers() {
 		_ = c.Delete()
 
 		markup := &tele.ReplyMarkup{}
-		btnSeeker := markup.Data(msgBtnJobSeeker[lang], "role", "seeker")
-		btnHirer := markup.Data(msgBtnHirer[lang], "role", "hr")
+		btnSalary := markup.Data(msgBtnDetermineSalary[lang], "goal", "salary")
+		btnJob := markup.Data(msgBtnFindJob[lang], "goal", "job")
 		markup.Inline(
-			markup.Row(btnSeeker),
-			markup.Row(btnHirer),
+			markup.Row(btnSalary),
+			markup.Row(btnJob),
 		)
 		return c.Send(msgChooseRole[lang], markup)
 	})
 
-	// Role selection callback
-	bot.Handle(&tele.Btn{Unique: "role"}, func(c tele.Context) error {
-		role := c.Callback().Data
-		if role != "seeker" && role != "hr" {
+	// Goal selection callback (salary / job)
+	bot.Handle(&tele.Btn{Unique: "goal"}, func(c tele.Context) error {
+		goal := c.Callback().Data
+		if goal != "salary" && goal != "job" {
 			return c.Respond(&tele.CallbackResponse{Text: "Unknown action"})
 		}
 
@@ -311,9 +268,10 @@ func (tb *Bot) registerHandlers() {
 			}
 		}
 
-		lang, isHR, err := botSvc.HandleRoleSelection(ctx, sender.ID, role, sender.FirstName, sender.LastName, sender.Username, photoData)
+		// Always create as job seeker
+		lang, _, err := botSvc.HandleRoleSelection(ctx, sender.ID, "seeker", sender.FirstName, sender.LastName, sender.Username, photoData)
 		if err != nil {
-			log.Printf("role selection error for %d: %v", sender.ID, err)
+			log.Printf("goal selection error for %d: %v", sender.ID, err)
 			return c.Respond(&tele.CallbackResponse{Text: msgError[langOrDefault(lang)]})
 		}
 
@@ -323,16 +281,11 @@ func (tb *Bot) registerHandlers() {
 		lang = langOrDefault(lang)
 
 		// Ask for phone number via reply keyboard
-		phoneMsg := msgSharePhone[lang]
-		if isHR {
-			phoneMsg = msgSharePhoneHR[lang]
-		}
-
 		markup := &tele.ReplyMarkup{ResizeKeyboard: true, OneTimeKeyboard: true}
 		btnPhone := markup.Contact(msgBtnSharePhone[lang])
 		markup.Reply(markup.Row(btnPhone))
 
-		return c.Send(phoneMsg, markup)
+		return c.Send(msgSharePhone[lang], markup)
 	})
 
 	// Contact (phone number) handler
@@ -353,16 +306,7 @@ func (tb *Bot) registerHandlers() {
 
 		lang = langOrDefault(lang)
 
-		// Check if HR or user to send correct success message with menu
-		result, err := botSvc.HandleStart(ctx, sender.ID)
-		if err != nil {
-			return c.Send(fmt.Sprintf(msgRegisteredUser[lang], sender.FirstName), userMenu(lang))
-		}
-
-		if result.IsHR {
-			return c.Send(fmt.Sprintf(msgRegisteredHR[lang], result.HR.FirstName), hrMenu(lang))
-		}
-		return c.Send(fmt.Sprintf(msgRegisteredUser[lang], result.User.FirstName), userMenu(lang))
+		return c.Send(fmt.Sprintf(msgRegisteredUser[lang], sender.FirstName), userMenu(lang))
 	})
 
 	// Text message handler
@@ -395,11 +339,6 @@ func (tb *Bot) registerHandlers() {
 				return c.Send(msgOpenProfile[lang], profileViewInline(lang, tb.webAppURL))
 			}
 			return c.Send(msgSendResume[lang])
-		}
-		if isMenuButton(text, menuBtnCreateVacancy) ||
-			isMenuButton(text, menuBtnMyVacancies) || isMenuButton(text, menuBtnFindCandidates) {
-			// Placeholder for future functionality
-			return nil
 		}
 		if isMenuButton(text, menuBtnSearchVacancies) {
 			if tb.webAppURL != "" {
@@ -612,16 +551,6 @@ func profileViewInline(lang, webAppURL string) *tele.ReplyMarkup {
 	markup := &tele.ReplyMarkup{}
 	markup.Inline(
 		markup.Row(tele.Btn{Text: menuBtnUpdateResume[lang], WebApp: &tele.WebApp{URL: webAppURL + "?view=profile"}}),
-	)
-	return markup
-}
-
-func hrMenu(lang string) *tele.ReplyMarkup {
-	markup := &tele.ReplyMarkup{ResizeKeyboard: true}
-	markup.Reply(
-		markup.Row(tele.Btn{Text: menuBtnCreateVacancy[lang]}),
-		markup.Row(tele.Btn{Text: menuBtnMyVacancies[lang]}),
-		markup.Row(tele.Btn{Text: menuBtnFindCandidates[lang]}),
 	)
 	return markup
 }
