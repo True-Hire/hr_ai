@@ -5,12 +5,14 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
 
 	"github.com/ruziba3vich/hr-ai/internal/domain"
+	"github.com/ruziba3vich/hr-ai/internal/infrastructure/gemini"
 )
 
 type BotService struct {
@@ -19,15 +21,17 @@ type BotService struct {
 	profileParse *ProfileParseService
 	storage      *StorageService
 	stateSvc     *BotStateService
+	geminiClient *gemini.Client
 }
 
-func NewBotService(userSvc *UserService, hrSvc *CompanyHRService, profileParse *ProfileParseService, storage *StorageService, stateSvc *BotStateService) *BotService {
+func NewBotService(userSvc *UserService, hrSvc *CompanyHRService, profileParse *ProfileParseService, storage *StorageService, stateSvc *BotStateService, geminiClient *gemini.Client) *BotService {
 	return &BotService{
 		userSvc:      userSvc,
 		hrSvc:        hrSvc,
 		profileParse: profileParse,
 		storage:      storage,
 		stateSvc:     stateSvc,
+		geminiClient: geminiClient,
 	}
 }
 
@@ -195,8 +199,14 @@ func (s *BotService) AddResumeFile(ctx context.Context, telegramID int64, data [
 	})
 }
 
+// ProcessResumeResult combines the parse result with salary estimation.
+type ProcessResumeResult struct {
+	Parse  *ParseResult
+	Salary *gemini.SalaryEstimation
+}
+
 // ProcessCollectedResume sends all collected resume data to Gemini and stores the result.
-func (s *BotService) ProcessCollectedResume(ctx context.Context, telegramID int64) (*ParseResult, error) {
+func (s *BotService) ProcessCollectedResume(ctx context.Context, telegramID int64) (*ProcessResumeResult, error) {
 	tgID := strconv.FormatInt(telegramID, 10)
 
 	user, err := s.userSvc.GetByTelegramID(ctx, tgID)
@@ -251,11 +261,75 @@ func (s *BotService) ProcessCollectedResume(ctx context.Context, telegramID int6
 		return nil, err
 	}
 
+	// Estimate salary using Gemini
+	summary := s.buildProfileSummary(ctx, user.ID)
+	var salary *gemini.SalaryEstimation
+	if summary != "" {
+		estimation, err := s.geminiClient.EstimateSalary(ctx, summary, user.Country)
+		if err != nil {
+			log.Printf("estimate salary for user %s: %v", user.ID, err)
+		} else {
+			salary = estimation
+			if err := s.userSvc.SetEstimatedSalary(ctx, user.ID, estimation.SalaryMin, estimation.SalaryMax, estimation.Currency); err != nil {
+				log.Printf("save estimated salary for user %s: %v", user.ID, err)
+			}
+		}
+	}
+
 	// Clean up
 	_ = s.stateSvc.ClearResumeEntries(ctx, tgID)
 	_ = s.stateSvc.ClearState(ctx, tgID)
 
-	return result, nil
+	return &ProcessResumeResult{Parse: result, Salary: salary}, nil
+}
+
+// buildProfileSummary creates a text summary of the user's profile for salary estimation.
+func (s *BotService) buildProfileSummary(ctx context.Context, userID uuid.UUID) string {
+	user, err := s.userSvc.GetUser(ctx, userID)
+	if err != nil {
+		return ""
+	}
+
+	var parts []string
+	if user.FirstName != "" || user.LastName != "" {
+		parts = append(parts, fmt.Sprintf("Name: %s %s", user.FirstName, user.LastName))
+	}
+
+	// Get profile fields (title, about, skills etc.)
+	fields, err := s.profileParse.profileFieldSvc.ListProfileFieldsByUser(ctx, userID)
+	if err == nil {
+		for _, f := range fields {
+			texts, err := s.profileParse.profileTextSvc.ListProfileFieldTexts(ctx, f.ID)
+			if err != nil {
+				continue
+			}
+			for _, t := range texts {
+				if t.Lang == "en" && t.Content != "" {
+					parts = append(parts, fmt.Sprintf("%s: %s", f.FieldName, t.Content))
+				}
+			}
+		}
+	}
+
+	// Get experience
+	experiences, err := s.profileParse.experienceSvc.ListExperienceItemsByUser(ctx, userID)
+	if err == nil {
+		for _, exp := range experiences {
+			entry := fmt.Sprintf("Experience: %s at %s (%s - %s)", exp.Position, exp.Company, exp.StartDate, exp.EndDate)
+			parts = append(parts, entry)
+		}
+	}
+
+	// Get education
+	educations, err := s.profileParse.educationSvc.ListEducationItemsByUser(ctx, userID)
+	if err == nil {
+		for _, edu := range educations {
+			entry := fmt.Sprintf("Education: %s in %s at %s", edu.Degree, edu.FieldOfStudy, edu.Institution)
+			parts = append(parts, entry)
+		}
+	}
+
+	return strings.Join(parts, "\n")
 }
 
 func (s *BotService) HandleResumeText(ctx context.Context, userID uuid.UUID, text string) (*ParseResult, error) {

@@ -132,7 +132,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 		Search:           searchSvc,
 		VacancySearch:      vacancySearchSvc,
 		VacancyApplication: vacancyAppSvc,
-		Bot:                application.NewBotService(userSvc, companyHRSvc, profileParseSvc, storageSvc, botStateSvc),
+		Bot:                application.NewBotService(userSvc, companyHRSvc, profileParseSvc, storageSvc, botStateSvc, geminiClient),
 		Storage:          storageSvc,
 		CasbinEnforcer:   enforcer,
 		RedisClient:      rc,
