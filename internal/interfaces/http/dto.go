@@ -38,7 +38,6 @@ type UpdateUserRequest struct {
 	TelegramID      string   `json:"telegram_id"`
 	Email           string   `json:"email" binding:"omitempty,email"`
 	Gender          string   `json:"gender"`
-	Country         string   `json:"country"`
 	Region          string   `json:"region"`
 	Nationality     string   `json:"nationality"`
 	ProfilePicURL   string   `json:"profile_pic_url"`
@@ -82,7 +81,6 @@ func (r *UpdateUserRequest) ToDomain(id uuid.UUID) *domain.User {
 		TelegramID:      r.TelegramID,
 		Email:           r.Email,
 		Gender:          r.Gender,
-		Country:         r.Country,
 		Region:          r.Region,
 		Nationality:     r.Nationality,
 		ProfilePicURL:   r.ProfilePicURL,
@@ -113,8 +111,11 @@ type UserResponse struct {
 	JobStatus       string               `json:"job_status,omitempty"`
 	ActivityType    string               `json:"activity_type,omitempty"`
 	Specializations []string             `json:"specializations"`
-	ProfileScore    int32                `json:"profile_score"`
-	CreatedAt       string               `json:"created_at"`
+	ProfileScore            int32                `json:"profile_score"`
+	EstimatedSalaryMin      int32                `json:"estimated_salary_min"`
+	EstimatedSalaryMax      int32                `json:"estimated_salary_max"`
+	EstimatedSalaryCurrency string               `json:"estimated_salary_currency,omitempty"`
+	CreatedAt               string               `json:"created_at"`
 	Profile         *UserProfileResponse `json:"profile,omitempty"`
 	SearchScore     *float64             `json:"search_score,omitempty"`
 }
@@ -201,8 +202,11 @@ func toUserResponseWithProfile(u *domain.User, profile *UserProfileResponse) Use
 		JobStatus:       u.JobStatus,
 		ActivityType:    u.ActivityType,
 		Specializations: specs,
-		ProfileScore:    u.ProfileScore,
-		CreatedAt:       u.CreatedAt.Format(time.RFC3339),
+		ProfileScore:            u.ProfileScore,
+		EstimatedSalaryMin:      u.EstimatedSalaryMin,
+		EstimatedSalaryMax:      u.EstimatedSalaryMax,
+		EstimatedSalaryCurrency: u.EstimatedSalaryCurrency,
+		CreatedAt:               u.CreatedAt.Format(time.RFC3339),
 		Profile:         profile,
 	}
 }

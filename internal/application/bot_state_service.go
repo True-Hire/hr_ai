@@ -56,3 +56,36 @@ func (s *BotStateService) ClearState(ctx context.Context, telegramID string) err
 	key := fmt.Sprintf("bot:state:%s", telegramID)
 	return s.redis.Delete(ctx, key)
 }
+
+// ResumeEntry represents a piece of resume data collected from the user.
+type ResumeEntry struct {
+	Type     string `json:"type"`      // "text", "file"
+	Text     string `json:"text"`      // for type=text
+	Data     string `json:"data"`      // base64-encoded for type=file
+	MimeType string `json:"mime_type"` // for type=file
+}
+
+func (s *BotStateService) AddResumeEntry(ctx context.Context, telegramID string, entry *ResumeEntry) error {
+	key := fmt.Sprintf("bot:resume:%s", telegramID)
+	entries, _ := s.GetResumeEntries(ctx, telegramID)
+	entries = append(entries, *entry)
+	return s.redis.Set(ctx, key, entries, s.ttl)
+}
+
+func (s *BotStateService) GetResumeEntries(ctx context.Context, telegramID string) ([]ResumeEntry, error) {
+	key := fmt.Sprintf("bot:resume:%s", telegramID)
+	var entries []ResumeEntry
+	found, err := s.redis.Get(ctx, key, &entries)
+	if err != nil {
+		return nil, fmt.Errorf("get resume entries: %w", err)
+	}
+	if !found {
+		return nil, nil
+	}
+	return entries, nil
+}
+
+func (s *BotStateService) ClearResumeEntries(ctx context.Context, telegramID string) error {
+	key := fmt.Sprintf("bot:resume:%s", telegramID)
+	return s.redis.Delete(ctx, key)
+}
