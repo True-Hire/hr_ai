@@ -2,20 +2,30 @@ package gemini
 
 import "fmt"
 
-func buildPrompt(userInput string) string {
-	return fmt.Sprintf(`You are an AI that extracts structured profile information from user-provided text for a job platform.
+const profileParseInstructions = `You are an AI that extracts structured profile information for a job platform. Your goal is to build the MOST COMPLETE resume possible from the provided data.
 
-Analyze the following user input and extract relevant profile fields. For each text field, provide the content in all 3 languages: Uzbek (uz), Russian (ru), and English (en). If the original text is in one language, translate the content to the other two languages.
+Analyze ALL provided content and extract every piece of relevant information. For each text field, provide the content in all 3 languages: Uzbek (uz), Russian (ru), and English (en). If the original content is in one language, translate it to the other two.
 
-Detect which language the input is written in and set source_lang to one of: "uz", "ru", "en".
+Detect which language the content is primarily in and set source_lang to one of: "uz", "ru", "en".
 
 TEXT FIELDS (translated into 3 languages):
 - title: Professional title or headline
-- about: A summary paragraph about the person
+- about: A comprehensive summary paragraph about the person
 - achievements: Notable achievements, awards, or accomplishments
 
-SKILLS (array of skill tag strings, translated per language):
-- skills: Each skill is a short tag/label (e.g. "Go", "Docker", "Web Design"). Provide the full array translated for each language.
+SKILLS — CRITICAL INSTRUCTIONS:
+- Extract skills from EVERY section: title, about, experience, education, projects, certifications, achievements
+- If the title says "UI/UX and Graphic Designer" → extract "UI/UX Design", "Graphic Design" as skills
+- If the about text mentions tools like "WordPress, Tilda, Opencart" → extract EACH as a separate skill
+- If someone says "project manager" or "руководитель проектов" → extract "Project Management"
+- If someone mentions "writing technical specifications" → extract "Technical Writing", "Requirements Analysis"
+- If someone mentions "conducting negotiations" → extract "Negotiation", "Communication"
+- If someone mentions "mobile applications" → extract "Mobile App Design" or "Mobile Development"
+- Extract ALL tools, platforms, technologies, frameworks, methodologies, and soft skills
+- Be EXHAUSTIVE — extract every possible skill that is mentioned, implied, or can be inferred
+- Each skill is a short tag/label (e.g. "Go", "Docker", "Web Design", "Project Management")
+- Provide the full array translated for each language
+- skills format: {"uz": ["...", "..."], "ru": ["...", "..."], "en": ["...", "..."]}
 
 CERTIFICATIONS (array of certification strings, translated per language):
 - certifications: Each certification is a short label. Provide the full array translated for each language.
@@ -46,8 +56,23 @@ STRUCTURED ARRAYS:
   - location (string, not translated)
   - description (translated: uz/ru/en)
 
+PROFILE SCORE — CRITICAL:
+- profile_score: Integer 0-100. Evaluate this resume BRUTALLY and HONESTLY.
+- How likely is this person to find a job with this resume?
+- Consider: completeness of information, specificity of skills, quality of experience descriptions, presence of measurable achievements, education relevance, language proficiency.
+- Do NOT be generous or user-friendly. Rate REALISTICALLY:
+  - 0-20: Almost no useful information, cannot be used as a resume
+  - 20-35: Very basic info, missing critical sections (no experience details, vague skills)
+  - 35-50: Has some content but major gaps (e.g. experience mentioned in about but no structured entries)
+  - 50-65: Decent resume with most sections filled but lacking specifics or measurable results
+  - 65-80: Good resume with detailed experience, specific skills, and some achievements
+  - 80-90: Excellent resume with quantified achievements, comprehensive skills, strong experience
+  - 90-100: Almost impossible to achieve — reserved for perfectly structured resumes with extraordinary detail
+
 IMPORTANT RULES:
-- Only include fields/items where you can extract meaningful content
+- Build the MOST COMPLETE resume possible from whatever data is available
+- If about text mentions working on specific types of projects but no experience entries exist, use that information to enrich the about section and extract skills
+- Fill in gaps using context clues — infer everything you can
 - Do NOT include fields with empty or placeholder content
 - Translate accurately and naturally into all 3 languages
 - skills, certifications, languages, experience and education MUST be arrays (even if there's only one item)
@@ -55,6 +80,7 @@ IMPORTANT RULES:
 Return ONLY valid JSON in this exact format:
 {
   "source_lang": "ru",
+  "profile_score": 42,
   "fields": {
     "title": {"uz": "...", "ru": "...", "en": "..."},
     "about": {"uz": "...", "ru": "...", "en": "..."}
@@ -102,10 +128,13 @@ Return ONLY valid JSON in this exact format:
       "description": {"uz": "...", "ru": "...", "en": "..."}
     }
   ]
-}
+}`
+
+func buildPrompt(userInput string) string {
+	return fmt.Sprintf(`%s
 
 User input:
-%s`, userInput)
+%s`, profileParseInstructions, userInput)
 }
 
 func buildCompanyPrompt(userInput string) string {
@@ -278,104 +307,7 @@ Text to translate:
 }
 
 func buildFilePrompt() string {
-	return `You are an AI that extracts structured profile information from uploaded files (resumes, CVs, profiles, or voice messages) for a job platform.
+	return `The uploaded file is a resume, CV, profile document, or voice/audio recording where a person describes their experience, skills, and background. Extract all information from it.
 
-Analyze the uploaded file and extract relevant profile fields. The file may be a document (PDF, image, text) or an audio/voice recording where a person describes their experience, skills, and background. For each text field, provide the content in all 3 languages: Uzbek (uz), Russian (ru), and English (en). If the original content is in one language, translate it to the other two languages.
-
-Detect which language the content is primarily in and set source_lang to one of: "uz", "ru", "en".
-
-TEXT FIELDS (translated into 3 languages):
-- title: Professional title or headline
-- about: A summary paragraph about the person
-- achievements: Notable achievements, awards, or accomplishments
-
-SKILLS (array of skill tag strings, translated per language):
-- skills: Each skill is a short tag/label (e.g. "Go", "Docker", "Web Design"). Provide the full array translated for each language.
-
-CERTIFICATIONS (array of certification strings, translated per language):
-- certifications: Each certification is a short label. Provide the full array translated for each language.
-
-LANGUAGES (array of objects):
-- languages: Array of languages the person speaks. Each item has:
-  - name (translated: uz/ru/en)
-  - level (string, e.g. "B2", "C1", "Native", not translated)
-
-STRUCTURED ARRAYS:
-- experience: Array of work experiences. Each item has:
-  - company (string, not translated)
-  - position (translated: uz/ru/en)
-  - start_date (string, e.g. "2020")
-  - end_date (string, e.g. "2023" or "present")
-  - projects: Array of project objects. Each project has:
-    - project (string, not translated - project name)
-    - items (translated: uz/ru/en - array of strings describing what was done)
-  - web_site (string URL, not translated)
-  - description (translated: uz/ru/en)
-
-- education: Array of education entries. Each item has:
-  - institution (string, not translated)
-  - degree (translated: uz/ru/en)
-  - field_of_study (translated: uz/ru/en)
-  - start_date (string)
-  - end_date (string)
-  - location (string, not translated)
-  - description (translated: uz/ru/en)
-
-IMPORTANT RULES:
-- Only include fields/items where you can extract meaningful content
-- Do NOT include fields with empty or placeholder content
-- Translate accurately and naturally into all 3 languages
-- skills, certifications, languages, experience and education MUST be arrays (even if there's only one item)
-
-Return ONLY valid JSON in this exact format:
-{
-  "source_lang": "ru",
-  "fields": {
-    "title": {"uz": "...", "ru": "...", "en": "..."},
-    "about": {"uz": "...", "ru": "...", "en": "..."}
-  },
-  "skills": {
-    "uz": ["Навык 1", "Навык 2"],
-    "ru": ["Навык 1", "Навык 2"],
-    "en": ["Skill 1", "Skill 2"]
-  },
-  "certifications": {
-    "uz": ["Sertifikat 1"],
-    "ru": ["Сертификат 1"],
-    "en": ["Certificate 1"]
-  },
-  "languages": [
-    {
-      "name": {"uz": "Ingliz tili", "ru": "Английский", "en": "English"},
-      "level": "B2"
-    }
-  ],
-  "experience": [
-    {
-      "company": "Company Name",
-      "position": {"uz": "...", "ru": "...", "en": "..."},
-      "start_date": "2020",
-      "end_date": "2023",
-      "projects": [
-        {
-          "project": "Project Name",
-          "items": {"uz": ["...", "..."], "ru": ["...", "..."], "en": ["...", "..."]}
-        }
-      ],
-      "web_site": "https://example.com",
-      "description": {"uz": "...", "ru": "...", "en": "..."}
-    }
-  ],
-  "education": [
-    {
-      "institution": "University Name",
-      "degree": {"uz": "...", "ru": "...", "en": "..."},
-      "field_of_study": {"uz": "...", "ru": "...", "en": "..."},
-      "start_date": "2014",
-      "end_date": "2018",
-      "location": "City",
-      "description": {"uz": "...", "ru": "...", "en": "..."}
-    }
-  ]
-}`
+` + profileParseInstructions
 }
