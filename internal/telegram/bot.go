@@ -102,10 +102,22 @@ var msgChooseRoleReminder = map[string]string{
 	"uz": "Iltimos, yuqoridagi tugmalardan birini tanlang ☝️",
 }
 
-var msgParsingResume = map[string]string{
-	"en": "Parsing your resume... This may take a moment.",
-	"ru": "Обрабатываем ваше резюме... Это может занять немного времени.",
-	"uz": "Rezyumeni tahlil qilmoqdamiz... Bu biroz vaqt olishi mumkin.",
+var msgParsingText = map[string]string{
+	"en": "Analyzing profile... ⏳",
+	"ru": "Анализирую профиль… ⏳",
+	"uz": "Profilni tahlil qilmoqdaman… ⏳",
+}
+
+var msgParsingFile = map[string]string{
+	"en": "I received the file. Analyzing skills and experience…",
+	"ru": "Я получил файл. Анализирую навыки и опыт…",
+	"uz": "Faylni oldim. Ko'nikmalar va tajribani tahlil qilmoqdaman…",
+}
+
+var msgParsingVoice = map[string]string{
+	"en": "I transcribed your voice message and created a profile. If anything needs clarifying — just say.",
+	"ru": "Я расшифровал твоё голосовое сообщение и сформировал профиль. Если что-то нужно уточнить — скажи.",
+	"uz": "Ovozli xabaringizni yozib oldim va profil yaratdim. Biror narsani aniqlashtirish kerak bo'lsa — ayting.",
 }
 
 var msgResumeSuccess = map[string]string{
@@ -354,7 +366,7 @@ func (tb *Bot) registerHandlers() {
 		}
 
 		// Treat as resume text
-		_ = c.Send(msgParsingResume[lang])
+		_ = c.Send(msgParsingText[lang])
 
 		result, err := botSvc.HandleResumeText(ctx, user.ID, c.Text())
 		if err != nil {
@@ -411,7 +423,7 @@ func (tb *Bot) registerHandlers() {
 			return c.Send(msgDownloadFailed[lang])
 		}
 
-		_ = c.Send(msgParsingResume[lang])
+		_ = c.Send(msgParsingFile[lang])
 
 		result, err := botSvc.HandleResumeFile(ctx, user.ID, fileData, mimeType)
 		if err != nil {
@@ -463,7 +475,7 @@ func (tb *Bot) registerHandlers() {
 			return c.Send(msgDownloadFailed[lang])
 		}
 
-		_ = c.Send(msgParsingResume[lang])
+		_ = c.Send(msgParsingFile[lang])
 
 		result, err := botSvc.HandleResumeFile(ctx, user.ID, fileData, "image/jpeg")
 		if err != nil {
@@ -520,7 +532,7 @@ func (tb *Bot) registerHandlers() {
 			mimeType = "audio/ogg"
 		}
 
-		_ = c.Send(msgParsingResume[lang])
+		_ = c.Send(msgParsingVoice[lang])
 
 		result, err := botSvc.HandleResumeFile(ctx, user.ID, fileData, mimeType)
 		if err != nil {
