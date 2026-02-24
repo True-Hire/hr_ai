@@ -523,6 +523,9 @@ func (tb *Bot) registerHandlers() {
 			return c.Send(msgOpenProfile[lang])
 		}
 		if isMenuButton(text, menuBtnUpdateResume) {
+			if err := botSvc.StartCollectingResume(ctx, sender.ID, lang); err != nil {
+				log.Printf("start collecting resume error for %d: %v", sender.ID, err)
+			}
 			return c.Send(msgSendResume[lang])
 		}
 		if isMenuButton(text, menuBtnSearchVacancies) {
