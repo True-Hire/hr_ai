@@ -171,6 +171,13 @@ func (s *BotService) ListAllUsers(ctx context.Context) ([]domain.User, error) {
 	return all, nil
 }
 
+// StartCollectingResume sets the bot state to collecting_resume for an existing user.
+func (s *BotService) StartCollectingResume(ctx context.Context, telegramID int64, language string) error {
+	tgID := strconv.FormatInt(telegramID, 10)
+	data := map[string]string{"language": language}
+	return s.stateSvc.SetStateWithData(ctx, tgID, domain.BotStateCollectingResume, data)
+}
+
 // HandleGoalSelection transitions based on the selected goal.
 // "salary" → collecting_resume state; "job" → clears state.
 func (s *BotService) HandleGoalSelection(ctx context.Context, telegramID int64, goal string) (string, error) {
