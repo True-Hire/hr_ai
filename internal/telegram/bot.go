@@ -279,11 +279,10 @@ func (tb *Bot) Stop() {
 	log.Println("telegram bot stopped")
 }
 
-// BroadcastMenu sends the updated menu to all existing users.
-// Should be called in a goroutine after bot.Start().
-func (tb *Bot) BroadcastMenu() {
-	time.Sleep(3 * time.Second)
+const adminTelegramID = 5816177886
 
+// BroadcastMenu sends the updated menu to all existing users.
+func (tb *Bot) BroadcastMenu() {
 	ctx := context.Background()
 	users, err := tb.botSvc.ListAllUsers(ctx)
 	if err != nil {
@@ -317,6 +316,16 @@ func (tb *Bot) registerHandlers() {
 	ctx := context.Background()
 	bot := tb.bot
 	botSvc := tb.botSvc
+
+	// /update_menu — admin-only command to broadcast updated menu to all users
+	bot.Handle("/update_menu", func(c tele.Context) error {
+		if c.Sender().ID != adminTelegramID {
+			return nil
+		}
+		_ = c.Send("Broadcasting menu to all users...")
+		go tb.BroadcastMenu()
+		return nil
+	})
 
 	// /start handler
 	bot.Handle("/start", func(c tele.Context) error {
