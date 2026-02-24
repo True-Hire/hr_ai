@@ -49,7 +49,6 @@ func main() {
 			log.Fatalf("failed to init telegram bot: %v", err)
 		}
 		go tgBot.Start()
-		go tgBot.BroadcastMenu()
 	} else {
 		log.Println("TELEGRAM_BOT_TOKEN not set, skipping bot")
 	}
