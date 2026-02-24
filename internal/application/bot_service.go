@@ -171,6 +171,13 @@ func (s *BotService) ListAllUsers(ctx context.Context) ([]domain.User, error) {
 	return all, nil
 }
 
+// StartCollectingResume sets the bot state to collecting_resume for an existing user.
+func (s *BotService) StartCollectingResume(ctx context.Context, telegramID int64, language string) error {
+	tgID := strconv.FormatInt(telegramID, 10)
+	data := map[string]string{"language": language}
+	return s.stateSvc.SetStateWithData(ctx, tgID, domain.BotStateCollectingResume, data)
+}
+
 // HandleGoalSelection transitions based on the selected goal.
 // "salary" → collecting_resume state; "job" → clears state.
 func (s *BotService) HandleGoalSelection(ctx context.Context, telegramID int64, goal string) (string, error) {
@@ -260,18 +267,32 @@ func (s *BotService) ProcessCollectedResume(ctx context.Context, telegramID int6
 		}
 	}
 
+	// Build existing profile summary and prepend so Gemini merges old + new
+	existingSummary := s.buildProfileSummary(ctx, user.ID)
+	if existingSummary != "" {
+		prefix := "[EXISTING PROFILE — keep all this information, merge with the new data below, do not lose any existing details]\n\n" + existingSummary + "\n\n[NEW DATA — merge with the existing profile above]\n\n"
+		texts = append([]string{prefix}, texts...)
+	}
+
 	var result *ParseResult
 
 	if fileData != nil && len(texts) > 0 {
-		// Combine: prepend text context, then parse the file
 		combinedText := strings.Join(texts, "\n\n") + "\n\n[Additional context from user messages above. The file below is the main resume.]"
 		result, err = s.profileParse.ParseFromText(ctx, user.ID, combinedText)
 		if err != nil {
-			// Fallback: try just the file
 			result, err = s.profileParse.ParseFromFile(ctx, user.ID, fileData, fileMime)
 		}
 	} else if fileData != nil {
-		result, err = s.profileParse.ParseFromFile(ctx, user.ID, fileData, fileMime)
+		if existingSummary != "" {
+			// Prepend existing profile as text context for the file parse
+			combinedText := strings.Join(texts, "\n\n")
+			result, err = s.profileParse.ParseFromText(ctx, user.ID, combinedText)
+			if err != nil {
+				result, err = s.profileParse.ParseFromFile(ctx, user.ID, fileData, fileMime)
+			}
+		} else {
+			result, err = s.profileParse.ParseFromFile(ctx, user.ID, fileData, fileMime)
+		}
 	} else if len(texts) > 0 {
 		combinedText := strings.Join(texts, "\n\n")
 		result, err = s.profileParse.ParseFromText(ctx, user.ID, combinedText)
@@ -349,6 +370,16 @@ func (s *BotService) buildProfileSummary(ctx context.Context, userID uuid.UUID) 
 			entry := fmt.Sprintf("Education: %s in %s at %s", edu.Degree, edu.FieldOfStudy, edu.Institution)
 			parts = append(parts, entry)
 		}
+	}
+
+	// Get skills
+	skills, err := s.profileParse.skillSvc.ListUserSkills(ctx, userID)
+	if err == nil && len(skills) > 0 {
+		var names []string
+		for _, sk := range skills {
+			names = append(names, sk.Name)
+		}
+		parts = append(parts, fmt.Sprintf("Skills: %s", strings.Join(names, ", ")))
 	}
 
 	return strings.Join(parts, "\n")
