@@ -1,7 +1,7 @@
 *.exe
-.env
 *.out
 /tmp
 hr-ai
 
 project_overview.txt
+.env
