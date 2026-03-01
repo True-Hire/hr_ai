@@ -249,7 +249,6 @@ func (hb *HRBot) registerHandlers() {
 			markup := &tele.ReplyMarkup{ResizeKeyboard: true, OneTimeKeyboard: true}
 			btnPhone := markup.Contact(hrMsgBtnSharePhone[lang])
 			markup.Reply(markup.Row(btnPhone))
-			_ = c.Send(hrMsgWelcomeNew[lang])
 			return c.Send(hrMsgSharePhone[lang], markup)
 		}
 
@@ -280,6 +279,7 @@ func (hb *HRBot) registerHandlers() {
 		}
 
 		lang = langOrDefault(hr.Language)
+		_ = c.Send(hrMsgWelcomeNew[lang])
 		return c.Send(fmt.Sprintf(hrMsgRegistered[lang], hr.FirstName), hrMenu(lang))
 	})
 
