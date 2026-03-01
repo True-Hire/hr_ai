@@ -44,3 +44,9 @@ RETURNING id, user_id, vacancy_id, status, cover_letter, created_at, updated_at;
 
 -- name: DeleteVacancyApplication :exec
 DELETE FROM vacancy_applications WHERE id = $1;
+
+-- name: DeleteVacancyApplicationsByUser :exec
+DELETE FROM vacancy_applications WHERE user_id = $1;
+
+-- name: DeleteVacancyApplicationsByVacancy :exec
+DELETE FROM vacancy_applications WHERE vacancy_id = $1;

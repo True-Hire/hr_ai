@@ -118,6 +118,14 @@ func (r *VacancyApplicationRepository) Delete(ctx context.Context, id uuid.UUID)
 	return r.q.DeleteVacancyApplication(ctx, uuidToPgtype(id))
 }
 
+func (r *VacancyApplicationRepository) DeleteByUser(ctx context.Context, userID uuid.UUID) error {
+	return r.q.DeleteVacancyApplicationsByUser(ctx, uuidToPgtype(userID))
+}
+
+func (r *VacancyApplicationRepository) DeleteByVacancy(ctx context.Context, vacancyID uuid.UUID) error {
+	return r.q.DeleteVacancyApplicationsByVacancy(ctx, uuidToPgtype(vacancyID))
+}
+
 func vacancyApplicationFromRow(row vadb.VacancyApplication) *domain.VacancyApplication {
 	return &domain.VacancyApplication{
 		ID:          pgtypeToUUID(row.ID),
