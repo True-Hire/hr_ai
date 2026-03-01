@@ -39,6 +39,7 @@ type Services struct {
 	VacancyApplication  *application.VacancyApplicationService
 	Bot                 *application.BotService
 	HRBot               *application.HRBotService
+	AccountDeletion     *application.AccountDeletionService
 	Storage          *application.StorageService
 	CasbinEnforcer   *casbinlib.Enforcer
 	RedisClient      *redisclient.Client
@@ -66,12 +67,19 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 	userSvc := application.NewUserService(userRepo)
 	geminiClient := gemini.NewClient(geminiAPIKey)
 
-	pfSvc := application.NewProfileFieldService(repository.NewProfileFieldRepository(pool))
-	pftSvc := application.NewProfileFieldTextService(repository.NewProfileFieldTextRepository(pool), geminiClient)
-	expSvc := application.NewExperienceItemService(repository.NewExperienceItemRepository(pool))
-	eduSvc := application.NewEducationItemService(repository.NewEducationItemRepository(pool))
-	itSvc := application.NewItemTextService(repository.NewItemTextRepository(pool), geminiClient)
-	skillSvc := application.NewSkillService(repository.NewSkillRepository(pool))
+	pfRepo := repository.NewProfileFieldRepository(pool)
+	pftRepo := repository.NewProfileFieldTextRepository(pool)
+	expRepo := repository.NewExperienceItemRepository(pool)
+	eduRepo := repository.NewEducationItemRepository(pool)
+	itRepo := repository.NewItemTextRepository(pool)
+	skillRepo := repository.NewSkillRepository(pool)
+
+	pfSvc := application.NewProfileFieldService(pfRepo)
+	pftSvc := application.NewProfileFieldTextService(pftRepo, geminiClient)
+	expSvc := application.NewExperienceItemService(expRepo)
+	eduSvc := application.NewEducationItemService(eduRepo)
+	itSvc := application.NewItemTextService(itRepo, geminiClient)
+	skillSvc := application.NewSkillService(skillRepo)
 
 	companyHRRepo := repository.NewCompanyHRRepository(pool)
 	hrSessionRepo := repository.NewHRSessionRepository(pool)
@@ -111,6 +119,12 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 	vacancyAppSvc := application.NewVacancyApplicationService(vacancyAppRepo)
 
 	companyHRSvc := application.NewCompanyHRService(companyHRRepo)
+	accountDeletionSvc := application.NewAccountDeletionService(
+		userRepo, companyHRRepo, sessionRepo, hrSessionRepo,
+		vacancyRepo, vacancyAppRepo,
+		pfRepo, pftRepo, expRepo, eduRepo, itRepo, skillRepo,
+		vectorIndexSvc,
+	)
 	botStateSvc := application.NewBotStateService(rc)
 
 	hrBotSvc := application.NewHRBotService(companyHRSvc, vacancySvc, botStateSvc, searchSvc, userSvc, geminiClient)
@@ -138,6 +152,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 		VacancyApplication: vacancyAppSvc,
 		Bot:                application.NewBotService(userSvc, companyHRSvc, profileParseSvc, storageSvc, botStateSvc, geminiClient),
 		HRBot:              hrBotSvc,
+		AccountDeletion:    accountDeletionSvc,
 		Storage:          storageSvc,
 		CasbinEnforcer:   enforcer,
 		RedisClient:      rc,
