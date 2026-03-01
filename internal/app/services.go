@@ -113,7 +113,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 	companyHRSvc := application.NewCompanyHRService(companyHRRepo)
 	botStateSvc := application.NewBotStateService(rc)
 
-	hrBotSvc := application.NewHRBotService(companyHRSvc, vacancySvc, botStateSvc, searchSvc, userSvc)
+	hrBotSvc := application.NewHRBotService(companyHRSvc, vacancySvc, botStateSvc, searchSvc, userSvc, geminiClient)
 
 	return &Services{
 		User:             userSvc,
