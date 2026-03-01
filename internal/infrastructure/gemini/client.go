@@ -281,6 +281,23 @@ func (c *Client) ParseVacancyFromText(ctx context.Context, userInput string) (*P
 	return &parsed, nil
 }
 
+func (c *Client) ParseVacancyFromFile(ctx context.Context, fileData []byte, mimeType string) (*ParsedVacancyFull, error) {
+	encoded := base64.StdEncoding.EncodeToString(fileData)
+	prompt := buildVacancyParsePrompt("(see attached file)")
+	text, err := c.generateJSON(ctx, []part{
+		{Text: prompt},
+		{InlineData: &inlineData{MimeType: mimeType, Data: encoded}},
+	})
+	if err != nil {
+		return nil, err
+	}
+	var parsed ParsedVacancyFull
+	if err := json.Unmarshal([]byte(text), &parsed); err != nil {
+		return nil, fmt.Errorf("parse gemini vacancy file JSON: %w (raw: %s)", err, text)
+	}
+	return &parsed, nil
+}
+
 func (c *Client) EmbedText(ctx context.Context, text string) ([]float32, error) {
 	reqBody := map[string]any{
 		"model": "models/gemini-embedding-001",
