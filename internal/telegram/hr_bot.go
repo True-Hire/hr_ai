@@ -20,15 +20,15 @@ import (
 // -- Localized messages for HR bot --
 
 var hrMsgWelcomeNew = map[string]string{
-	"en": "👋 Welcome to the HR Bot!\n\nI help you post vacancies and find the best candidates.\n\nPlease share your phone number to get started.",
-	"ru": "👋 Добро пожаловать в HR-бот!\n\nЯ помогу вам размещать вакансии и находить лучших кандидатов.\n\nПожалуйста, поделитесь номером телефона для начала.",
-	"uz": "👋 HR botga xush kelibsiz!\n\nMen sizga vakansiyalarni joylashtirish va eng yaxshi nomzodlarni topishga yordam beraman.\n\nBoshlash uchun telefon raqamingizni ulashing.",
+	"en": "Hello 👋\n\nI'm HR AI for recruiting. I'll help you:\n\n• calculate market salary\n• quickly find matching candidates\n• automate hiring\n\nWhat would you like to do?",
+	"ru": "Здравствуйте 👋\n\nЯ HR AI для подбора сотрудников. Помогу:\n\n• рассчитать рыночную зарплату\n• быстро найти подходящих кандидатов\n• автоматизировать найм\n\nЧто хотите сделать?",
+	"uz": "Salom 👋\n\nMen xodimlarni tanlash uchun HR AI man. Yordam beraman:\n\n• bozor maoshini hisoblash\n• mos nomzodlarni tez topish\n• yollashni avtomatlashtirish\n\nNima qilmoqchisiz?",
 }
 
 var hrMsgWelcomeBack = map[string]string{
-	"en": "👋 Welcome back, %s! Use the menu below 👇",
-	"ru": "👋 С возвращением, %s! Используйте меню ниже 👇",
-	"uz": "👋 Qaytganingiz bilan, %s! Quyidagi menyudan foydalaning 👇",
+	"en": "👋 Welcome back, %s! What would you like to do?",
+	"ru": "👋 С возвращением, %s! Что хотите сделать?",
+	"uz": "👋 Qaytganingiz bilan, %s! Nima qilmoqchisiz?",
 }
 
 var hrMsgRegistered = map[string]string{
@@ -244,17 +244,22 @@ func (hb *HRBot) registerHandlers() {
 			return c.Send(hrMsgError["en"])
 		}
 
-		lang := detectLang(sender.LanguageCode)
-
 		if result.IsNew {
+			lang := detectLang(sender.LanguageCode)
 			markup := &tele.ReplyMarkup{ResizeKeyboard: true, OneTimeKeyboard: true}
 			btnPhone := markup.Contact(hrMsgBtnSharePhone[lang])
 			markup.Reply(markup.Row(btnPhone))
-			return c.Send(hrMsgWelcomeNew[lang], markup)
+			_ = c.Send(hrMsgWelcomeNew[lang])
+			return c.Send(hrMsgSharePhone[lang], markup)
 		}
 
-		lang = langOrDefault(result.HR.Language)
-		return c.Send(fmt.Sprintf(hrMsgWelcomeBack[lang], result.HR.FirstName), hrMenu(lang))
+		lang := result.HR.Language
+		if lang == "" {
+			lang = detectLang(sender.LanguageCode)
+		}
+		lang = langOrDefault(lang)
+		name := strings.TrimSpace(result.HR.FirstName + " " + result.HR.LastName)
+		return c.Send(fmt.Sprintf(hrMsgWelcomeBack[lang], name), hrMenu(lang))
 	})
 
 	// Contact (phone number) handler — create HR record
