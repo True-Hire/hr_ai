@@ -362,8 +362,8 @@ func (hb *HRBot) registerHandlers() {
 		}
 
 		lang = langOrDefault(hr.Language)
-		_ = c.Send(hrMsgWelcomeNew[lang])
-		return c.Send(fmt.Sprintf(hrMsgRegistered[lang], hr.FirstName), hrMenu(lang))
+		_ = c.Send(fmt.Sprintf(hrMsgRegistered[lang], hr.FirstName))
+		return c.Send(hrMsgWelcomeNew[lang], hrMenu(lang))
 	})
 
 	// Language change callback for HR
