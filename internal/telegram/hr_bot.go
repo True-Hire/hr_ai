@@ -32,9 +32,9 @@ var hrMsgWelcomeBack = map[string]string{
 }
 
 var hrMsgRegistered = map[string]string{
-	"en": "✅ Registration complete, %s! Welcome!\n\nUse the menu below to get started 👇",
-	"ru": "✅ Регистрация завершена, %s! Добро пожаловать!\n\nИспользуйте меню ниже 👇",
-	"uz": "✅ Ro'yxatdan o'tish yakunlandi, %s! Xush kelibsiz!\n\nBoshlash uchun quyidagi menyudan foydalaning 👇",
+	"en": "Thank you for registering, %s! 🎉\n\nNow you can use the menu below to manage vacancies and find candidates 👇",
+	"ru": "Спасибо за регистрацию, %s! 🎉\n\nТеперь вы можете использовать меню ниже для управления вакансиями и поиска кандидатов 👇",
+	"uz": "Ro'yxatdan o'tganingiz uchun rahmat, %s! 🎉\n\nEndi quyidagi menyu orqali vakansiyalarni boshqarish va nomzodlarni topish mumkin 👇",
 }
 
 var hrMsgSharePhone = map[string]string{
@@ -55,16 +55,16 @@ var hrMsgPhoneReminder = map[string]string{
 	"uz": "Iltimos, quyidagi tugma orqali telefon raqamingizni ulashing 👇",
 }
 
-var hrMenuBtnPostVacancy = map[string]string{
-	"en": "📝 Post Vacancy",
-	"ru": "📝 Разместить вакансию",
-	"uz": "📝 Vakansiya joylashtirish",
+var hrMenuBtnCreateVacancy = map[string]string{
+	"en": "📝 Create Vacancy",
+	"ru": "📝 Создать вакансию",
+	"uz": "📝 Vakansiya yaratish",
 }
 
-var hrMenuBtnMyVacancies = map[string]string{
-	"en": "📋 My Vacancies",
-	"ru": "📋 Мои вакансии",
-	"uz": "📋 Mening vakansiyalarim",
+var hrMenuBtnActiveVacancies = map[string]string{
+	"en": "📋 Active Vacancies",
+	"ru": "📋 Активные вакансии",
+	"uz": "📋 Faol vakansiyalar",
 }
 
 var hrMenuBtnFindCandidates = map[string]string{
@@ -334,13 +334,13 @@ func (hb *HRBot) registerHandlers() {
 
 		text := c.Text()
 
-		if isMenuButton(text, hrMenuBtnPostVacancy) {
+		if isMenuButton(text, hrMenuBtnCreateVacancy) {
 			if err := hrBotSvc.SetState(ctx, sender.ID, domain.HRBotStatePostingVacancy, map[string]string{"language": lang, "hr_id": hr.ID.String()}); err != nil {
 				log.Printf("hr set posting state error for %d: %v", sender.ID, err)
 			}
 			return c.Send(hrMsgPostVacancy[lang])
 		}
-		if isMenuButton(text, hrMenuBtnMyVacancies) {
+		if isMenuButton(text, hrMenuBtnActiveVacancies) {
 			return hb.handleMyVacancies(ctx, c, hr)
 		}
 		if isMenuButton(text, hrMenuBtnFindCandidates) {
@@ -477,7 +477,7 @@ func (hb *HRBot) handleSearchQuery(ctx context.Context, c tele.Context, state *d
 func hrMenu(lang string) *tele.ReplyMarkup {
 	markup := &tele.ReplyMarkup{ResizeKeyboard: true}
 	markup.Reply(
-		markup.Row(tele.Btn{Text: hrMenuBtnPostVacancy[lang]}, tele.Btn{Text: hrMenuBtnMyVacancies[lang]}),
+		markup.Row(tele.Btn{Text: hrMenuBtnCreateVacancy[lang]}, tele.Btn{Text: hrMenuBtnActiveVacancies[lang]}),
 		markup.Row(tele.Btn{Text: hrMenuBtnFindCandidates[lang]}, tele.Btn{Text: hrMenuBtnChangeLang[lang]}),
 	)
 	return markup
