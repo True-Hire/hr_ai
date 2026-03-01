@@ -130,28 +130,22 @@ var hrMsgHowToContinue = map[string]string{
 	"uz": "Qanday davom etamiz? ⬇️",
 }
 
-var hrMsgBtnFillMissing = map[string]string{
-	"en": "1️⃣ Fill in missing information",
-	"ru": "1️⃣ Заполнить недостающую информацию",
-	"uz": "1️⃣ Yetishmayotgan ma'lumotlarni to'ldirish",
-}
-
 var hrMsgBtnContinueCurrent = map[string]string{
-	"en": "2️⃣ Continue with current data",
-	"ru": "2️⃣ Продолжить с текущими данными",
-	"uz": "2️⃣ Joriy ma'lumotlar bilan davom etish",
+	"en": "1️⃣ Continue with current data",
+	"ru": "1️⃣ Продолжить с текущими данными",
+	"uz": "1️⃣ Joriy ma'lumotlar bilan davom etish",
 }
 
 var hrMsgBtnCreateDescription = map[string]string{
-	"en": "3️⃣ Create proper vacancy description",
-	"ru": "3️⃣ Создать правильное описание вакансии",
-	"uz": "3️⃣ To'g'ri vakansiya tavsifini yaratish",
+	"en": "2️⃣ Create proper vacancy description",
+	"ru": "2️⃣ Создать правильное описание вакансии",
+	"uz": "2️⃣ To'g'ri vakansiya tavsifini yaratish",
 }
 
 var hrMsgBtnAddInfo = map[string]string{
-	"en": "4️⃣ Add additional information",
-	"ru": "4️⃣ Добавить дополнительную информацию",
-	"uz": "4️⃣ Qo'shimcha ma'lumot qo'shish",
+	"en": "3️⃣ Add additional information",
+	"ru": "3️⃣ Добавить дополнительную информацию",
+	"uz": "3️⃣ Qo'shimcha ma'lumot qo'shish",
 }
 
 var hrMsgSendAdditionalInfo = map[string]string{
@@ -749,7 +743,6 @@ func (hb *HRBot) sendVacancyReview(c tele.Context, draft *gemini.ParsedVacancyFu
 
 	markup := &tele.ReplyMarkup{}
 	markup.Inline(
-		markup.Row(markup.Data(hrMsgBtnFillMissing[lang], "hr_vac_fill_missing")),
 		markup.Row(markup.Data(hrMsgBtnContinueCurrent[lang], "hr_vac_continue")),
 		markup.Row(markup.Data(hrMsgBtnCreateDescription[lang], "hr_vac_create_desc")),
 		markup.Row(markup.Data(hrMsgBtnAddInfo[lang], "hr_vac_add_info")),
