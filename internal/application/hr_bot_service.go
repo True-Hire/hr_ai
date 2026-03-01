@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"strconv"
@@ -9,23 +10,26 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/ruziba3vich/hr-ai/internal/domain"
+	"github.com/ruziba3vich/hr-ai/internal/infrastructure/gemini"
 )
 
 type HRBotService struct {
-	hrSvc      *CompanyHRService
-	vacancySvc *VacancyService
-	stateSvc   *BotStateService
-	searchSvc  *SearchService
-	userSvc    *UserService
+	hrSvc        *CompanyHRService
+	vacancySvc   *VacancyService
+	stateSvc     *BotStateService
+	searchSvc    *SearchService
+	userSvc      *UserService
+	geminiClient *gemini.Client
 }
 
-func NewHRBotService(hrSvc *CompanyHRService, vacancySvc *VacancyService, stateSvc *BotStateService, searchSvc *SearchService, userSvc *UserService) *HRBotService {
+func NewHRBotService(hrSvc *CompanyHRService, vacancySvc *VacancyService, stateSvc *BotStateService, searchSvc *SearchService, userSvc *UserService, geminiClient *gemini.Client) *HRBotService {
 	return &HRBotService{
-		hrSvc:      hrSvc,
-		vacancySvc: vacancySvc,
-		stateSvc:   stateSvc,
-		searchSvc:  searchSvc,
-		userSvc:    userSvc,
+		hrSvc:        hrSvc,
+		vacancySvc:   vacancySvc,
+		stateSvc:     stateSvc,
+		searchSvc:    searchSvc,
+		userSvc:      userSvc,
+		geminiClient: geminiClient,
 	}
 }
 
@@ -133,7 +137,46 @@ func (s *HRBotService) ListAllHRs(ctx context.Context) ([]domain.CompanyHR, erro
 	return all, nil
 }
 
-// State management with hr_bot: prefix
+// -- Vacancy draft parsing (Gemini) --
+
+func (s *HRBotService) ParseVacancyFromText(ctx context.Context, text string) (*gemini.ParsedVacancyFull, error) {
+	return s.geminiClient.ParseVacancyFromText(ctx, text)
+}
+
+func (s *HRBotService) ParseVacancyFromFile(ctx context.Context, fileData []byte, mimeType string) (*gemini.ParsedVacancyFull, error) {
+	return s.geminiClient.ParseVacancyFromFile(ctx, fileData, mimeType)
+}
+
+func (s *HRBotService) CreateVacancyFromDraft(ctx context.Context, hrID uuid.UUID, draft *gemini.ParsedVacancyFull) (*VacancyWithDetails, error) {
+	return s.vacancySvc.CreateVacancyFromParsed(ctx, hrID, uuid.Nil, draft)
+}
+
+// -- Vacancy draft storage in Redis --
+
+func (s *HRBotService) SaveVacancyDraft(ctx context.Context, telegramID int64, draft *gemini.ParsedVacancyFull) error {
+	key := fmt.Sprintf("hr_bot:vacancy_draft:%d", telegramID)
+	return s.stateSvc.redis.Set(ctx, key, draft, s.stateSvc.ttl)
+}
+
+func (s *HRBotService) GetVacancyDraft(ctx context.Context, telegramID int64) (*gemini.ParsedVacancyFull, error) {
+	key := fmt.Sprintf("hr_bot:vacancy_draft:%d", telegramID)
+	var draft gemini.ParsedVacancyFull
+	found, err := s.stateSvc.redis.Get(ctx, key, &draft)
+	if err != nil {
+		return nil, fmt.Errorf("get vacancy draft: %w", err)
+	}
+	if !found {
+		return nil, nil
+	}
+	return &draft, nil
+}
+
+func (s *HRBotService) ClearVacancyDraft(ctx context.Context, telegramID int64) error {
+	key := fmt.Sprintf("hr_bot:vacancy_draft:%d", telegramID)
+	return s.stateSvc.redis.Delete(ctx, key)
+}
+
+// -- State management with hr: prefix --
 
 func (s *HRBotService) GetBotState(ctx context.Context, telegramID int64) (*domain.BotState, error) {
 	tgID := "hr:" + strconv.FormatInt(telegramID, 10)
@@ -151,4 +194,10 @@ func (s *HRBotService) SetState(ctx context.Context, telegramID int64, state str
 func (s *HRBotService) ClearState(ctx context.Context, telegramID int64) error {
 	tgID := "hr:" + strconv.FormatInt(telegramID, 10)
 	return s.stateSvc.ClearState(ctx, tgID)
+}
+
+// -- Helpers --
+
+func Base64Encode(data []byte) string {
+	return base64.StdEncoding.EncodeToString(data)
 }

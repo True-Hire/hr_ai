@@ -210,6 +210,70 @@ func (s *VacancyService) ParseVacancy(ctx context.Context, hrID, companyID uuid.
 	return &VacancyWithDetails{Vacancy: created, Texts: texts, Skills: skills, Company: company}, nil
 }
 
+func (s *VacancyService) CreateVacancyFromParsed(ctx context.Context, hrID, companyID uuid.UUID, parsed *gemini.ParsedVacancyFull) (*VacancyWithDetails, error) {
+	salaryCurrency := parsed.SalaryCurrency
+	if salaryCurrency == "" {
+		salaryCurrency = "USD"
+	}
+	format := parsed.Format
+	if format == "" {
+		format = "office"
+	}
+	schedule := parsed.Schedule
+	if schedule == "" {
+		schedule = "full-time"
+	}
+
+	vacancy := &domain.Vacancy{
+		ID:             uuid.New(),
+		HRID:           hrID,
+		CompanyID:      companyID,
+		SalaryMin:      parsed.SalaryMin,
+		SalaryMax:      parsed.SalaryMax,
+		SalaryCurrency: salaryCurrency,
+		ExperienceMin:  parsed.ExperienceMin,
+		ExperienceMax:  parsed.ExperienceMax,
+		Format:         format,
+		Schedule:       schedule,
+		Phone:          parsed.Phone,
+		Telegram:       parsed.Telegram,
+		Email:          parsed.Email,
+		Address:        parsed.Address,
+		SourceLang:     parsed.SourceLang,
+		Status:         "draft",
+	}
+
+	created, err := s.repo.Create(ctx, vacancy)
+	if err != nil {
+		return nil, fmt.Errorf("service create vacancy from parsed: %w", err)
+	}
+
+	texts, err := s.storeVacancyTexts(ctx, created.ID, parsed.SourceLang, parsed.Fields)
+	if err != nil {
+		return nil, err
+	}
+
+	var skills []domain.Skill
+	if len(parsed.Skills) > 0 {
+		skills, err = s.skillSvc.SetVacancySkills(ctx, created.ID, parsed.Skills)
+		if err != nil {
+			return nil, fmt.Errorf("set vacancy skills: %w", err)
+		}
+	}
+
+	company, _ := s.companySvc.GetCompany(ctx, created.CompanyID)
+
+	if s.vectorIndexSvc != nil {
+		go func() {
+			if err := s.vectorIndexSvc.IndexVacancy(context.Background(), created.ID); err != nil {
+				log.Printf("index vacancy %s: %v", created.ID, err)
+			}
+		}()
+	}
+
+	return &VacancyWithDetails{Vacancy: created, Texts: texts, Skills: skills, Company: company}, nil
+}
+
 func (s *VacancyService) storeVacancyTexts(ctx context.Context, vacancyID uuid.UUID, sourceLang string, fields map[string]map[string]string) ([]domain.VacancyText, error) {
 	langs := []string{"uz", "ru", "en"}
 	modelVer := s.geminiClient.ModelVersion()
