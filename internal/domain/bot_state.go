@@ -10,4 +10,7 @@ const (
 	BotStateChoosingRole     = "choosing_role"
 	BotStateSharingPhone     = "sharing_phone"
 	BotStateCollectingResume = "collecting_resume"
+
+	HRBotStateSharingPhone   = "hr_sharing_phone"
+	HRBotStatePostingVacancy = "hr_posting_vacancy"
 )
