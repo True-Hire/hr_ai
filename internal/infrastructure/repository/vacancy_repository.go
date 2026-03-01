@@ -165,6 +165,22 @@ func (r *VacancyRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.q.DeleteVacancy(ctx, uuidToPgtype(id))
 }
 
+func (r *VacancyRepository) NullifyHRID(ctx context.Context, hrID uuid.UUID) error {
+	return r.q.NullifyVacancyHRID(ctx, uuidToPgtype(hrID))
+}
+
+func (r *VacancyRepository) ListIDsByHR(ctx context.Context, hrID uuid.UUID) ([]uuid.UUID, error) {
+	rows, err := r.q.ListVacancyIDsByHR(ctx, uuidToPgtype(hrID))
+	if err != nil {
+		return nil, fmt.Errorf("list vacancy ids by hr: %w", err)
+	}
+	result := make([]uuid.UUID, 0, len(rows))
+	for _, row := range rows {
+		result = append(result, pgtypeToUUID(row))
+	}
+	return result, nil
+}
+
 func pgtypeUUIDToNullable(id pgtype.UUID) uuid.UUID {
 	if !id.Valid {
 		return uuid.Nil

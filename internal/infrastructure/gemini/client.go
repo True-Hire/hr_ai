@@ -281,6 +281,18 @@ func (c *Client) ParseVacancyFromText(ctx context.Context, userInput string) (*P
 	return &parsed, nil
 }
 
+func (c *Client) MergeVacancy(ctx context.Context, existingJSON, additionalInfo string) (*ParsedVacancyFull, error) {
+	text, err := c.generateJSON(ctx, []part{{Text: buildVacancyMergePrompt(existingJSON, additionalInfo)}})
+	if err != nil {
+		return nil, err
+	}
+	var parsed ParsedVacancyFull
+	if err := json.Unmarshal([]byte(text), &parsed); err != nil {
+		return nil, fmt.Errorf("parse gemini vacancy merge JSON: %w (raw: %s)", err, text)
+	}
+	return &parsed, nil
+}
+
 func (c *Client) ParseVacancyFromFile(ctx context.Context, fileData []byte, mimeType string) (*ParsedVacancyFull, error) {
 	encoded := base64.StdEncoding.EncodeToString(fileData)
 	prompt := buildVacancyParsePrompt("(see attached file)")
