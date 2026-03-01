@@ -33,4 +33,6 @@ type VacancyApplicationRepository interface {
 	CountByVacancy(ctx context.Context, vacancyID uuid.UUID) (int64, error)
 	UpdateStatus(ctx context.Context, id uuid.UUID, status string) (*VacancyApplication, error)
 	Delete(ctx context.Context, id uuid.UUID) error
+	DeleteByUser(ctx context.Context, userID uuid.UUID) error
+	DeleteByVacancy(ctx context.Context, vacancyID uuid.UUID) error
 }

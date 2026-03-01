@@ -442,6 +442,39 @@ func (q *Queries) ListVacanciesByHR(ctx context.Context, arg ListVacanciesByHRPa
 	return items, nil
 }
 
+const listVacancyIDsByHR = `-- name: ListVacancyIDsByHR :many
+SELECT id FROM vacancies WHERE hr_id = $1
+`
+
+func (q *Queries) ListVacancyIDsByHR(ctx context.Context, hrID pgtype.UUID) ([]pgtype.UUID, error) {
+	rows, err := q.db.Query(ctx, listVacancyIDsByHR, hrID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []pgtype.UUID
+	for rows.Next() {
+		var id pgtype.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const nullifyVacancyHRID = `-- name: NullifyVacancyHRID :exec
+UPDATE vacancies SET hr_id = NULL WHERE hr_id = $1
+`
+
+func (q *Queries) NullifyVacancyHRID(ctx context.Context, hrID pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, nullifyVacancyHRID, hrID)
+	return err
+}
+
 const searchVacancies = `-- name: SearchVacancies :many
 SELECT DISTINCT v.id, v.hr_id, v.company_id, v.country_id, v.salary_min, v.salary_max, v.salary_currency,
     v.experience_min, v.experience_max, v.format, v.schedule,
