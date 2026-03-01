@@ -602,33 +602,36 @@ func (hb *HRBot) handleVacancyInput(ctx context.Context, c tele.Context, state *
 		_ = c.Send(hrMsgParsingFile[lang])
 	}
 
-	// If adding info to existing draft, prepend existing data
-	var existingJSON string
-	if isAdding {
-		draft, _ := hb.hrBotSvc.GetVacancyDraft(ctx, sender.ID)
-		if draft != nil {
-			b, _ := json.Marshal(draft)
-			existingJSON = string(b)
-		}
-	}
-
 	var parsed *gemini.ParsedVacancyFull
 	var err error
 
-	if inputType == "text" {
-		fullText := text
-		if existingJSON != "" {
-			fullText = "[EXISTING VACANCY DATA — merge with the new information below, do not lose any existing details]\n\n" + existingJSON + "\n\n[NEW ADDITIONAL DATA — merge with existing]\n\n" + text
-		}
-		parsed, err = hb.hrBotSvc.ParseVacancyFromText(ctx, fullText)
-	} else {
-		if existingJSON != "" && len(fileData) > 0 {
-			// For files with existing data, add existing as text context
-			fullText := "[EXISTING VACANCY DATA — merge with the new information below]\n\n" + existingJSON + "\n\n[NEW DATA from the attached file — merge with existing]"
-			parsed, err = hb.hrBotSvc.ParseVacancyFromText(ctx, fullText)
-			if err != nil {
-				parsed, err = hb.hrBotSvc.ParseVacancyFromFile(ctx, fileData, mimeType)
+	if isAdding {
+		// Merge additional info with existing draft
+		draft, _ := hb.hrBotSvc.GetVacancyDraft(ctx, sender.ID)
+		if draft != nil {
+			existingBytes, _ := json.Marshal(draft)
+			existingJSON := string(existingBytes)
+
+			var newInfo string
+			if inputType == "text" {
+				newInfo = text
+			} else if len(fileData) > 0 {
+				// For voice/file, first parse the file, then merge
+				fileParsed, fileErr := hb.hrBotSvc.ParseVacancyFromFile(ctx, fileData, mimeType)
+				if fileErr == nil {
+					b, _ := json.Marshal(fileParsed)
+					newInfo = string(b)
+				}
 			}
+
+			if newInfo != "" {
+				parsed, err = hb.hrBotSvc.MergeVacancy(ctx, existingJSON, newInfo)
+			}
+		}
+	} else {
+		// First-time parse
+		if inputType == "text" {
+			parsed, err = hb.hrBotSvc.ParseVacancyFromText(ctx, text)
 		} else if len(fileData) > 0 {
 			parsed, err = hb.hrBotSvc.ParseVacancyFromFile(ctx, fileData, mimeType)
 		}
@@ -658,51 +661,97 @@ func (hb *HRBot) handleVacancyInput(ctx context.Context, c tele.Context, state *
 }
 
 func (hb *HRBot) sendVacancyReview(c tele.Context, draft *gemini.ParsedVacancyFull, lang string) error {
-	// Build vacancy summary
 	var sb strings.Builder
 
-	title := ""
-	if fields, ok := draft.Fields["title"]; ok {
-		title = fields[lang]
-		if title == "" {
-			title = fields["en"]
-		}
-	}
+	// Title (bold)
+	title := draftField(draft, "title", lang)
 	if title != "" {
-		sb.WriteString(fmt.Sprintf("%s: %s\n", hrMsgFieldPosition[lang], title))
+		sb.WriteString(fmt.Sprintf("*%s*\n\n", title))
 	}
 
-	if draft.Address != "" {
-		sb.WriteString(fmt.Sprintf("%s: %s\n", hrMsgFieldCity[lang], draft.Address))
+	// Description / About the company
+	desc := draftField(draft, "description", lang)
+	if desc != "" {
+		descLabel := map[string]string{"en": "About:", "ru": "О компании:", "uz": "Kompaniya haqida:"}
+		sb.WriteString(fmt.Sprintf("*%s*\n%s\n\n", descLabel[lang], desc))
 	}
 
-	if draft.Format != "" && draft.Format != "office" {
-		sb.WriteString(fmt.Sprintf("%s: %s\n", hrMsgFieldFormat[lang], draft.Format))
-	} else if draft.Format == "office" {
-		formatName := map[string]string{"en": "office", "ru": "офис", "uz": "ofis"}
-		sb.WriteString(fmt.Sprintf("%s: %s\n", hrMsgFieldFormat[lang], formatName[lang]))
+	// Responsibilities
+	resp := draftField(draft, "responsibilities", lang)
+	if resp != "" {
+		respLabel := map[string]string{"en": "Responsibilities:", "ru": "Обязанности:", "uz": "Vazifalar:"}
+		sb.WriteString(fmt.Sprintf("*%s*\n%s\n\n", respLabel[lang], formatAsBullets(resp)))
 	}
 
-	if len(draft.Skills) > 0 {
-		sb.WriteString(fmt.Sprintf("%s: %s\n", hrMsgFieldStack[lang], strings.Join(draft.Skills, ", ")))
+	// Requirements
+	req := draftField(draft, "requirements", lang)
+	if req != "" {
+		reqLabel := map[string]string{"en": "Requirements:", "ru": "Требования:", "uz": "Talablar:"}
+		sb.WriteString(fmt.Sprintf("*%s*\n%s\n\n", reqLabel[lang], formatAsBullets(req)))
 	}
 
-	if draft.ExperienceMin > 0 || draft.ExperienceMax > 0 {
-		if draft.ExperienceMin > 0 && draft.ExperienceMax > 0 {
-			expYears := map[string]string{"en": "years", "ru": "лет", "uz": "yil"}
-			sb.WriteString(fmt.Sprintf("%s: %d–%d %s\n", hrMsgFieldExperience[lang], draft.ExperienceMin, draft.ExperienceMax, expYears[lang]))
-		} else if draft.ExperienceMin > 0 {
-			sb.WriteString(fmt.Sprintf("%s: %d+ %s\n", hrMsgFieldExperience[lang], draft.ExperienceMin, map[string]string{"en": "years", "ru": "лет", "uz": "yil"}[lang]))
+	// Benefits / Conditions
+	ben := draftField(draft, "benefits", lang)
+	if ben != "" {
+		benLabel := map[string]string{"en": "We offer:", "ru": "Условия:", "uz": "Sharoitlar:"}
+		sb.WriteString(fmt.Sprintf("*%s*\n%s\n\n", benLabel[lang], formatAsBullets(ben)))
+	}
+
+	// Details line: format, experience, salary, skills
+	var details []string
+
+	if draft.Format != "" {
+		formatNames := map[string]map[string]string{
+			"office": {"en": "Office", "ru": "Офис", "uz": "Ofis"},
+			"remote": {"en": "Remote", "ru": "Удалёнка", "uz": "Masofaviy"},
+			"hybrid": {"en": "Hybrid", "ru": "Гибрид", "uz": "Gibrid"},
+		}
+		if names, ok := formatNames[draft.Format]; ok {
+			details = append(details, fmt.Sprintf("📍 %s", names[lang]))
 		}
 	}
-
+	if draft.Address != "" {
+		details = append(details, fmt.Sprintf("🏢 %s", draft.Address))
+	}
+	if draft.ExperienceMin > 0 || draft.ExperienceMax > 0 {
+		expYears := map[string]string{"en": "years", "ru": "лет", "uz": "yil"}
+		if draft.ExperienceMin > 0 && draft.ExperienceMax > 0 {
+			details = append(details, fmt.Sprintf("💼 %d–%d %s", draft.ExperienceMin, draft.ExperienceMax, expYears[lang]))
+		} else if draft.ExperienceMin > 0 {
+			details = append(details, fmt.Sprintf("💼 %d+ %s", draft.ExperienceMin, expYears[lang]))
+		}
+	}
 	if draft.SalaryMin > 0 || draft.SalaryMax > 0 {
 		minStr := formatNumber(int64(draft.SalaryMin))
 		maxStr := formatNumber(int64(draft.SalaryMax))
-		sb.WriteString(fmt.Sprintf("%s: %s–%s %s\n", hrMsgFieldSalary[lang], minStr, maxStr, draft.SalaryCurrency))
+		details = append(details, fmt.Sprintf("💰 %s – %s %s", minStr, maxStr, draft.SalaryCurrency))
+	}
+	if len(details) > 0 {
+		sb.WriteString(strings.Join(details, "\n"))
+		sb.WriteString("\n\n")
 	}
 
-	// Determine missing fields
+	if len(draft.Skills) > 0 {
+		sb.WriteString(fmt.Sprintf("🛠 %s\n\n", strings.Join(draft.Skills, ", ")))
+	}
+
+	// Contacts
+	var contacts []string
+	if draft.Phone != "" {
+		contacts = append(contacts, fmt.Sprintf("📞 %s", draft.Phone))
+	}
+	if draft.Telegram != "" {
+		contacts = append(contacts, fmt.Sprintf("✈️ %s", draft.Telegram))
+	}
+	if draft.Email != "" {
+		contacts = append(contacts, fmt.Sprintf("📧 %s", draft.Email))
+	}
+	if len(contacts) > 0 {
+		sb.WriteString(strings.Join(contacts, "  "))
+		sb.WriteString("\n\n")
+	}
+
+	// Missing fields
 	var missing []string
 	if draft.SalaryMin == 0 && draft.SalaryMax == 0 {
 		missing = append(missing, hrMsgMissingSalary[lang])
@@ -710,22 +759,10 @@ func (hb *HRBot) sendVacancyReview(c tele.Context, draft *gemini.ParsedVacancyFu
 	if draft.Format == "" {
 		missing = append(missing, hrMsgMissingFormat[lang])
 	}
-	hasResponsibilities := false
-	if fields, ok := draft.Fields["responsibilities"]; ok {
-		if fields[lang] != "" || fields["en"] != "" {
-			hasResponsibilities = true
-		}
-	}
-	if !hasResponsibilities {
+	if draftField(draft, "responsibilities", lang) == "" {
 		missing = append(missing, hrMsgMissingResponsibilities[lang])
 	}
-	hasRequirements := false
-	if fields, ok := draft.Fields["requirements"]; ok {
-		if fields[lang] != "" || fields["en"] != "" {
-			hasRequirements = true
-		}
-	}
-	if !hasRequirements {
+	if draftField(draft, "requirements", lang) == "" {
 		missing = append(missing, hrMsgMissingRequirements[lang])
 	}
 	if draft.ExperienceMin == 0 && draft.ExperienceMax == 0 {
@@ -733,13 +770,14 @@ func (hb *HRBot) sendVacancyReview(c tele.Context, draft *gemini.ParsedVacancyFu
 	}
 
 	if len(missing) > 0 {
-		sb.WriteString(fmt.Sprintf("\n%s\n", hrMsgMissing[lang]))
+		sb.WriteString(fmt.Sprintf("⚠️ %s\n", hrMsgMissing[lang]))
 		for _, m := range missing {
 			sb.WriteString(fmt.Sprintf("• %s\n", m))
 		}
+		sb.WriteString("\n")
 	}
 
-	sb.WriteString(fmt.Sprintf("\n%s", hrMsgHowToContinue[lang]))
+	sb.WriteString(hrMsgHowToContinue[lang])
 
 	markup := &tele.ReplyMarkup{}
 	markup.Inline(
@@ -748,7 +786,42 @@ func (hb *HRBot) sendVacancyReview(c tele.Context, draft *gemini.ParsedVacancyFu
 		markup.Row(markup.Data(hrMsgBtnAddInfo[lang], "hr_vac_add_info")),
 	)
 
-	return c.Send(sb.String(), markup)
+	return c.Send(sb.String(), &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: markup})
+}
+
+// draftField returns the text field value for the given language, falling back to English.
+func draftField(draft *gemini.ParsedVacancyFull, field, lang string) string {
+	if fields, ok := draft.Fields[field]; ok {
+		if v := fields[lang]; v != "" {
+			return v
+		}
+		return fields["en"]
+	}
+	return ""
+}
+
+// formatAsBullets takes a text block and formats each line/sentence as a bullet point.
+// If the text already has bullet points or newlines, it preserves them.
+func formatAsBullets(text string) string {
+	text = strings.TrimSpace(text)
+	if text == "" {
+		return ""
+	}
+
+	lines := strings.Split(text, "\n")
+	var result []string
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		// Strip existing bullet markers
+		line = strings.TrimPrefix(line, "• ")
+		line = strings.TrimPrefix(line, "- ")
+		line = strings.TrimPrefix(line, "* ")
+		result = append(result, "• "+line)
+	}
+	return strings.Join(result, "\n")
 }
 
 func (hb *HRBot) handleMyVacancies(ctx context.Context, c tele.Context, hr *domain.CompanyHR) error {
