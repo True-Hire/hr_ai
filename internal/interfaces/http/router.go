@@ -26,6 +26,7 @@ func NewRouter(svc *app.Services) *gin.Engine {
 	countryHandler := NewCountryHandler(svc.Country)
 	storageHandler := NewStorageHandler(svc.Storage)
 	searchHandler := NewSearchHandler(svc.Search, svc.VectorIndex, userHandler)
+	accountDeletionHandler := NewAccountDeletionHandler(svc.AccountDeletion)
 	miniAppHandler := NewMiniAppHandler(svc.VacancySearch, svc.Vacancy, svc.VacancyApplication,
 		svc.User, svc.ProfileField, svc.ProfileFieldText,
 		svc.ExperienceItem, svc.EducationItem, svc.ItemText, svc.Skill)
@@ -54,6 +55,7 @@ func NewRouter(svc *app.Services) *gin.Engine {
 			users.GET("/:id", userHandler.GetByID)
 			users.PUT("/:id", userHandler.Update)
 			users.DELETE("/:id", userHandler.Delete)
+			users.DELETE("/by-phone/:phone", accountDeletionHandler.DeleteUserByPhone)
 			users.POST("/:id/profile-fields", profileFieldHandler.Create)
 			users.GET("/:id/profile-fields", profileFieldHandler.ListByUser)
 		}
@@ -76,6 +78,7 @@ func NewRouter(svc *app.Services) *gin.Engine {
 			hrs.GET("/:id", companyHRHandler.GetByID)
 			hrs.PUT("/:id", companyHRHandler.Update)
 			hrs.DELETE("/:id", companyHRHandler.Delete)
+			hrs.DELETE("/by-phone/:phone", accountDeletionHandler.DeleteHRByPhone)
 		}
 
 		companies := v1.Group("/companies")

@@ -90,3 +90,9 @@ WHERE vt.lang = sqlc.arg(lang)
 
 -- name: DeleteVacancy :exec
 DELETE FROM vacancies WHERE id = $1;
+
+-- name: NullifyVacancyHRID :exec
+UPDATE vacancies SET hr_id = NULL WHERE hr_id = $1;
+
+-- name: ListVacancyIDsByHR :many
+SELECT id FROM vacancies WHERE hr_id = $1;

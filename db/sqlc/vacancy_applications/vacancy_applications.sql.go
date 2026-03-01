@@ -80,6 +80,24 @@ func (q *Queries) DeleteVacancyApplication(ctx context.Context, id pgtype.UUID) 
 	return err
 }
 
+const deleteVacancyApplicationsByUser = `-- name: DeleteVacancyApplicationsByUser :exec
+DELETE FROM vacancy_applications WHERE user_id = $1
+`
+
+func (q *Queries) DeleteVacancyApplicationsByUser(ctx context.Context, userID pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteVacancyApplicationsByUser, userID)
+	return err
+}
+
+const deleteVacancyApplicationsByVacancy = `-- name: DeleteVacancyApplicationsByVacancy :exec
+DELETE FROM vacancy_applications WHERE vacancy_id = $1
+`
+
+func (q *Queries) DeleteVacancyApplicationsByVacancy(ctx context.Context, vacancyID pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteVacancyApplicationsByVacancy, vacancyID)
+	return err
+}
+
 const getVacancyApplicationByID = `-- name: GetVacancyApplicationByID :one
 SELECT id, user_id, vacancy_id, status, cover_letter, created_at, updated_at
 FROM vacancy_applications

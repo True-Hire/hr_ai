@@ -43,4 +43,6 @@ type VacancyRepository interface {
 	CountSearch(ctx context.Context, lang, query string) (int64, error)
 	Update(ctx context.Context, v *Vacancy) (*Vacancy, error)
 	Delete(ctx context.Context, id uuid.UUID) error
+	NullifyHRID(ctx context.Context, hrID uuid.UUID) error
+	ListIDsByHR(ctx context.Context, hrID uuid.UUID) ([]uuid.UUID, error)
 }

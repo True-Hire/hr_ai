@@ -147,6 +147,10 @@ func (s *HRBotService) ParseVacancyFromFile(ctx context.Context, fileData []byte
 	return s.geminiClient.ParseVacancyFromFile(ctx, fileData, mimeType)
 }
 
+func (s *HRBotService) MergeVacancy(ctx context.Context, existingJSON, additionalInfo string) (*gemini.ParsedVacancyFull, error) {
+	return s.geminiClient.MergeVacancy(ctx, existingJSON, additionalInfo)
+}
+
 func (s *HRBotService) CreateVacancyFromDraft(ctx context.Context, hrID uuid.UUID, draft *gemini.ParsedVacancyFull) (*VacancyWithDetails, error) {
 	return s.vacancySvc.CreateVacancyFromParsed(ctx, hrID, uuid.Nil, draft)
 }

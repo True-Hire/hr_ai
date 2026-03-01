@@ -275,6 +275,30 @@ HR's job posting text:
 %s`, userInput)
 }
 
+func buildVacancyMergePrompt(existingJSON, additionalInfo string) string {
+	return fmt.Sprintf(`You are an AI that merges additional information into an existing vacancy/job posting.
+
+Below is the EXISTING vacancy data in JSON format, followed by NEW additional information from the HR manager.
+
+Your task:
+1. Take ALL existing data and keep it
+2. Merge the new information — update fields that the new info clarifies, ADD new details to descriptions/requirements/responsibilities
+3. Do NOT remove or lose any existing information
+4. If the new info contradicts existing data, prefer the new info
+5. For text fields (title, description, responsibilities, requirements, benefits), APPEND new details to existing content, translate into all 3 languages
+6. For skills, merge both lists (no duplicates)
+
+Return the MERGED result in the same JSON format.
+
+EXISTING VACANCY DATA:
+%s
+
+NEW ADDITIONAL INFORMATION:
+%s
+
+Return ONLY valid JSON in the same format as the existing data.`, existingJSON, additionalInfo)
+}
+
 func buildTranslateToEnglishPrompt(text string) string {
 	return fmt.Sprintf(`You are a translator. Translate the following text to English. If the text is already in English, return it as-is.
 

@@ -1,0 +1,1 @@
+ALTER TABLE vacancies ALTER COLUMN hr_id DROP NOT NULL;
