@@ -35,7 +35,7 @@ func main() {
 	}
 	defer pool.Close()
 
-	services, err := app.NewServices(pool, cfg.GeminiAPIKey, cfg.JWTSecret, cfg.DatabaseURL, cfg.QdrantURL, cfg.QdrantAPIKey, cfg.RedisURL, cfg.MinioEndpoint, cfg.MinioAccessKey, cfg.MinioSecretKey, cfg.MinioBucket, cfg.MinioUseSSL, cfg.TelegramBotToken)
+	services, err := app.NewServices(pool, cfg.GeminiAPIKey, cfg.JWTSecret, cfg.DatabaseURL, cfg.QdrantURL, cfg.QdrantAPIKey, cfg.RedisURL, cfg.MinioEndpoint, cfg.MinioAccessKey, cfg.MinioSecretKey, cfg.MinioBucket, cfg.MinioUseSSL, cfg.TelegramBotToken, cfg.TelegramHRBotToken)
 	if err != nil {
 		log.Fatalf("failed to init services: %v", err)
 	}
@@ -51,6 +51,18 @@ func main() {
 		go tgBot.Start()
 	} else {
 		log.Println("TELEGRAM_BOT_TOKEN not set, skipping bot")
+	}
+
+	// Start HR Telegram bot in background
+	var hrBot *telegram.HRBot
+	if cfg.TelegramHRBotToken != "" {
+		hrBot, err = telegram.NewHRBot(cfg.TelegramHRBotToken, services.HRBot)
+		if err != nil {
+			log.Fatalf("failed to init hr telegram bot: %v", err)
+		}
+		go hrBot.Start()
+	} else {
+		log.Println("TELEGRAM_HR_BOT_TOKEN not set, skipping HR bot")
 	}
 
 	// Start HTTP server
@@ -74,6 +86,9 @@ func main() {
 
 	if tgBot != nil {
 		tgBot.Stop()
+	}
+	if hrBot != nil {
+		hrBot.Stop()
 	}
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

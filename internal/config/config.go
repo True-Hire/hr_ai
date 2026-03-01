@@ -15,7 +15,8 @@ type Config struct {
 	QdrantURL        string
 	QdrantAPIKey     string
 	RedisURL         string
-	TelegramBotToken string
+	TelegramBotToken   string
+	TelegramHRBotToken string
 	MinioEndpoint    string
 	MinioAccessKey   string
 	MinioSecretKey   string
@@ -63,6 +64,7 @@ func Load() (*Config, error) {
 	}
 
 	tgBotToken := os.Getenv("TELEGRAM_BOT_TOKEN")
+	tgHRBotToken := os.Getenv("TELEGRAM_HR_BOT_TOKEN")
 
 	minioEndpoint := os.Getenv("MINIO_ENDPOINT")
 	if minioEndpoint == "" {
@@ -91,7 +93,8 @@ func Load() (*Config, error) {
 		QdrantURL:        qdrantURL,
 		QdrantAPIKey:     qdrantAPIKey,
 		RedisURL:         redisURL,
-		TelegramBotToken: tgBotToken,
+		TelegramBotToken:   tgBotToken,
+		TelegramHRBotToken: tgHRBotToken,
 		MinioEndpoint:    minioEndpoint,
 		MinioAccessKey:   minioAccessKey,
 		MinioSecretKey:   minioSecretKey,

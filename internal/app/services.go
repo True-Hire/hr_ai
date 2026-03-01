@@ -38,14 +38,16 @@ type Services struct {
 	VacancySearch       *application.VacancySearchService
 	VacancyApplication  *application.VacancyApplicationService
 	Bot                 *application.BotService
+	HRBot               *application.HRBotService
 	Storage          *application.StorageService
 	CasbinEnforcer   *casbinlib.Enforcer
 	RedisClient      *redisclient.Client
 	JWTSecret        string
-	TelegramBotToken string
+	TelegramBotToken   string
+	TelegramHRBotToken string
 }
 
-func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdrantURL, qdrantAPIKey, redisURL, minioEndpoint, minioAccessKey, minioSecretKey, minioBucket string, minioUseSSL bool, telegramBotToken string) (*Services, error) {
+func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdrantURL, qdrantAPIKey, redisURL, minioEndpoint, minioAccessKey, minioSecretKey, minioBucket string, minioUseSSL bool, telegramBotToken, telegramHRBotToken string) (*Services, error) {
 	rc, err := redisclient.NewClient(redisURL)
 	if err != nil {
 		return nil, fmt.Errorf("init redis: %w", err)
@@ -111,6 +113,8 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 	companyHRSvc := application.NewCompanyHRService(companyHRRepo)
 	botStateSvc := application.NewBotStateService(rc)
 
+	hrBotSvc := application.NewHRBotService(companyHRSvc, vacancySvc, botStateSvc, searchSvc, userSvc)
+
 	return &Services{
 		User:             userSvc,
 		ProfileField:     pfSvc,
@@ -133,10 +137,12 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 		VacancySearch:      vacancySearchSvc,
 		VacancyApplication: vacancyAppSvc,
 		Bot:                application.NewBotService(userSvc, companyHRSvc, profileParseSvc, storageSvc, botStateSvc, geminiClient),
+		HRBot:              hrBotSvc,
 		Storage:          storageSvc,
 		CasbinEnforcer:   enforcer,
 		RedisClient:      rc,
 		JWTSecret:        jwtSecret,
-		TelegramBotToken: telegramBotToken,
+		TelegramBotToken:   telegramBotToken,
+		TelegramHRBotToken: telegramHRBotToken,
 	}, nil
 }
