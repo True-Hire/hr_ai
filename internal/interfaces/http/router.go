@@ -1,6 +1,9 @@
 package http
 
 import (
+	"net/http"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -8,8 +11,36 @@ import (
 	"github.com/ruziba3vich/hr-ai/internal/app"
 )
 
+func corsMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		origin := c.GetHeader("Origin")
+		if origin != "" {
+			allowed := []string{
+				"https://hr-ai-wb-app.leetcoders.uz",
+				"https://hr-ai.compile-me.uz",
+			}
+			for _, a := range allowed {
+				if strings.EqualFold(origin, a) {
+					c.Header("Access-Control-Allow-Origin", origin)
+					break
+				}
+			}
+		}
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Telegram-Init-Data")
+		c.Header("Access-Control-Max-Age", "86400")
+
+		if c.Request.Method == http.MethodOptions {
+			c.AbortWithStatus(http.StatusNoContent)
+			return
+		}
+		c.Next()
+	}
+}
+
 func NewRouter(svc *app.Services) *gin.Engine {
 	router := gin.Default()
+	router.Use(corsMiddleware())
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
