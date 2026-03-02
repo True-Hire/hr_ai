@@ -356,7 +356,10 @@ func (hb *HRBot) registerHandlers() {
 		}
 		lang = langOrDefault(lang)
 		name := strings.TrimSpace(result.HR.FirstName + " " + result.HR.LastName)
-		return c.Send(fmt.Sprintf(hrMsgWelcomeBack[lang], name), hrMenu(lang))
+		if err := c.Send(fmt.Sprintf(hrMsgWelcomeBack[lang], name), hrInlineMenu(lang)); err != nil {
+			log.Printf("hr welcome back msg error for %d: %v", sender.ID, err)
+		}
+		return c.Send("⌨️", hrMenu(lang))
 	})
 
 	// Contact (phone number) handler — create HR record
@@ -377,11 +380,10 @@ func (hb *HRBot) registerHandlers() {
 		}
 
 		lang = langOrDefault(hr.Language)
-		if _, err := hb.bot.Send(c.Recipient(), fmt.Sprintf(hrMsgRegistered[lang], hr.FirstName)); err != nil {
-			log.Printf("hr registered msg error for %d: %v", sender.ID, err)
+		if err := c.Send(hrMsgWelcomeNew[lang], hrInlineMenu(lang)); err != nil {
+			log.Printf("hr welcome msg error for %d: %v", sender.ID, err)
 		}
-		time.Sleep(500 * time.Millisecond)
-		return c.Send(hrMsgWelcomeNew[lang], hrMenu(lang))
+		return c.Send("⌨️", hrMenu(lang))
 	})
 
 	// Language change callback for HR
@@ -407,6 +409,43 @@ func (hb *HRBot) registerHandlers() {
 		}
 
 		return c.Send(hrMsgLangChanged[newLang], hrMenu(newLang))
+	})
+
+	// Inline menu callback
+	bot.Handle(&tele.Btn{Unique: "hr_menu"}, func(c tele.Context) error {
+		sender := c.Sender()
+		action := c.Callback().Data
+		_ = c.Respond(&tele.CallbackResponse{})
+
+		tgID := strconv.FormatInt(sender.ID, 10)
+		hr, err := hrBotSvc.GetHRByTelegramID(ctx, tgID)
+		if err != nil {
+			return c.Send(hrMsgError["en"])
+		}
+		lang := langOrDefault(hr.Language)
+
+		switch action {
+		case "create_vacancy":
+			if err := hrBotSvc.SetState(ctx, sender.ID, domain.HRBotStatePostingVacancy, map[string]string{"language": lang, "hr_id": hr.ID.String()}); err != nil {
+				log.Printf("hr set posting state error for %d: %v", sender.ID, err)
+			}
+			return c.Send(hrMsgPostVacancy[lang])
+		case "active_vacancies":
+			return hb.handleMyVacancies(ctx, c, hr)
+		case "find_candidates":
+			return hb.handleFindCandidatesStart(ctx, c, hr)
+		case "change_lang":
+			markup := &tele.ReplyMarkup{}
+			markup.Inline(
+				markup.Row(
+					markup.Data("🇬🇧 English", "hr_chg_lang", "en"),
+					markup.Data("🇷🇺 Русский", "hr_chg_lang", "ru"),
+					markup.Data("🇺🇿 O'zbek", "hr_chg_lang", "uz"),
+				),
+			)
+			return c.Send(hrMsgChooseLang[lang], markup)
+		}
+		return nil
 	})
 
 	// Vacancy review callbacks
@@ -928,6 +967,21 @@ func hrMenu(lang string) *tele.ReplyMarkup {
 	markup.Reply(
 		markup.Row(tele.Btn{Text: hrMenuBtnCreateVacancy[lang]}, tele.Btn{Text: hrMenuBtnActiveVacancies[lang]}),
 		markup.Row(tele.Btn{Text: hrMenuBtnFindCandidates[lang]}, tele.Btn{Text: hrMenuBtnChangeLang[lang]}),
+	)
+	return markup
+}
+
+func hrInlineMenu(lang string) *tele.ReplyMarkup {
+	markup := &tele.ReplyMarkup{}
+	markup.Inline(
+		markup.Row(
+			markup.Data(hrMenuBtnCreateVacancy[lang], "hr_menu", "create_vacancy"),
+			markup.Data(hrMenuBtnActiveVacancies[lang], "hr_menu", "active_vacancies"),
+		),
+		markup.Row(
+			markup.Data(hrMenuBtnFindCandidates[lang], "hr_menu", "find_candidates"),
+			markup.Data(hrMenuBtnChangeLang[lang], "hr_menu", "change_lang"),
+		),
 	)
 	return markup
 }
