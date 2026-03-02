@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/google/uuid"
 
@@ -60,20 +61,41 @@ func NewAccountDeletionService(
 
 // DeleteUserByPhone finds a user by phone and deletes everything associated with them.
 func (s *AccountDeletionService) DeleteUserByPhone(ctx context.Context, phone string) error {
+	phone = normalizePhone(phone)
 	user, err := s.userRepo.GetByPhone(ctx, phone)
 	if err != nil {
-		return fmt.Errorf("find user by phone: %w", err)
+		// try with opposite format
+		user, err = s.userRepo.GetByPhone(ctx, flipPhonePrefix(phone))
+		if err != nil {
+			return fmt.Errorf("find user by phone: %w", err)
+		}
 	}
 	return s.deleteUser(ctx, user.ID)
 }
 
 // DeleteHRByPhone finds an HR by phone, nullifies their vacancy references, and deletes the HR.
 func (s *AccountDeletionService) DeleteHRByPhone(ctx context.Context, phone string) error {
+	phone = normalizePhone(phone)
 	hr, err := s.hrRepo.GetByPhone(ctx, phone)
 	if err != nil {
-		return fmt.Errorf("find hr by phone: %w", err)
+		// try with opposite format
+		hr, err = s.hrRepo.GetByPhone(ctx, flipPhonePrefix(phone))
+		if err != nil {
+			return fmt.Errorf("find hr by phone: %w", err)
+		}
 	}
 	return s.deleteHR(ctx, hr.ID)
+}
+
+func normalizePhone(phone string) string {
+	return strings.TrimSpace(phone)
+}
+
+func flipPhonePrefix(phone string) string {
+	if strings.HasPrefix(phone, "+") {
+		return strings.TrimPrefix(phone, "+")
+	}
+	return "+" + phone
 }
 
 func (s *AccountDeletionService) deleteUser(ctx context.Context, userID uuid.UUID) error {
