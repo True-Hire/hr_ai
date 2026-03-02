@@ -356,7 +356,7 @@ func (hb *HRBot) registerHandlers() {
 		}
 		lang = langOrDefault(lang)
 		name := strings.TrimSpace(result.HR.FirstName + " " + result.HR.LastName)
-		if err := c.Send(fmt.Sprintf(hrMsgWelcomeBack[lang], name), hrInlineMenu(lang)); err != nil {
+		if err := c.Send(fmt.Sprintf(hrMsgWelcomeBack[lang], name), hb.hrInlineMenu(lang)); err != nil {
 			log.Printf("hr welcome back msg error for %d: %v", sender.ID, err)
 		}
 		return c.Send("⌨️", hrMenu(lang))
@@ -380,7 +380,7 @@ func (hb *HRBot) registerHandlers() {
 		}
 
 		lang = langOrDefault(hr.Language)
-		if err := c.Send(hrMsgWelcomeNew[lang], hrInlineMenu(lang)); err != nil {
+		if err := c.Send(hrMsgWelcomeNew[lang], hb.hrInlineMenu(lang)); err != nil {
 			log.Printf("hr welcome msg error for %d: %v", sender.ID, err)
 		}
 		return c.Send("⌨️", hrMenu(lang))
@@ -554,6 +554,13 @@ func (hb *HRBot) registerHandlers() {
 			return hb.handleMyVacancies(ctx, c, hr)
 		}
 		if isMenuButton(text, hrMenuBtnFindCandidates) {
+			if hb.webAppURL != "" {
+				markup := &tele.ReplyMarkup{}
+				markup.Inline(
+					markup.Row(markup.WebApp(hrMenuBtnFindCandidates[lang], &tele.WebApp{URL: hb.webAppURL + "/applications"})),
+				)
+				return c.Send("🔍", markup)
+			}
 			return hb.handleFindCandidatesStart(ctx, c, hr)
 		}
 		if isMenuButton(text, hrMenuBtnChangeLang) {
@@ -971,14 +978,19 @@ func hrMenu(lang string) *tele.ReplyMarkup {
 	return markup
 }
 
-func hrInlineMenu(lang string) *tele.ReplyMarkup {
+func (hb *HRBot) hrInlineMenu(lang string) *tele.ReplyMarkup {
 	markup := &tele.ReplyMarkup{}
-	markup.Inline(
+	rows := []tele.Row{
 		markup.Row(markup.Data(hrMenuBtnCreateVacancy[lang], "hr_menu", "create_vacancy")),
 		markup.Row(markup.Data(hrMenuBtnActiveVacancies[lang], "hr_menu", "active_vacancies")),
-		markup.Row(markup.Data(hrMenuBtnFindCandidates[lang], "hr_menu", "find_candidates")),
-		markup.Row(markup.Data(hrMenuBtnChangeLang[lang], "hr_menu", "change_lang")),
-	)
+	}
+	if hb.webAppURL != "" {
+		rows = append(rows, markup.Row(markup.WebApp(hrMenuBtnFindCandidates[lang], &tele.WebApp{URL: hb.webAppURL + "/applications"})))
+	} else {
+		rows = append(rows, markup.Row(markup.Data(hrMenuBtnFindCandidates[lang], "hr_menu", "find_candidates")))
+	}
+	rows = append(rows, markup.Row(markup.Data(hrMenuBtnChangeLang[lang], "hr_menu", "change_lang")))
+	markup.Inline(rows...)
 	return markup
 }
 
