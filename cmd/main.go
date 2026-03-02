@@ -56,7 +56,7 @@ func main() {
 	// Start HR Telegram bot in background
 	var hrBot *telegram.HRBot
 	if cfg.TelegramHRBotToken != "" {
-		hrBot, err = telegram.NewHRBot(cfg.TelegramHRBotToken, services.HRBot)
+		hrBot, err = telegram.NewHRBot(cfg.TelegramHRBotToken, services.HRBot, cfg.HRWebAppURL)
 		if err != nil {
 			log.Fatalf("failed to init hr telegram bot: %v", err)
 		}
