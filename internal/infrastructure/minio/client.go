@@ -12,10 +12,11 @@ import (
 )
 
 type Client struct {
-	mc       *minio.Client
-	bucket   string
-	endpoint string
-	useSSL   bool
+	mc            *minio.Client
+	bucket        string
+	endpoint      string
+	useSSL        bool
+	publicBaseURL string
 }
 
 type FileInfo struct {
@@ -24,7 +25,7 @@ type FileInfo struct {
 	Size        int64
 }
 
-func NewClient(endpoint, accessKey, secretKey, bucket string, useSSL bool) (*Client, error) {
+func NewClient(endpoint, accessKey, secretKey, bucket string, useSSL bool, publicBaseURL ...string) (*Client, error) {
 	mc, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),
 		Secure: useSSL,
@@ -44,11 +45,17 @@ func NewClient(endpoint, accessKey, secretKey, bucket string, useSSL bool) (*Cli
 		}
 	}
 
+	var pubURL string
+	if len(publicBaseURL) > 0 {
+		pubURL = publicBaseURL[0]
+	}
+
 	return &Client{
-		mc:       mc,
-		bucket:   bucket,
-		endpoint: endpoint,
-		useSSL:   useSSL,
+		mc:            mc,
+		bucket:        bucket,
+		endpoint:      endpoint,
+		useSSL:        useSSL,
+		publicBaseURL: pubURL,
 	}, nil
 }
 
@@ -98,6 +105,9 @@ func (c *Client) Delete(ctx context.Context, objectName string) error {
 }
 
 func (c *Client) PublicURL(objectName string) string {
+	if c.publicBaseURL != "" {
+		return c.publicBaseURL + "/" + objectName
+	}
 	scheme := "http"
 	if c.useSSL {
 		scheme = "https"

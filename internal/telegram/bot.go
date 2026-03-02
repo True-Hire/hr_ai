@@ -350,6 +350,21 @@ func (tb *Bot) registerHandlers() {
 			return c.Send(msgWelcomeNew["en"], markup)
 		}
 
+		// Update profile pic if missing
+		if result.User != nil && result.User.ProfilePicURL == "" {
+			go func() {
+				photos, err := bot.ProfilePhotosOf(sender)
+				if err == nil && len(photos) > 0 {
+					reader, err := bot.File(&photos[0].File)
+					if err == nil {
+						photoData, _ := io.ReadAll(reader)
+						reader.Close()
+						botSvc.UpdateProfilePicIfMissing(ctx, result.User.ID, "", photoData)
+					}
+				}
+			}()
+		}
+
 		lang := langOrDefault(result.User.Language)
 		return c.Send(fmt.Sprintf(msgWelcomeBackUser[lang], result.User.FirstName), userMenu(lang))
 	})
