@@ -557,7 +557,7 @@ func (hb *HRBot) registerHandlers() {
 			if hb.webAppURL != "" {
 				markup := &tele.ReplyMarkup{}
 				markup.Inline(
-					markup.Row(markup.WebApp(hrMenuBtnFindCandidates[lang], &tele.WebApp{URL: hb.webAppURL + "/applications"})),
+					markup.Row(markup.WebApp(hrMenuBtnFindCandidates[lang], &tele.WebApp{URL: hb.webAppURL})),
 				)
 				return c.Send("🔍", markup)
 			}
@@ -985,7 +985,7 @@ func (hb *HRBot) hrInlineMenu(lang string) *tele.ReplyMarkup {
 		markup.Row(markup.Data(hrMenuBtnActiveVacancies[lang], "hr_menu", "active_vacancies")),
 	}
 	if hb.webAppURL != "" {
-		rows = append(rows, markup.Row(markup.WebApp(hrMenuBtnFindCandidates[lang], &tele.WebApp{URL: hb.webAppURL + "/applications"})))
+		rows = append(rows, markup.Row(markup.WebApp(hrMenuBtnFindCandidates[lang], &tele.WebApp{URL: hb.webAppURL})))
 	} else {
 		rows = append(rows, markup.Row(markup.Data(hrMenuBtnFindCandidates[lang], "hr_menu", "find_candidates")))
 	}
