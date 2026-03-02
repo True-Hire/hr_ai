@@ -42,7 +42,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script_stop: true
-          envs: DATABASE_URL,SERVER_PORT,GEMINI_API_KEY,JWT_SECRET,QDRANT_URL,QDRANT_API_KEY,REDIS_URL,TELEGRAM_BOT_TOKEN,TELEGRAM_HR_BOT_TOKEN,MINIO_ENDPOINT,MINIO_ACCESS_KEY,MINIO_SECRET_KEY,MINIO_BUCKET,MINIO_USE_SSL,WEBAPP_URL,GHCR_TOKEN
+          envs: DATABASE_URL,SERVER_PORT,GEMINI_API_KEY,JWT_SECRET,QDRANT_URL,QDRANT_API_KEY,REDIS_URL,TELEGRAM_BOT_TOKEN,TELEGRAM_HR_BOT_TOKEN,MINIO_ENDPOINT,MINIO_ACCESS_KEY,MINIO_SECRET_KEY,MINIO_BUCKET,MINIO_USE_SSL,WEBAPP_URL,HR_WEBAPP_URL,GHCR_TOKEN
           script: |
             echo "Logging in to GHCR..."
             echo "$GHCR_TOKEN" | docker login ghcr.io -u ruziba3vich --password-stdin
@@ -65,6 +65,7 @@ jobs:
             MINIO_BUCKET=$MINIO_BUCKET
             MINIO_USE_SSL=$MINIO_USE_SSL
             WEBAPP_URL=$WEBAPP_URL
+            HR_WEBAPP_URL=$HR_WEBAPP_URL
             EOF
             chmod 600 /opt/hr-ai/.env
 
@@ -103,4 +104,5 @@ jobs:
           MINIO_BUCKET: ${{ secrets.MINIO_BUCKET }}
           MINIO_USE_SSL: ${{ secrets.MINIO_USE_SSL }}
           WEBAPP_URL: ${{ secrets.WEBAPP_URL }}
+          HR_WEBAPP_URL: ${{ secrets.HR_WEBAPP_URL }}
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}

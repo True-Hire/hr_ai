@@ -243,11 +243,12 @@ var hrMsgError = map[string]string{
 // -- HR Bot --
 
 type HRBot struct {
-	bot      *tele.Bot
-	hrBotSvc *application.HRBotService
+	bot       *tele.Bot
+	hrBotSvc  *application.HRBotService
+	webAppURL string
 }
 
-func NewHRBot(token string, hrBotSvc *application.HRBotService) (*HRBot, error) {
+func NewHRBot(token string, hrBotSvc *application.HRBotService, webAppURL string) (*HRBot, error) {
 	b, err := tele.NewBot(tele.Settings{
 		Token:  token,
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
@@ -256,8 +257,19 @@ func NewHRBot(token string, hrBotSvc *application.HRBotService) (*HRBot, error) 
 		return nil, fmt.Errorf("create hr telegram bot: %w", err)
 	}
 
-	hb := &HRBot{bot: b, hrBotSvc: hrBotSvc}
+	hb := &HRBot{bot: b, hrBotSvc: hrBotSvc, webAppURL: webAppURL}
 	hb.registerHandlers()
+
+	if webAppURL != "" {
+		if err := b.SetMenuButton(nil, &tele.MenuButton{
+			Type: tele.MenuButtonWebApp,
+			Text: "Open App",
+			WebApp: &tele.WebApp{URL: webAppURL},
+		}); err != nil {
+			log.Printf("hr bot: failed to set menu button: %v", err)
+		}
+	}
+
 	return hb, nil
 }
 
@@ -362,7 +374,10 @@ func (hb *HRBot) registerHandlers() {
 		}
 
 		lang = langOrDefault(hr.Language)
-		_ = c.Send(fmt.Sprintf(hrMsgRegistered[lang], hr.FirstName))
+		if err := c.Send(fmt.Sprintf(hrMsgRegistered[lang], hr.FirstName)); err != nil {
+			log.Printf("hr registered msg error for %d: %v", sender.ID, err)
+		}
+		time.Sleep(300 * time.Millisecond)
 		return c.Send(hrMsgWelcomeNew[lang], hrMenu(lang))
 	})
 
