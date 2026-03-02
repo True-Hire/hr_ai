@@ -68,6 +68,27 @@ func (s *BotService) HandleStart(ctx context.Context, telegramID int64) (*StartR
 	return &StartResult{IsNew: true}, nil
 }
 
+// UpdateProfilePicIfMissing uploads the photo and updates the user's profile_pic_url if empty.
+func (s *BotService) UpdateProfilePicIfMissing(ctx context.Context, userID uuid.UUID, currentURL string, photoData []byte) {
+	if currentURL != "" || len(photoData) == 0 {
+		return
+	}
+	result, err := s.storage.UploadProfilePhoto(ctx, photoData, "image/jpeg")
+	if err != nil {
+		log.Printf("update profile pic for %s: upload failed: %v", userID, err)
+		return
+	}
+	user, err := s.userSvc.GetUser(ctx, userID)
+	if err != nil {
+		log.Printf("update profile pic for %s: get user failed: %v", userID, err)
+		return
+	}
+	user.ProfilePicURL = result.URL
+	if _, err := s.userSvc.UpdateUser(ctx, user); err != nil {
+		log.Printf("update profile pic for %s: db update failed: %v", userID, err)
+	}
+}
+
 // HandleLanguageSelection creates the user and transitions to sharing_phone state.
 func (s *BotService) HandleLanguageSelection(ctx context.Context, telegramID int64, language, firstName, lastName, username string, photoData []byte) (string, error) {
 	tgID := strconv.FormatInt(telegramID, 10)
