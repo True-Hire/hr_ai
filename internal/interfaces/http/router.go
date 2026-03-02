@@ -177,6 +177,7 @@ func NewRouter(svc *app.Services) *gin.Engine {
 		hrMiniapp := v1.Group("/hr-miniapp")
 		hrMiniapp.Use(TelegramHRAuthMiddleware(svc.TelegramHRBotToken, svc.CompanyHR))
 		{
+			hrMiniapp.GET("/me", companyHRHandler.MiniAppMe)
 			hrMiniapp.GET("/vacancies", vacancyHandler.List)
 			hrMiniapp.GET("/vacancies/:id", vacancyHandler.GetByID)
 		}
