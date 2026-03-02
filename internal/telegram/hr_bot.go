@@ -974,14 +974,10 @@ func hrMenu(lang string) *tele.ReplyMarkup {
 func hrInlineMenu(lang string) *tele.ReplyMarkup {
 	markup := &tele.ReplyMarkup{}
 	markup.Inline(
-		markup.Row(
-			markup.Data(hrMenuBtnCreateVacancy[lang], "hr_menu", "create_vacancy"),
-			markup.Data(hrMenuBtnActiveVacancies[lang], "hr_menu", "active_vacancies"),
-		),
-		markup.Row(
-			markup.Data(hrMenuBtnFindCandidates[lang], "hr_menu", "find_candidates"),
-			markup.Data(hrMenuBtnChangeLang[lang], "hr_menu", "change_lang"),
-		),
+		markup.Row(markup.Data(hrMenuBtnCreateVacancy[lang], "hr_menu", "create_vacancy")),
+		markup.Row(markup.Data(hrMenuBtnActiveVacancies[lang], "hr_menu", "active_vacancies")),
+		markup.Row(markup.Data(hrMenuBtnFindCandidates[lang], "hr_menu", "find_candidates")),
+		markup.Row(markup.Data(hrMenuBtnChangeLang[lang], "hr_menu", "change_lang")),
 	)
 	return markup
 }
