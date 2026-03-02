@@ -176,6 +176,7 @@ func TelegramHRAuthMiddleware(hrBotToken string, hrSvc *application.CompanyHRSer
 		}
 
 		c.Set("hr_id", hr.ID.String())
+		c.Set("company_id", hr.CompanyID.String())
 		c.Set("tg_user_id", telegramID)
 		c.Next()
 	}
