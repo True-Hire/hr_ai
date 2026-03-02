@@ -261,11 +261,14 @@ func NewHRBot(token string, hrBotSvc *application.HRBotService, webAppURL string
 	hb.registerHandlers()
 
 	if webAppURL != "" {
-		if err := b.SetMenuButton(nil, &tele.MenuButton{
-			Type: tele.MenuButtonWebApp,
-			Text: "Open App",
-			WebApp: &tele.WebApp{URL: webAppURL},
-		}); err != nil {
+		_, err = b.Raw("setChatMenuButton", map[string]interface{}{
+			"menu_button": tele.MenuButton{
+				Type:   tele.MenuButtonWebApp,
+				Text:   "Open App",
+				WebApp: &tele.WebApp{URL: webAppURL},
+			},
+		})
+		if err != nil {
 			log.Printf("hr bot: failed to set menu button: %v", err)
 		}
 	}
