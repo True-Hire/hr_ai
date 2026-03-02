@@ -377,10 +377,10 @@ func (hb *HRBot) registerHandlers() {
 		}
 
 		lang = langOrDefault(hr.Language)
-		if err := c.Send(fmt.Sprintf(hrMsgRegistered[lang], hr.FirstName)); err != nil {
+		if _, err := hb.bot.Send(c.Recipient(), fmt.Sprintf(hrMsgRegistered[lang], hr.FirstName)); err != nil {
 			log.Printf("hr registered msg error for %d: %v", sender.ID, err)
 		}
-		time.Sleep(300 * time.Millisecond)
+		time.Sleep(500 * time.Millisecond)
 		return c.Send(hrMsgWelcomeNew[lang], hrMenu(lang))
 	})
 
