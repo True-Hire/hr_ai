@@ -377,8 +377,11 @@ func (hb *HRBot) registerHandlers() {
 		}
 
 		lang = langOrDefault(hr.Language)
-		msg := fmt.Sprintf(hrMsgRegistered[lang], hr.FirstName) + "\n\n" + hrMsgWelcomeNew[lang]
-		return c.Send(msg, hrMenu(lang))
+		if _, err := hb.bot.Send(c.Recipient(), fmt.Sprintf(hrMsgRegistered[lang], hr.FirstName)); err != nil {
+			log.Printf("hr registered msg error for %d: %v", sender.ID, err)
+		}
+		time.Sleep(500 * time.Millisecond)
+		return c.Send(hrMsgWelcomeNew[lang], hrMenu(lang))
 	})
 
 	// Language change callback for HR
