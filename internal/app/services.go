@@ -48,14 +48,14 @@ type Services struct {
 	TelegramHRBotToken string
 }
 
-func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdrantURL, qdrantAPIKey, redisURL, minioEndpoint, minioAccessKey, minioSecretKey, minioBucket string, minioUseSSL bool, telegramBotToken, telegramHRBotToken string) (*Services, error) {
+func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdrantURL, qdrantAPIKey, redisURL, minioEndpoint, minioAccessKey, minioSecretKey, minioBucket string, minioUseSSL bool, minioPublicURL, telegramBotToken, telegramHRBotToken string) (*Services, error) {
 	rc, err := redisclient.NewClient(redisURL)
 	if err != nil {
 		return nil, fmt.Errorf("init redis: %w", err)
 	}
 	cacheSvc := application.NewCacheService(rc)
 
-	mc, err := minioclient.NewClient(minioEndpoint, minioAccessKey, minioSecretKey, minioBucket, minioUseSSL)
+	mc, err := minioclient.NewClient(minioEndpoint, minioAccessKey, minioSecretKey, minioBucket, minioUseSSL, minioPublicURL)
 	if err != nil {
 		rc.Close()
 		return nil, fmt.Errorf("init minio: %w", err)
