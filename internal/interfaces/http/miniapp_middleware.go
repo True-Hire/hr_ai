@@ -140,6 +140,47 @@ func validateInitData(initData, botToken string) (int64, error) {
 	return tgUser.ID, nil
 }
 
+// TelegramHRAuthMiddleware validates Telegram Mini App initData using the HR bot token.
+func TelegramHRAuthMiddleware(hrBotToken string, hrSvc *application.CompanyHRService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		header := c.GetHeader("Authorization")
+		if header == "" {
+			header = c.GetHeader("X-Telegram-Init-Data")
+			if header != "" {
+				header = "tma " + header
+			}
+		}
+		if header == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, ErrorResponse{Error: "missing authorization header"})
+			return
+		}
+
+		parts := strings.SplitN(header, " ", 2)
+		if len(parts) != 2 || parts[0] != "tma" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, ErrorResponse{Error: "invalid authorization header"})
+			return
+		}
+
+		telegramID, err := validateInitData(parts[1], hrBotToken)
+		if err != nil {
+			log.Printf("hr miniapp auth failed: %v", err)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, ErrorResponse{Error: fmt.Sprintf("invalid initData: %v", err)})
+			return
+		}
+
+		tgIDStr := strconv.FormatInt(telegramID, 10)
+		hr, err := hrSvc.GetByTelegramID(c.Request.Context(), tgIDStr)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, ErrorResponse{Error: "hr not found"})
+			return
+		}
+
+		c.Set("hr_id", hr.ID.String())
+		c.Set("tg_user_id", telegramID)
+		c.Next()
+	}
+}
+
 func hmacSHA256(key, data []byte) []byte {
 	h := hmac.New(sha256.New, key)
 	h.Write(data)
