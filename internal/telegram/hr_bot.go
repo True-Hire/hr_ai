@@ -356,10 +356,7 @@ func (hb *HRBot) registerHandlers() {
 		}
 		lang = langOrDefault(lang)
 		name := strings.TrimSpace(result.HR.FirstName + " " + result.HR.LastName)
-		if err := c.Send(fmt.Sprintf(hrMsgWelcomeBack[lang], name), hb.hrInlineMenu(lang)); err != nil {
-			log.Printf("hr welcome back msg error for %d: %v", sender.ID, err)
-		}
-		return c.Send("⌨️", hrMenu(lang))
+		return c.Send(fmt.Sprintf(hrMsgWelcomeBack[lang], name), hb.hrInlineMenu(lang))
 	})
 
 	// Contact (phone number) handler — create HR record
@@ -380,10 +377,7 @@ func (hb *HRBot) registerHandlers() {
 		}
 
 		lang = langOrDefault(hr.Language)
-		if err := c.Send(hrMsgWelcomeNew[lang], hb.hrInlineMenu(lang)); err != nil {
-			log.Printf("hr welcome msg error for %d: %v", sender.ID, err)
-		}
-		return c.Send("⌨️", hrMenu(lang))
+		return c.Send(hrMsgWelcomeNew[lang], hb.hrInlineMenu(lang))
 	})
 
 	// Language change callback for HR
