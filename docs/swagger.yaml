@@ -371,6 +371,66 @@ definitions:
       web_site:
         type: string
     type: object
+  http.HRApplicantResponse:
+    properties:
+      cover_letter:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      seen_at:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/http.HRApplicantUserResponse'
+      user_id:
+        type: string
+      vacancy_id:
+        type: string
+    type: object
+  http.HRApplicantUserResponse:
+    properties:
+      first_name:
+        type: string
+      id:
+        type: string
+      last_name:
+        type: string
+      phone:
+        type: string
+      skills:
+        items:
+          type: string
+        type: array
+      telegram:
+        type: string
+    type: object
+  http.HRApplicationListResponse:
+    properties:
+      applications:
+        items:
+          $ref: '#/definitions/http.HRApplicantResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  http.HRApplicationStatsResponse:
+    properties:
+      seen:
+        type: integer
+      total:
+        type: integer
+      unseen:
+        type: integer
+    type: object
   http.HRMiniAppCompanyData:
     properties:
       about:
@@ -447,6 +507,13 @@ definitions:
         type: string
       position:
         type: string
+    type: object
+  http.HRUpdateApplicationStatusRequest:
+    properties:
+      status:
+        type: string
+    required:
+    - status
     type: object
   http.LanguageItemResponse:
     properties:
@@ -1495,6 +1562,194 @@ paths:
       security:
       - TelegramAuth: []
       summary: Update current HR profile and optionally create/update company data
+      tags:
+      - hr-miniapp
+  /hr-miniapp/vacancies/{id}/applications:
+    get:
+      parameters:
+      - description: Vacancy ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.HRApplicationListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: List applicants for a vacancy
+      tags:
+      - hr-miniapp
+  /hr-miniapp/vacancies/{id}/applications/{app_id}/seen:
+    put:
+      parameters:
+      - description: Vacancy ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Application ID
+        in: path
+        name: app_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.HRApplicantResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: Mark application as seen
+      tags:
+      - hr-miniapp
+  /hr-miniapp/vacancies/{id}/applications/{app_id}/status:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Vacancy ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Application ID
+        in: path
+        name: app_id
+        required: true
+        type: string
+      - description: New status
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.HRUpdateApplicationStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.HRApplicantResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: Update application status (accepted/rejected/pending)
+      tags:
+      - hr-miniapp
+  /hr-miniapp/vacancies/{id}/applications/stats:
+    get:
+      parameters:
+      - description: Vacancy ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.HRApplicationStatsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: Get application statistics for a vacancy
       tags:
       - hr-miniapp
   /hr/auth/login:
