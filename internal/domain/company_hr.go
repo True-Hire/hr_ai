@@ -22,7 +22,7 @@ type CompanyHR struct {
 	Position     string
 	Status       string
 	PasswordHash string
-	CompanyID    uuid.UUID
+	CompanyData  *CompanyData
 	Language     string
 	CreatedAt    time.Time
 }

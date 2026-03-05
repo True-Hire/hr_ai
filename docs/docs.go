@@ -15,6 +15,1227 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/login": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Login with phone or email and password",
+                "parameters": [
+                    {
+                        "description": "Login credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.AuthTokenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Logout and invalidate session",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Device ID",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.LogoutRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/refresh": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Get new access and refresh tokens",
+                "parameters": [
+                    {
+                        "description": "Refresh token and device ID",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.RefreshRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.AuthTokenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/set-password": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Set password for an existing user",
+                "parameters": [
+                    {
+                        "description": "User ID and password",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.SetPasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.MessageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/companies": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "companies"
+                ],
+                "summary": "List companies with pagination",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Page size",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.PaginatedCompaniesResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "companies"
+                ],
+                "summary": "Create a new company (data is translated via Gemini into uz/ru/en)",
+                "parameters": [
+                    {
+                        "description": "Company data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.CreateCompanyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/http.CompanyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/companies/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "companies"
+                ],
+                "summary": "Get company by ID with all translations",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Company ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.CompanyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "companies"
+                ],
+                "summary": "Update company (non-text fields only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Company ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated company data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.UpdateCompanyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.CompanyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "companies"
+                ],
+                "summary": "Delete a company and all its translations",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Company ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/countries": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "countries"
+                ],
+                "summary": "List all countries with translated names",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "en",
+                        "description": "Language (uz, ru, en)",
+                        "name": "lang",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/http.CountryResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/countries/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "countries"
+                ],
+                "summary": "Get country by ID with translated name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Country ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "en",
+                        "description": "Language (uz, ru, en)",
+                        "name": "lang",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.CountryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/files": {
+            "get": {
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Download a file from storage",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Object name (e.g. profile-photos/uuid)",
+                        "name": "object_name",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Upload a file to storage",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Storage folder prefix (e.g. profile-photos, resumes)",
+                        "name": "folder",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "File to upload",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/http.UploadResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Delete a file from storage",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Object name (e.g. profile-photos/uuid)",
+                        "name": "object_name",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/hr-miniapp/me": {
+            "get": {
+                "security": [
+                    {
+                        "TelegramAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "hr-miniapp"
+                ],
+                "summary": "Get current HR profile with company data",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.HRMiniAppMeResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "TelegramAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "hr-miniapp"
+                ],
+                "summary": "Update current HR profile and optionally create/update company data",
+                "parameters": [
+                    {
+                        "description": "HR and optional company data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.HRMiniAppUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.HRMiniAppMeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/hr/auth/login": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "hr-auth"
+                ],
+                "summary": "Login as company HR",
+                "parameters": [
+                    {
+                        "description": "Login credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.AuthTokenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/hr/auth/logout": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "hr-auth"
+                ],
+                "summary": "Logout HR (invalidate session)",
+                "parameters": [
+                    {
+                        "description": "Device ID",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.LogoutRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/hr/auth/refresh": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "hr-auth"
+                ],
+                "summary": "Refresh HR access token",
+                "parameters": [
+                    {
+                        "description": "Refresh token and device ID",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.RefreshRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.AuthTokenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/hr/auth/set-password": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "hr-auth"
+                ],
+                "summary": "Set password for a company HR",
+                "parameters": [
+                    {
+                        "description": "HR ID and password",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.SetPasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.MessageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/hrs": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "hrs"
+                ],
+                "summary": "List company HRs with pagination",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Page size",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.PaginatedCompanyHRsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "hrs"
+                ],
+                "summary": "Create a new company HR",
+                "parameters": [
+                    {
+                        "description": "HR data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.CreateCompanyHRRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/http.CompanyHRResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/hrs/by-phone/{phone}": {
+            "delete": {
+                "description": "Removes an HR account and nullifies hr_id on their vacancies (vacancies are preserved)",
+                "tags": [
+                    "account-deletion"
+                ],
+                "summary": "Delete an HR account by phone number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Phone number",
+                        "name": "phone",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/hrs/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "hrs"
+                ],
+                "summary": "Get current authenticated HR with full details",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.CompanyHRResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/hrs/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "hrs"
+                ],
+                "summary": "Get company HR by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "HR ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.CompanyHRResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "hrs"
+                ],
+                "summary": "Update a company HR",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "HR ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated HR data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.UpdateCompanyHRRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.CompanyHRResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "hrs"
+                ],
+                "summary": "Delete a company HR",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "HR ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/profile-fields/{id}": {
             "get": {
                 "produces": [
@@ -197,6 +1418,59 @@ const docTemplate = `{
                     }
                 }
             },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profile-field-texts"
+                ],
+                "summary": "Update a profile field text (retranslates into all 3 languages via Gemini)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Profile field ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated text data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.UpdateProfileFieldTextRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/http.ProfileFieldTextResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "consumes": [
                     "application/json"
@@ -271,69 +1545,6 @@ const docTemplate = `{
                         "name": "lang",
                         "in": "path",
                         "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/http.ProfileFieldTextResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "profile-field-texts"
-                ],
-                "summary": "Update a profile field text",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Profile field ID (UUID)",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Language code (uz, ru, en)",
-                        "name": "lang",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Updated text data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/http.UpdateProfileFieldTextRequest"
-                        }
                     }
                 ],
                 "responses": {
@@ -454,12 +1665,18 @@ const docTemplate = `{
                 "tags": [
                     "users"
                 ],
-                "summary": "List users with pagination",
+                "summary": "List users with pagination or semantic search",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search query (any language). When provided, returns semantically ranked results",
+                        "name": "q",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "default": 1,
-                        "description": "Page number",
+                        "description": "Page number (pagination mode)",
                         "name": "page",
                         "in": "query"
                     },
@@ -524,6 +1741,167 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/by-phone/{phone}": {
+            "delete": {
+                "description": "Completely removes a user and all associated data (profile, skills, experience, education, applications, sessions, vectors)",
+                "tags": [
+                    "account-deletion"
+                ],
+                "summary": "Delete a user account by phone number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Phone number",
+                        "name": "phone",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get current authenticated user with full profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "en",
+                        "description": "Language code (uz, ru, en)",
+                        "name": "lang",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.UserResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me/profile/parse": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Accepts JSON with user_input text, or multipart/form-data with either user_input field or a file (PDF, PNG, JPG, TXT). Parses the profile and stores multilingual translations (uz, ru, en).",
+                "consumes": [
+                    "application/json",
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profile-parse"
+                ],
+                "summary": "Parse a user profile from text or file using Gemini AI",
+                "parameters": [
+                    {
+                        "description": "Text input (for JSON content type)",
+                        "name": "request",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/http.ProfileParseTextRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Text input (for multipart)",
+                        "name": "user_input",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "File upload: PDF, PNG, JPG, TXT (max 20MB)",
+                        "name": "file",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.ProfileParseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/http.ErrorResponse"
                         }
@@ -777,54 +2155,182 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/{id}/profile/parse": {
-            "post": {
-                "description": "Accepts JSON with user_input text, or multipart/form-data with either user_input field or a file (PDF, PNG, JPG, TXT). Parses the profile and stores multilingual translations (uz, ru, en).",
-                "consumes": [
-                    "application/json",
-                    "multipart/form-data"
-                ],
+        "/vacancies": {
+            "get": {
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "profile-parse"
+                    "vacancies"
                 ],
-                "summary": "Parse a user profile from text or file using Gemini AI",
+                "summary": "List vacancies with pagination",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "User ID (UUID)",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
                     },
                     {
-                        "description": "Text input (for JSON content type)",
-                        "name": "request",
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/http.ProfileParseTextRequest"
-                        }
-                    },
-                    {
-                        "type": "string",
-                        "description": "Text input (for multipart)",
-                        "name": "user_input",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "file",
-                        "description": "File upload: PDF, PNG, JPG, TXT (max 20MB)",
-                        "name": "file",
-                        "in": "formData"
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Page size",
+                        "name": "page_size",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.ProfileParseResponse"
+                            "$ref": "#/definitions/http.PaginatedVacanciesResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vacancies"
+                ],
+                "summary": "Create a new vacancy (text fields translated via Gemini into uz/ru/en)",
+                "parameters": [
+                    {
+                        "description": "Vacancy data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.CreateVacancyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/http.VacancyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/vacancies/parse": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vacancies"
+                ],
+                "summary": "Parse a vacancy from free-form text (Gemini extracts all fields + translates)",
+                "parameters": [
+                    {
+                        "description": "Free-form vacancy text",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.VacancyParseRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/http.VacancyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/vacancies/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vacancies"
+                ],
+                "summary": "Get vacancy by ID with all translations and skills",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vacancy ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.VacancyResponse"
                         }
                     },
                     "400": {
@@ -846,10 +2352,416 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vacancies"
+                ],
+                "summary": "Update vacancy (non-text fields only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vacancy ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated vacancy data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.UpdateVacancyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.VacancyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "vacancies"
+                ],
+                "summary": "Delete a vacancy and all its translations and skills",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vacancy ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
             }
         }
     },
     "definitions": {
+        "domain.CompanyData": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "employee_count": {
+                    "type": "integer"
+                },
+                "instagram": {
+                    "type": "string"
+                },
+                "logo_url": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "source_lang": {
+                    "type": "string"
+                },
+                "telegram": {
+                    "type": "string"
+                },
+                "telegram_channel": {
+                    "type": "string"
+                },
+                "texts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.CompanyDataText"
+                    }
+                },
+                "web_site": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.CompanyDataText": {
+            "type": "object",
+            "properties": {
+                "about": {
+                    "type": "string"
+                },
+                "activity_type": {
+                    "type": "string"
+                },
+                "company_type": {
+                    "type": "string"
+                },
+                "is_source": {
+                    "type": "boolean"
+                },
+                "lang": {
+                    "type": "string"
+                },
+                "market": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.AuthTokenResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "device_id": {
+                    "type": "string"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.CompanyHRResponse": {
+            "type": "object",
+            "properties": {
+                "company_data": {
+                    "$ref": "#/definitions/domain.CompanyData"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "patronymic": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "telegram": {
+                    "type": "string"
+                },
+                "telegram_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.CompanyResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "employee_count": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "instagram": {
+                    "type": "string"
+                },
+                "logo_url": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "source_lang": {
+                    "type": "string"
+                },
+                "telegram": {
+                    "type": "string"
+                },
+                "telegram_channel": {
+                    "type": "string"
+                },
+                "texts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.CompanyTextResponse"
+                    }
+                },
+                "web_site": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.CompanyTextResponse": {
+            "type": "object",
+            "properties": {
+                "about": {
+                    "type": "string"
+                },
+                "activity_type": {
+                    "type": "string"
+                },
+                "company_type": {
+                    "type": "string"
+                },
+                "is_source": {
+                    "type": "boolean"
+                },
+                "lang": {
+                    "type": "string"
+                },
+                "market": {
+                    "type": "string"
+                },
+                "model_version": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.CountryResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "short_code": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.CreateCompanyHRRequest": {
+            "type": "object",
+            "required": [
+                "first_name",
+                "last_name",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                },
+                "patronymic": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "string"
+                },
+                "telegram": {
+                    "type": "string"
+                },
+                "telegram_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.CreateCompanyRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "about": {
+                    "type": "string"
+                },
+                "activity_type": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "company_type": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "employee_count": {
+                    "type": "integer"
+                },
+                "instagram": {
+                    "type": "string"
+                },
+                "logo_url": {
+                    "type": "string"
+                },
+                "market": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "telegram": {
+                    "type": "string"
+                },
+                "telegram_channel": {
+                    "type": "string"
+                },
+                "web_site": {
+                    "type": "string"
+                }
+            }
+        },
         "http.CreateProfileFieldRequest": {
             "type": "object",
             "required": [
@@ -890,7 +2802,8 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "first_name",
-                "last_name"
+                "last_name",
+                "password"
             ],
             "properties": {
                 "activity_type": {
@@ -917,6 +2830,10 @@ const docTemplate = `{
                 "nationality": {
                     "type": "string"
                 },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                },
                 "patronymic": {
                     "type": "string"
                 },
@@ -942,6 +2859,78 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "telegram": {
+                    "type": "string"
+                },
+                "telegram_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.CreateVacancyRequest": {
+            "type": "object",
+            "required": [
+                "hr_id",
+                "title"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "benefits": {
+                    "type": "string"
+                },
+                "country_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "experience_max": {
+                    "type": "integer"
+                },
+                "experience_min": {
+                    "type": "integer"
+                },
+                "format": {
+                    "type": "string"
+                },
+                "hr_id": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "requirements": {
+                    "type": "string"
+                },
+                "responsibilities": {
+                    "type": "string"
+                },
+                "salary_currency": {
+                    "type": "string"
+                },
+                "salary_max": {
+                    "type": "integer"
+                },
+                "salary_min": {
+                    "type": "integer"
+                },
+                "schedule": {
+                    "type": "string"
+                },
+                "skills": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "telegram": {
+                    "type": "string"
+                },
+                "title": {
                     "type": "string"
                 }
             }
@@ -1015,6 +3004,123 @@ const docTemplate = `{
                 }
             }
         },
+        "http.HRMiniAppCompanyData": {
+            "type": "object",
+            "properties": {
+                "about": {
+                    "type": "string"
+                },
+                "activity_type": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "company_type": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "employee_count": {
+                    "type": "integer"
+                },
+                "instagram": {
+                    "type": "string"
+                },
+                "logo_url": {
+                    "type": "string"
+                },
+                "market": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "telegram": {
+                    "type": "string"
+                },
+                "telegram_channel": {
+                    "type": "string"
+                },
+                "web_site": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.HRMiniAppMeResponse": {
+            "type": "object",
+            "properties": {
+                "company_data": {
+                    "$ref": "#/definitions/domain.CompanyData"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "patronymic": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "telegram": {
+                    "type": "string"
+                },
+                "telegram_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.HRMiniAppUpdateRequest": {
+            "type": "object",
+            "properties": {
+                "company": {
+                    "$ref": "#/definitions/http.HRMiniAppCompanyData"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "patronymic": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "string"
+                }
+            }
+        },
         "http.LanguageItemResponse": {
             "type": "object",
             "properties": {
@@ -1023,6 +3129,83 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "http.LoginRequest": {
+            "type": "object",
+            "required": [
+                "login",
+                "password"
+            ],
+            "properties": {
+                "fcm_token": {
+                    "type": "string"
+                },
+                "login": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.LogoutRequest": {
+            "type": "object",
+            "required": [
+                "device_id"
+            ],
+            "properties": {
+                "device_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.MessageResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.PaginatedCompaniesResponse": {
+            "type": "object",
+            "properties": {
+                "companies": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.CompanyResponse"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "http.PaginatedCompanyHRsResponse": {
+            "type": "object",
+            "properties": {
+                "hrs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.CompanyHRResponse"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
@@ -1042,6 +3225,26 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/http.UserResponse"
+                    }
+                }
+            }
+        },
+        "http.PaginatedVacanciesResponse": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "vacancies": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.VacancyResponse"
                     }
                 }
             }
@@ -1261,6 +3464,37 @@ const docTemplate = `{
                 }
             }
         },
+        "http.RefreshRequest": {
+            "type": "object",
+            "required": [
+                "device_id",
+                "refresh_token"
+            ],
+            "properties": {
+                "device_id": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.SetPasswordRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "user_id"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
         "http.SkillResponse": {
             "type": "object",
             "properties": {
@@ -1268,6 +3502,70 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.UpdateCompanyHRRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "patronymic": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "string"
+                },
+                "telegram": {
+                    "type": "string"
+                },
+                "telegram_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.UpdateCompanyRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "employee_count": {
+                    "type": "integer"
+                },
+                "instagram": {
+                    "type": "string"
+                },
+                "logo_url": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "telegram": {
+                    "type": "string"
+                },
+                "telegram_channel": {
+                    "type": "string"
+                },
+                "web_site": {
                     "type": "string"
                 }
             }
@@ -1291,9 +3589,6 @@ const docTemplate = `{
             "properties": {
                 "content": {
                     "type": "string"
-                },
-                "model_version": {
-                    "type": "string"
                 }
             }
         },
@@ -1301,9 +3596,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "activity_type": {
-                    "type": "string"
-                },
-                "country": {
                     "type": "string"
                 },
                 "email": {
@@ -1349,6 +3641,85 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "telegram": {
+                    "type": "string"
+                },
+                "telegram_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.UpdateVacancyRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "benefits": {
+                    "type": "string"
+                },
+                "country_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "experience_max": {
+                    "type": "integer"
+                },
+                "experience_min": {
+                    "type": "integer"
+                },
+                "format": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "requirements": {
+                    "type": "string"
+                },
+                "responsibilities": {
+                    "type": "string"
+                },
+                "salary_currency": {
+                    "type": "string"
+                },
+                "salary_max": {
+                    "type": "integer"
+                },
+                "salary_min": {
+                    "type": "integer"
+                },
+                "schedule": {
+                    "type": "string"
+                },
+                "skills": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "telegram": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.UploadResponse": {
+            "type": "object",
+            "properties": {
+                "object_name": {
+                    "type": "string"
+                },
+                "url": {
                     "type": "string"
                 }
             }
@@ -1412,6 +3783,15 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "estimated_salary_currency": {
+                    "type": "string"
+                },
+                "estimated_salary_max": {
+                    "type": "integer"
+                },
+                "estimated_salary_min": {
+                    "type": "integer"
+                },
                 "first_name": {
                     "type": "string"
                 },
@@ -1442,8 +3822,14 @@ const docTemplate = `{
                 "profile_pic_url": {
                     "type": "string"
                 },
+                "profile_score": {
+                    "type": "integer"
+                },
                 "region": {
                     "type": "string"
+                },
+                "search_score": {
+                    "type": "number"
                 },
                 "specializations": {
                     "type": "array",
@@ -1459,8 +3845,166 @@ const docTemplate = `{
                 },
                 "telegram": {
                     "type": "string"
+                },
+                "telegram_id": {
+                    "type": "string"
                 }
             }
+        },
+        "http.VacancyCompanyResponse": {
+            "type": "object",
+            "properties": {
+                "about": {
+                    "type": "string"
+                },
+                "activity_type": {
+                    "type": "string"
+                },
+                "company_type": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "employee_count": {
+                    "type": "integer"
+                },
+                "logo_url": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.VacancyParseRequest": {
+            "type": "object",
+            "required": [
+                "hr_id",
+                "user_input"
+            ],
+            "properties": {
+                "hr_id": {
+                    "type": "string"
+                },
+                "user_input": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.VacancyResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "company": {
+                    "$ref": "#/definitions/http.VacancyCompanyResponse"
+                },
+                "country_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "experience_max": {
+                    "type": "integer"
+                },
+                "experience_min": {
+                    "type": "integer"
+                },
+                "format": {
+                    "type": "string"
+                },
+                "hr_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "salary_currency": {
+                    "type": "string"
+                },
+                "salary_max": {
+                    "type": "integer"
+                },
+                "salary_min": {
+                    "type": "integer"
+                },
+                "schedule": {
+                    "type": "string"
+                },
+                "skills": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.SkillResponse"
+                    }
+                },
+                "source_lang": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "telegram": {
+                    "type": "string"
+                },
+                "text": {
+                    "$ref": "#/definitions/http.VacancyTextResponse"
+                }
+            }
+        },
+        "http.VacancyTextResponse": {
+            "type": "object",
+            "properties": {
+                "benefits": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "is_source": {
+                    "type": "boolean"
+                },
+                "lang": {
+                    "type": "string"
+                },
+                "model_version": {
+                    "type": "string"
+                },
+                "requirements": {
+                    "type": "string"
+                },
+                "responsibilities": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "JWT Bearer token (e.g. \"Bearer \u003ctoken\u003e\")",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        },
+        "TelegramAuth": {
+            "description": "Telegram Mini App init data (e.g. \"tma \u003cinitData\u003e\")",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

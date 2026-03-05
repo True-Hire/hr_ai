@@ -19,7 +19,6 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-
 // -- Localized messages for HR bot --
 
 var hrMsgWelcomeNew = map[string]string{
@@ -264,7 +263,7 @@ func NewHRBot(token string, hrBotSvc *application.HRBotService, webAppURL string
 		_, err = b.Raw("setChatMenuButton", map[string]interface{}{
 			"menu_button": tele.MenuButton{
 				Type:   tele.MenuButtonWebApp,
-				Text:   "Open App",
+				Text:   "Open",
 				WebApp: &tele.WebApp{URL: webAppURL},
 			},
 		})
@@ -356,10 +355,7 @@ func (hb *HRBot) registerHandlers() {
 		}
 		lang = langOrDefault(lang)
 		name := strings.TrimSpace(result.HR.FirstName + " " + result.HR.LastName)
-		if err := c.Send(fmt.Sprintf(hrMsgWelcomeBack[lang], name), hb.hrInlineMenu(lang)); err != nil {
-			log.Printf("hr welcome back msg error for %d: %v", sender.ID, err)
-		}
-		return c.Send("⌨️", hrMenu(lang))
+		return c.Send(fmt.Sprintf(hrMsgWelcomeBack[lang], name), hb.hrInlineMenu(lang))
 	})
 
 	// Contact (phone number) handler — create HR record
@@ -380,10 +376,7 @@ func (hb *HRBot) registerHandlers() {
 		}
 
 		lang = langOrDefault(hr.Language)
-		if err := c.Send(hrMsgWelcomeNew[lang], hb.hrInlineMenu(lang)); err != nil {
-			log.Printf("hr welcome msg error for %d: %v", sender.ID, err)
-		}
-		return c.Send("⌨️", hrMenu(lang))
+		return c.Send(hrMsgWelcomeNew[lang], hb.hrInlineMenu(lang))
 	})
 
 	// Language change callback for HR
@@ -461,14 +454,14 @@ func (hb *HRBot) registerHandlers() {
 			return c.Send(hrMsgError[lang], hrMenu(lang))
 		}
 
-		state, _ := hrBotSvc.GetBotState(ctx, sender.ID)
-		hrIDStr := ""
-		if state != nil {
-			hrIDStr = state.Data["hr_id"]
+		tgIDStr := strconv.FormatInt(sender.ID, 10)
+		hr, err := hrBotSvc.GetHRByTelegramID(ctx, tgIDStr)
+		if err != nil || hr == nil {
+			log.Printf("hr_vac_continue: failed to get HR for tg_id %d: %v", sender.ID, err)
+			return c.Send(hrMsgError[lang], hrMenu(lang))
 		}
-		hrID, _ := uuid.Parse(hrIDStr)
 
-		result, err := hrBotSvc.CreateVacancyFromDraft(ctx, hrID, draft)
+		result, err := hrBotSvc.CreateVacancyFromDraft(ctx, hr.ID, hr.CompanyData, draft)
 		if err != nil {
 			log.Printf("hr create vacancy from draft error for %d: %v", sender.ID, err)
 			return c.Send(hrMsgVacancyFailed[lang], hrMenu(lang))
