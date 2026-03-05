@@ -13,12 +13,13 @@ import (
 )
 
 type VacancyHandler struct {
-	service      *application.VacancyService
-	companyHRSvc *application.CompanyHRService
+	service          *application.VacancyService
+	companyHRSvc     *application.CompanyHRService
+	vacancySearchSvc *application.VacancySearchService
 }
 
-func NewVacancyHandler(service *application.VacancyService, companyHRSvc *application.CompanyHRService) *VacancyHandler {
-	return &VacancyHandler{service: service, companyHRSvc: companyHRSvc}
+func NewVacancyHandler(service *application.VacancyService, companyHRSvc *application.CompanyHRService, vacancySearchSvc *application.VacancySearchService) *VacancyHandler {
+	return &VacancyHandler{service: service, companyHRSvc: companyHRSvc, vacancySearchSvc: vacancySearchSvc}
 }
 
 // Create godoc
@@ -183,14 +184,21 @@ func (h *VacancyHandler) GetByID(c *gin.Context) {
 func (h *VacancyHandler) List(c *gin.Context) {
 	page := parseQueryInt32(c, "page", 1)
 	pageSize := parseQueryInt32(c, "page_size", 20)
+	query := c.Query("q")
+	lang := c.DefaultQuery("lang", "en")
 
-	result, err := h.service.ListVacancies(c.Request.Context(), page, pageSize)
+	var result *application.ListVacanciesResult
+	var err error
+
+	if query != "" && h.vacancySearchSvc != nil {
+		result, err = h.vacancySearchSvc.SearchVacancies(c.Request.Context(), query, page, pageSize)
+	} else {
+		result, err = h.service.ListVacancies(c.Request.Context(), page, pageSize)
+	}
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to list vacancies"})
 		return
 	}
-
-	lang := c.DefaultQuery("lang", "en")
 
 	resp := PaginatedVacanciesResponse{
 		Vacancies: make([]VacancyResponse, 0, len(result.Vacancies)),

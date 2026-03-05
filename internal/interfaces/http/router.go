@@ -53,7 +53,7 @@ func NewRouter(svc *app.Services) *gin.Engine {
 	companyHRHandler := NewCompanyHRHandler(svc.CompanyHR, svc.HRAuth)
 	hrAuthHandler := NewHRAuthHandler(svc.HRAuth)
 	companyHandler := NewCompanyHandler(svc.Company)
-	vacancyHandler := NewVacancyHandler(svc.Vacancy, svc.CompanyHR)
+	vacancyHandler := NewVacancyHandler(svc.Vacancy, svc.CompanyHR, svc.VacancySearch)
 	countryHandler := NewCountryHandler(svc.Country)
 	storageHandler := NewStorageHandler(svc.Storage)
 	searchHandler := NewSearchHandler(svc.Search, svc.VectorIndex, userHandler)
