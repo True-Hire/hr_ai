@@ -13,11 +13,12 @@ import (
 )
 
 type VacancyHandler struct {
-	service *application.VacancyService
+	service      *application.VacancyService
+	companyHRSvc *application.CompanyHRService
 }
 
-func NewVacancyHandler(service *application.VacancyService) *VacancyHandler {
-	return &VacancyHandler{service: service}
+func NewVacancyHandler(service *application.VacancyService, companyHRSvc *application.CompanyHRService) *VacancyHandler {
+	return &VacancyHandler{service: service, companyHRSvc: companyHRSvc}
 }
 
 // Create godoc
@@ -45,9 +46,11 @@ func (h *VacancyHandler) Create(c *gin.Context) {
 		return
 	}
 
-	companyID, err := uuid.Parse(req.CompanyID)
+	// Fetch HR to get company data
+	hr, err := h.companyHRSvc.GetCompanyHR(c.Request.Context(), hrID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid company_id"})
+		log.Printf("create vacancy: failed to get hr: %v", err)
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to get hr"})
 		return
 	}
 
@@ -62,7 +65,7 @@ func (h *VacancyHandler) Create(c *gin.Context) {
 
 	input := &application.CreateVacancyInput{
 		HRID:             hrID,
-		CompanyID:        companyID,
+		CompanyData:      hr.CompanyData,
 		CountryID:        countryID,
 		SalaryMin:        req.SalaryMin,
 		SalaryMax:        req.SalaryMax,
@@ -119,13 +122,15 @@ func (h *VacancyHandler) Parse(c *gin.Context) {
 		return
 	}
 
-	companyID, err := uuid.Parse(req.CompanyID)
+	// Fetch HR to get company data
+	hr, err := h.companyHRSvc.GetCompanyHR(c.Request.Context(), hrID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid company_id"})
+		log.Printf("parse vacancy: failed to get hr: %v", err)
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to get hr"})
 		return
 	}
 
-	result, err := h.service.ParseVacancy(c.Request.Context(), hrID, companyID, req.UserInput)
+	result, err := h.service.ParseVacancy(c.Request.Context(), hrID, hr.CompanyData, req.UserInput)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to parse vacancy"})
 		return
@@ -167,34 +172,19 @@ func (h *VacancyHandler) GetByID(c *gin.Context) {
 }
 
 // List godoc
-// @Summary List vacancies with pagination (optional company_id filter)
+// @Summary List vacancies with pagination
 // @Tags vacancies
 // @Produce json
 // @Param page query int false "Page number" default(1)
 // @Param page_size query int false "Page size" default(20)
-// @Param company_id query string false "Filter by company ID"
 // @Success 200 {object} PaginatedVacanciesResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /vacancies [get]
 func (h *VacancyHandler) List(c *gin.Context) {
 	page := parseQueryInt32(c, "page", 1)
 	pageSize := parseQueryInt32(c, "page_size", 20)
-	companyIDStr := c.Query("company_id")
 
-	var result *application.ListVacanciesResult
-	var err error
-
-	if companyIDStr != "" {
-		companyID, parseErr := uuid.Parse(companyIDStr)
-		if parseErr != nil {
-			c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid company_id"})
-			return
-		}
-		result, err = h.service.ListVacanciesByCompany(c.Request.Context(), companyID, page, pageSize)
-	} else {
-		result, err = h.service.ListVacancies(c.Request.Context(), page, pageSize)
-	}
-
+	result, err := h.service.ListVacancies(c.Request.Context(), page, pageSize)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to list vacancies"})
 		return

@@ -1,7 +1,9 @@
 package http
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -10,17 +12,18 @@ import (
 
 	"github.com/ruziba3vich/hr-ai/internal/application"
 	"github.com/ruziba3vich/hr-ai/internal/domain"
+	"github.com/ruziba3vich/hr-ai/internal/infrastructure/gemini"
 )
 
 type HRMiniAppHandler struct {
-	hrService      *application.CompanyHRService
-	companyService *application.CompanyService
+	hrService    *application.CompanyHRService
+	geminiClient *gemini.Client
 }
 
-func NewHRMiniAppHandler(hrService *application.CompanyHRService, companyService *application.CompanyService) *HRMiniAppHandler {
+func NewHRMiniAppHandler(hrService *application.CompanyHRService, geminiClient *gemini.Client) *HRMiniAppHandler {
 	return &HRMiniAppHandler{
-		hrService:      hrService,
-		companyService: companyService,
+		hrService:    hrService,
+		geminiClient: geminiClient,
 	}
 }
 
@@ -55,19 +58,11 @@ func (h *HRMiniAppHandler) GetMe(c *gin.Context) {
 		CompanyHRResponse: toCompanyHRResponse(hr),
 	}
 
-	if hr.CompanyID != uuid.Nil {
-		cwt, err := h.companyService.GetCompany(c.Request.Context(), hr.CompanyID)
-		if err == nil {
-			cr := toCompanyResponse(cwt)
-			resp.Company = &cr
-		}
-	}
-
 	c.JSON(http.StatusOK, resp)
 }
 
 // UpdateMe godoc
-// @Summary Update current HR profile and optionally create/update company
+// @Summary Update current HR profile and optionally create/update company data
 // @Tags hr-miniapp
 // @Accept json
 // @Produce json
@@ -122,55 +117,100 @@ func (h *HRMiniAppHandler) UpdateMe(c *gin.Context) {
 		hr.Position = req.Position
 	}
 
-	// Handle company data
+	// Handle company data — translate text fields via Gemini, embed as JSONB
 	if req.Company != nil {
-		if hr.CompanyID == uuid.Nil {
-			// Create new company
-			input := &application.CreateCompanyInput{
-				Name:            req.Company.Name,
-				ActivityType:    req.Company.ActivityType,
-				CompanyType:     req.Company.CompanyType,
-				About:           req.Company.About,
-				Market:          req.Company.Market,
-				EmployeeCount:   req.Company.EmployeeCount,
-				Country:         req.Company.Country,
-				Address:         req.Company.Address,
-				Phone:           req.Company.Phone,
-				Telegram:        req.Company.Telegram,
-				TelegramChannel: req.Company.TelegramChannel,
-				Email:           req.Company.Email,
-				LogoURL:         req.Company.LogoURL,
-				WebSite:         req.Company.WebSite,
-				Instagram:       req.Company.Instagram,
-			}
-			cwt, err := h.companyService.CreateCompany(c.Request.Context(), input)
-			if err != nil {
-				log.Printf("hr-miniapp: failed to create company: %v", err)
-				c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to create company"})
-				return
-			}
-			hr.CompanyID = cwt.Company.ID
-		} else {
-			// Update existing company (non-text fields only)
-			company := &domain.Company{
-				ID:              hr.CompanyID,
-				EmployeeCount:   req.Company.EmployeeCount,
-				Country:         req.Company.Country,
-				Address:         req.Company.Address,
-				Phone:           req.Company.Phone,
-				Telegram:        req.Company.Telegram,
-				TelegramChannel: req.Company.TelegramChannel,
-				Email:           req.Company.Email,
-				LogoURL:         req.Company.LogoURL,
-				WebSite:         req.Company.WebSite,
-				Instagram:       req.Company.Instagram,
-			}
-			if _, err := h.companyService.UpdateCompany(c.Request.Context(), company); err != nil {
-				log.Printf("hr-miniapp: failed to update company: %v", err)
-				c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to update company"})
-				return
-			}
+		cd := hr.CompanyData
+		if cd == nil {
+			cd = &domain.CompanyData{}
 		}
+
+		// Update non-text fields
+		if req.Company.EmployeeCount > 0 {
+			cd.EmployeeCount = req.Company.EmployeeCount
+		}
+		if req.Company.Country != "" {
+			cd.Country = req.Company.Country
+		}
+		if req.Company.Address != "" {
+			cd.Address = req.Company.Address
+		}
+		if req.Company.Phone != "" {
+			cd.Phone = req.Company.Phone
+		}
+		if req.Company.Telegram != "" {
+			cd.Telegram = req.Company.Telegram
+		}
+		if req.Company.TelegramChannel != "" {
+			cd.TelegramChannel = req.Company.TelegramChannel
+		}
+		if req.Company.Email != "" {
+			cd.Email = req.Company.Email
+		}
+		if req.Company.LogoURL != "" {
+			cd.LogoURL = req.Company.LogoURL
+		}
+		if req.Company.WebSite != "" {
+			cd.WebSite = req.Company.WebSite
+		}
+		if req.Company.Instagram != "" {
+			cd.Instagram = req.Company.Instagram
+		}
+
+		// Build text fields for Gemini translation
+		textData := map[string]string{}
+		if req.Company.Name != "" {
+			textData["name"] = req.Company.Name
+		}
+		if req.Company.ActivityType != "" {
+			textData["activity_type"] = req.Company.ActivityType
+		}
+		if req.Company.CompanyType != "" {
+			textData["company_type"] = req.Company.CompanyType
+		}
+		if req.Company.About != "" {
+			textData["about"] = req.Company.About
+		}
+		if req.Company.Market != "" {
+			textData["market"] = req.Company.Market
+		}
+
+		if len(textData) > 0 {
+			jsonBytes, _ := json.Marshal(textData)
+			parsed, err := h.geminiClient.TranslateCompany(c.Request.Context(), string(jsonBytes))
+			if err != nil {
+				log.Printf("hr-miniapp: failed to translate company: %v", err)
+				c.JSON(http.StatusInternalServerError, ErrorResponse{Error: fmt.Sprintf("failed to translate company texts: %v", err)})
+				return
+			}
+			cd.SourceLang = parsed.SourceLang
+
+			texts := make([]domain.CompanyDataText, 0, 3)
+			for _, lang := range []string{"uz", "ru", "en"} {
+				t := domain.CompanyDataText{
+					Lang:     lang,
+					IsSource: lang == parsed.SourceLang,
+				}
+				if translations, ok := parsed.Fields["name"]; ok {
+					t.Name = translations[lang]
+				}
+				if translations, ok := parsed.Fields["activity_type"]; ok {
+					t.ActivityType = translations[lang]
+				}
+				if translations, ok := parsed.Fields["company_type"]; ok {
+					t.CompanyType = translations[lang]
+				}
+				if translations, ok := parsed.Fields["about"]; ok {
+					t.About = translations[lang]
+				}
+				if translations, ok := parsed.Fields["market"]; ok {
+					t.Market = translations[lang]
+				}
+				texts = append(texts, t)
+			}
+			cd.Texts = texts
+		}
+
+		hr.CompanyData = cd
 	}
 
 	// Save HR
@@ -182,14 +222,6 @@ func (h *HRMiniAppHandler) UpdateMe(c *gin.Context) {
 
 	resp := HRMiniAppMeResponse{
 		CompanyHRResponse: toCompanyHRResponse(updated),
-	}
-
-	if updated.CompanyID != uuid.Nil {
-		cwt, err := h.companyService.GetCompany(c.Request.Context(), updated.CompanyID)
-		if err == nil {
-			cr := toCompanyResponse(cwt)
-			resp.Company = &cr
-		}
 	}
 
 	c.JSON(http.StatusOK, resp)
