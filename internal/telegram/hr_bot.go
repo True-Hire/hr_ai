@@ -894,12 +894,26 @@ func (hb *HRBot) handleMyVacancies(ctx context.Context, c tele.Context, hr *doma
 		return c.Send(hrMsgNoVacancies[lang])
 	}
 
+	applicantsLabel := map[string]string{"en": "applicants", "ru": "откликов", "uz": "ariza"}
+	newLabel := map[string]string{"en": "new", "ru": "новых", "uz": "yangi"}
+
 	var sb strings.Builder
 	for i, v := range vacancies {
 		title := vacancyTitle(&v, lang)
 		minStr := formatNumber(int64(v.Vacancy.SalaryMin))
 		maxStr := formatNumber(int64(v.Vacancy.SalaryMax))
-		sb.WriteString(fmt.Sprintf("%d. **%s**\n   %s – %s %s | %s\n\n", i+1, title, minStr, maxStr, v.Vacancy.SalaryCurrency, v.Vacancy.Status))
+
+		statsStr := ""
+		total, unseen, err := hb.hrBotSvc.GetVacancyStats(ctx, v.Vacancy.ID)
+		if err == nil && total > 0 {
+			if unseen > 0 {
+				statsStr = fmt.Sprintf(" | 👥 %d %s (%d %s)", total, applicantsLabel[lang], unseen, newLabel[lang])
+			} else {
+				statsStr = fmt.Sprintf(" | 👥 %d %s", total, applicantsLabel[lang])
+			}
+		}
+
+		sb.WriteString(fmt.Sprintf("%d. **%s**\n   %s – %s %s | %s%s\n\n", i+1, title, minStr, maxStr, v.Vacancy.SalaryCurrency, v.Vacancy.Status, statsStr))
 	}
 
 	return c.Send(sb.String(), &tele.SendOptions{ParseMode: tele.ModeMarkdown})
