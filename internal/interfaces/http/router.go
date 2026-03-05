@@ -53,7 +53,7 @@ func NewRouter(svc *app.Services) *gin.Engine {
 	companyHRHandler := NewCompanyHRHandler(svc.CompanyHR, svc.HRAuth)
 	hrAuthHandler := NewHRAuthHandler(svc.HRAuth)
 	companyHandler := NewCompanyHandler(svc.Company)
-	vacancyHandler := NewVacancyHandler(svc.Vacancy)
+	vacancyHandler := NewVacancyHandler(svc.Vacancy, svc.CompanyHR)
 	countryHandler := NewCountryHandler(svc.Country)
 	storageHandler := NewStorageHandler(svc.Storage)
 	searchHandler := NewSearchHandler(svc.Search, svc.VectorIndex, userHandler)
@@ -174,7 +174,7 @@ func NewRouter(svc *app.Services) *gin.Engine {
 			miniapp.GET("/applications", miniAppHandler.ListMyApplications)
 		}
 
-		hrMiniAppHandler := NewHRMiniAppHandler(svc.CompanyHR, svc.Company)
+		hrMiniAppHandler := NewHRMiniAppHandler(svc.CompanyHR, svc.GeminiClient)
 
 		hrMiniapp := v1.Group("/hr-miniapp")
 		hrMiniapp.Use(TelegramHRAuthMiddleware(svc.TelegramHRBotToken, svc.CompanyHR))
