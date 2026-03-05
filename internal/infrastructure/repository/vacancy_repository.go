@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -23,10 +24,14 @@ func NewVacancyRepository(pool *pgxpool.Pool) *VacancyRepository {
 }
 
 func (r *VacancyRepository) Create(ctx context.Context, v *domain.Vacancy) (*domain.Vacancy, error) {
+	companyDataBytes, err := json.Marshal(v.CompanyData)
+	if err != nil {
+		return nil, fmt.Errorf("create vacancy: marshal company data: %w", err)
+	}
 	row, err := r.q.CreateVacancy(ctx, vacanciesdb.CreateVacancyParams{
 		ID:             uuidToPgtype(v.ID),
 		HrID:           uuidToPgtype(v.HRID),
-		CompanyID:      uuidToPgtype(v.CompanyID),
+		CompanyData:    companyDataBytes,
 		CountryID:      uuidToPgtypeNullable(v.CountryID),
 		SalaryMin:      int4ToPgtype(v.SalaryMin),
 		SalaryMax:      int4ToPgtype(v.SalaryMax),
@@ -45,7 +50,7 @@ func (r *VacancyRepository) Create(ctx context.Context, v *domain.Vacancy) (*dom
 	if err != nil {
 		return nil, fmt.Errorf("create vacancy: %w", err)
 	}
-	return vacancyFromCreateRow(row), nil
+	return vacancyFromCreateRow(row)
 }
 
 func (r *VacancyRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Vacancy, error) {
@@ -56,7 +61,7 @@ func (r *VacancyRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.
 		}
 		return nil, fmt.Errorf("get vacancy by id: %w", err)
 	}
-	return vacancyFromGetRow(row), nil
+	return vacancyFromGetRow(row)
 }
 
 func (r *VacancyRepository) List(ctx context.Context, limit, offset int32) ([]domain.Vacancy, error) {
@@ -66,23 +71,11 @@ func (r *VacancyRepository) List(ctx context.Context, limit, offset int32) ([]do
 	}
 	result := make([]domain.Vacancy, 0, len(rows))
 	for _, row := range rows {
-		result = append(result, *vacancyFromListRow(row))
-	}
-	return result, nil
-}
-
-func (r *VacancyRepository) ListByCompany(ctx context.Context, companyID uuid.UUID, limit, offset int32) ([]domain.Vacancy, error) {
-	rows, err := r.q.ListVacanciesByCompany(ctx, vacanciesdb.ListVacanciesByCompanyParams{
-		CompanyID: uuidToPgtype(companyID),
-		Limit:     limit,
-		Offset:    offset,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("list vacancies by company: %w", err)
-	}
-	result := make([]domain.Vacancy, 0, len(rows))
-	for _, row := range rows {
-		result = append(result, *vacancyFromListByCompanyRow(row))
+		v, err := vacancyFromListRow(row)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, *v)
 	}
 	return result, nil
 }
@@ -98,7 +91,11 @@ func (r *VacancyRepository) ListByHR(ctx context.Context, hrID uuid.UUID, limit,
 	}
 	result := make([]domain.Vacancy, 0, len(rows))
 	for _, row := range rows {
-		result = append(result, *vacancyFromListByHRRow(row))
+		v, err := vacancyFromListByHRRow(row)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, *v)
 	}
 	return result, nil
 }
@@ -115,17 +112,17 @@ func (r *VacancyRepository) Search(ctx context.Context, lang, query string, limi
 	}
 	result := make([]domain.Vacancy, 0, len(rows))
 	for _, row := range rows {
-		result = append(result, *vacancyFromSearchRow(row))
+		v, err := vacancyFromSearchRow(row)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, *v)
 	}
 	return result, nil
 }
 
 func (r *VacancyRepository) Count(ctx context.Context) (int64, error) {
 	return r.q.CountVacancies(ctx)
-}
-
-func (r *VacancyRepository) CountByCompany(ctx context.Context, companyID uuid.UUID) (int64, error) {
-	return r.q.CountVacanciesByCompany(ctx, uuidToPgtype(companyID))
 }
 
 func (r *VacancyRepository) CountSearch(ctx context.Context, lang, query string) (int64, error) {
@@ -158,7 +155,7 @@ func (r *VacancyRepository) Update(ctx context.Context, v *domain.Vacancy) (*dom
 		}
 		return nil, fmt.Errorf("update vacancy: %w", err)
 	}
-	return vacancyFromUpdateRow(row), nil
+	return vacancyFromUpdateRow(row)
 }
 
 func (r *VacancyRepository) Delete(ctx context.Context, id uuid.UUID) error {
@@ -188,34 +185,26 @@ func pgtypeUUIDToNullable(id pgtype.UUID) uuid.UUID {
 	return uuid.UUID(id.Bytes)
 }
 
-func vacancyFromCreateRow(row vacanciesdb.CreateVacancyRow) *domain.Vacancy {
-	return &domain.Vacancy{
-		ID:             pgtypeToUUID(row.ID),
-		HRID:           pgtypeToUUID(row.HrID),
-		CompanyID:      pgtypeToUUID(row.CompanyID),
-		CountryID:      pgtypeUUIDToNullable(row.CountryID),
-		SalaryMin:      pgtypeToInt32(row.SalaryMin),
-		SalaryMax:      pgtypeToInt32(row.SalaryMax),
-		SalaryCurrency: row.SalaryCurrency,
-		ExperienceMin:  pgtypeToInt32(row.ExperienceMin),
-		ExperienceMax:  pgtypeToInt32(row.ExperienceMax),
-		Format:         row.Format,
-		Schedule:       row.Schedule,
-		Phone:          pgtypeToString(row.Phone),
-		Telegram:       pgtypeToString(row.Telegram),
-		Email:          pgtypeToString(row.Email),
-		Address:        pgtypeToString(row.Address),
-		Status:         row.Status,
-		SourceLang:     row.SourceLang,
-		CreatedAt:      row.CreatedAt.Time,
+func unmarshalCompanyData(b []byte) (*domain.CompanyData, error) {
+	if len(b) == 0 {
+		return nil, nil
 	}
+	var cd domain.CompanyData
+	if err := json.Unmarshal(b, &cd); err != nil {
+		return nil, fmt.Errorf("unmarshal company data: %w", err)
+	}
+	return &cd, nil
 }
 
-func vacancyFromGetRow(row vacanciesdb.GetVacancyByIDRow) *domain.Vacancy {
+func vacancyFromCreateRow(row vacanciesdb.CreateVacancyRow) (*domain.Vacancy, error) {
+	cd, err := unmarshalCompanyData(row.CompanyData)
+	if err != nil {
+		return nil, err
+	}
 	return &domain.Vacancy{
 		ID:             pgtypeToUUID(row.ID),
 		HRID:           pgtypeToUUID(row.HrID),
-		CompanyID:      pgtypeToUUID(row.CompanyID),
+		CompanyData:    cd,
 		CountryID:      pgtypeUUIDToNullable(row.CountryID),
 		SalaryMin:      pgtypeToInt32(row.SalaryMin),
 		SalaryMax:      pgtypeToInt32(row.SalaryMax),
@@ -231,14 +220,18 @@ func vacancyFromGetRow(row vacanciesdb.GetVacancyByIDRow) *domain.Vacancy {
 		Status:         row.Status,
 		SourceLang:     row.SourceLang,
 		CreatedAt:      row.CreatedAt.Time,
-	}
+	}, nil
 }
 
-func vacancyFromListRow(row vacanciesdb.ListVacanciesRow) *domain.Vacancy {
+func vacancyFromGetRow(row vacanciesdb.GetVacancyByIDRow) (*domain.Vacancy, error) {
+	cd, err := unmarshalCompanyData(row.CompanyData)
+	if err != nil {
+		return nil, err
+	}
 	return &domain.Vacancy{
 		ID:             pgtypeToUUID(row.ID),
 		HRID:           pgtypeToUUID(row.HrID),
-		CompanyID:      pgtypeToUUID(row.CompanyID),
+		CompanyData:    cd,
 		CountryID:      pgtypeUUIDToNullable(row.CountryID),
 		SalaryMin:      pgtypeToInt32(row.SalaryMin),
 		SalaryMax:      pgtypeToInt32(row.SalaryMax),
@@ -254,14 +247,18 @@ func vacancyFromListRow(row vacanciesdb.ListVacanciesRow) *domain.Vacancy {
 		Status:         row.Status,
 		SourceLang:     row.SourceLang,
 		CreatedAt:      row.CreatedAt.Time,
-	}
+	}, nil
 }
 
-func vacancyFromListByCompanyRow(row vacanciesdb.ListVacanciesByCompanyRow) *domain.Vacancy {
+func vacancyFromListRow(row vacanciesdb.ListVacanciesRow) (*domain.Vacancy, error) {
+	cd, err := unmarshalCompanyData(row.CompanyData)
+	if err != nil {
+		return nil, err
+	}
 	return &domain.Vacancy{
 		ID:             pgtypeToUUID(row.ID),
 		HRID:           pgtypeToUUID(row.HrID),
-		CompanyID:      pgtypeToUUID(row.CompanyID),
+		CompanyData:    cd,
 		CountryID:      pgtypeUUIDToNullable(row.CountryID),
 		SalaryMin:      pgtypeToInt32(row.SalaryMin),
 		SalaryMax:      pgtypeToInt32(row.SalaryMax),
@@ -277,14 +274,18 @@ func vacancyFromListByCompanyRow(row vacanciesdb.ListVacanciesByCompanyRow) *dom
 		Status:         row.Status,
 		SourceLang:     row.SourceLang,
 		CreatedAt:      row.CreatedAt.Time,
-	}
+	}, nil
 }
 
-func vacancyFromListByHRRow(row vacanciesdb.ListVacanciesByHRRow) *domain.Vacancy {
+func vacancyFromListByHRRow(row vacanciesdb.ListVacanciesByHRRow) (*domain.Vacancy, error) {
+	cd, err := unmarshalCompanyData(row.CompanyData)
+	if err != nil {
+		return nil, err
+	}
 	return &domain.Vacancy{
 		ID:             pgtypeToUUID(row.ID),
 		HRID:           pgtypeToUUID(row.HrID),
-		CompanyID:      pgtypeToUUID(row.CompanyID),
+		CompanyData:    cd,
 		CountryID:      pgtypeUUIDToNullable(row.CountryID),
 		SalaryMin:      pgtypeToInt32(row.SalaryMin),
 		SalaryMax:      pgtypeToInt32(row.SalaryMax),
@@ -300,14 +301,18 @@ func vacancyFromListByHRRow(row vacanciesdb.ListVacanciesByHRRow) *domain.Vacanc
 		Status:         row.Status,
 		SourceLang:     row.SourceLang,
 		CreatedAt:      row.CreatedAt.Time,
-	}
+	}, nil
 }
 
-func vacancyFromSearchRow(row vacanciesdb.SearchVacanciesRow) *domain.Vacancy {
+func vacancyFromSearchRow(row vacanciesdb.SearchVacanciesRow) (*domain.Vacancy, error) {
+	cd, err := unmarshalCompanyData(row.CompanyData)
+	if err != nil {
+		return nil, err
+	}
 	return &domain.Vacancy{
 		ID:             pgtypeToUUID(row.ID),
 		HRID:           pgtypeToUUID(row.HrID),
-		CompanyID:      pgtypeToUUID(row.CompanyID),
+		CompanyData:    cd,
 		CountryID:      pgtypeUUIDToNullable(row.CountryID),
 		SalaryMin:      pgtypeToInt32(row.SalaryMin),
 		SalaryMax:      pgtypeToInt32(row.SalaryMax),
@@ -323,14 +328,18 @@ func vacancyFromSearchRow(row vacanciesdb.SearchVacanciesRow) *domain.Vacancy {
 		Status:         row.Status,
 		SourceLang:     row.SourceLang,
 		CreatedAt:      row.CreatedAt.Time,
-	}
+	}, nil
 }
 
-func vacancyFromUpdateRow(row vacanciesdb.UpdateVacancyRow) *domain.Vacancy {
+func vacancyFromUpdateRow(row vacanciesdb.UpdateVacancyRow) (*domain.Vacancy, error) {
+	cd, err := unmarshalCompanyData(row.CompanyData)
+	if err != nil {
+		return nil, err
+	}
 	return &domain.Vacancy{
 		ID:             pgtypeToUUID(row.ID),
 		HRID:           pgtypeToUUID(row.HrID),
-		CompanyID:      pgtypeToUUID(row.CompanyID),
+		CompanyData:    cd,
 		CountryID:      pgtypeUUIDToNullable(row.CountryID),
 		SalaryMin:      pgtypeToInt32(row.SalaryMin),
 		SalaryMax:      pgtypeToInt32(row.SalaryMax),
@@ -346,5 +355,5 @@ func vacancyFromUpdateRow(row vacanciesdb.UpdateVacancyRow) *domain.Vacancy {
 		Status:         row.Status,
 		SourceLang:     row.SourceLang,
 		CreatedAt:      row.CreatedAt.Time,
-	}
+	}, nil
 }

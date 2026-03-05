@@ -22,6 +22,14 @@ import (
 // @version 1.0
 // @description HR AI platform API with multilingual profile parsing powered by Gemini
 // @BasePath /api/v1
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description JWT Bearer token (e.g. "Bearer <token>")
+// @securityDefinitions.apikey TelegramAuth
+// @in header
+// @name Authorization
+// @description Telegram Mini App init data (e.g. "tma <initData>")
 func main() {
 	cfg, err := config.Load()
 	if err != nil {

@@ -37,8 +37,8 @@ type CompanyHr struct {
 	Status       string
 	PasswordHash pgtype.Text
 	CreatedAt    pgtype.Timestamp
-	CompanyID    pgtype.UUID
 	Language     string
+	CompanyData  []byte
 }
 
 type CompanyText struct {
@@ -187,7 +187,6 @@ type UserSkill struct {
 type Vacancy struct {
 	ID             pgtype.UUID
 	HrID           pgtype.UUID
-	CompanyID      pgtype.UUID
 	SalaryMin      pgtype.Int4
 	SalaryMax      pgtype.Int4
 	SalaryCurrency string
@@ -203,6 +202,7 @@ type Vacancy struct {
 	SourceLang     string
 	CreatedAt      pgtype.Timestamp
 	CountryID      pgtype.UUID
+	CompanyData    []byte
 }
 
 type VacancyApplication struct {
