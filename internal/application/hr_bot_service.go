@@ -94,7 +94,7 @@ func (s *HRBotService) UpdateLanguage(ctx context.Context, hrID uuid.UUID, langu
 }
 
 func (s *HRBotService) ParseVacancy(ctx context.Context, hrID uuid.UUID, text string) (*VacancyWithDetails, error) {
-	return s.vacancySvc.ParseVacancy(ctx, hrID, uuid.Nil, text)
+	return s.vacancySvc.ParseVacancy(ctx, hrID, nil, text)
 }
 
 func (s *HRBotService) SearchCandidates(ctx context.Context, query string) ([]SearchResult, error) {
@@ -151,8 +151,8 @@ func (s *HRBotService) MergeVacancy(ctx context.Context, existingJSON, additiona
 	return s.geminiClient.MergeVacancy(ctx, existingJSON, additionalInfo)
 }
 
-func (s *HRBotService) CreateVacancyFromDraft(ctx context.Context, hrID, companyID uuid.UUID, draft *gemini.ParsedVacancyFull) (*VacancyWithDetails, error) {
-	return s.vacancySvc.CreateVacancyFromParsed(ctx, hrID, companyID, draft)
+func (s *HRBotService) CreateVacancyFromDraft(ctx context.Context, hrID uuid.UUID, companyData *domain.CompanyData, draft *gemini.ParsedVacancyFull) (*VacancyWithDetails, error) {
+	return s.vacancySvc.CreateVacancyFromParsed(ctx, hrID, companyData, draft)
 }
 
 // -- Vacancy draft storage in Redis --
