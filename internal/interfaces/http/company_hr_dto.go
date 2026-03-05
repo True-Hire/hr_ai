@@ -94,6 +94,39 @@ type PaginatedCompanyHRsResponse struct {
 	PageSize int32               `json:"page_size"`
 }
 
+type HRMiniAppUpdateRequest struct {
+	FirstName  string                `json:"first_name"`
+	LastName   string                `json:"last_name"`
+	Patronymic string                `json:"patronymic"`
+	Phone      string                `json:"phone"`
+	Email      string                `json:"email" binding:"omitempty,email"`
+	Position   string                `json:"position"`
+	Company    *HRMiniAppCompanyData `json:"company"`
+}
+
+type HRMiniAppCompanyData struct {
+	Name            string `json:"name"`
+	ActivityType    string `json:"activity_type"`
+	CompanyType     string `json:"company_type"`
+	About           string `json:"about"`
+	Market          string `json:"market"`
+	EmployeeCount   int32  `json:"employee_count"`
+	Country         string `json:"country"`
+	Address         string `json:"address"`
+	Phone           string `json:"phone"`
+	Telegram        string `json:"telegram"`
+	TelegramChannel string `json:"telegram_channel"`
+	Email           string `json:"email"`
+	LogoURL         string `json:"logo_url"`
+	WebSite         string `json:"web_site"`
+	Instagram       string `json:"instagram"`
+}
+
+type HRMiniAppMeResponse struct {
+	CompanyHRResponse
+	Company *CompanyResponse `json:"company,omitempty"`
+}
+
 func toCompanyHRResponse(hr *domain.CompanyHR) CompanyHRResponse {
 	resp := CompanyHRResponse{
 		ID:         hr.ID.String(),
