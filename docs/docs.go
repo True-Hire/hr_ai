@@ -695,7 +695,7 @@ const docTemplate = `{
                 "tags": [
                     "hr-miniapp"
                 ],
-                "summary": "Update current HR profile and optionally create/update company",
+                "summary": "Update current HR profile and optionally create/update company data",
                 "parameters": [
                     {
                         "description": "HR and optional company data",
@@ -2163,7 +2163,7 @@ const docTemplate = `{
                 "tags": [
                     "vacancies"
                 ],
-                "summary": "List vacancies with pagination (optional company_id filter)",
+                "summary": "List vacancies with pagination",
                 "parameters": [
                     {
                         "type": "integer",
@@ -2177,12 +2177,6 @@ const docTemplate = `{
                         "default": 20,
                         "description": "Page size",
                         "name": "page_size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by company ID",
-                        "name": "company_id",
                         "in": "query"
                     }
                 ],
@@ -2450,6 +2444,76 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "domain.CompanyData": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "employee_count": {
+                    "type": "integer"
+                },
+                "instagram": {
+                    "type": "string"
+                },
+                "logo_url": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "source_lang": {
+                    "type": "string"
+                },
+                "telegram": {
+                    "type": "string"
+                },
+                "telegram_channel": {
+                    "type": "string"
+                },
+                "texts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.CompanyDataText"
+                    }
+                },
+                "web_site": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.CompanyDataText": {
+            "type": "object",
+            "properties": {
+                "about": {
+                    "type": "string"
+                },
+                "activity_type": {
+                    "type": "string"
+                },
+                "company_type": {
+                    "type": "string"
+                },
+                "is_source": {
+                    "type": "boolean"
+                },
+                "lang": {
+                    "type": "string"
+                },
+                "market": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "http.AuthTokenResponse": {
             "type": "object",
             "properties": {
@@ -2470,8 +2534,8 @@ const docTemplate = `{
         "http.CompanyHRResponse": {
             "type": "object",
             "properties": {
-                "company_id": {
-                    "type": "string"
+                "company_data": {
+                    "$ref": "#/definitions/domain.CompanyData"
                 },
                 "created_at": {
                     "type": "string"
@@ -2615,9 +2679,6 @@ const docTemplate = `{
                 "password"
             ],
             "properties": {
-                "company_id": {
-                    "type": "string"
-                },
                 "email": {
                     "type": "string"
                 },
@@ -2808,7 +2869,7 @@ const docTemplate = `{
         "http.CreateVacancyRequest": {
             "type": "object",
             "required": [
-                "company_id",
+                "hr_id",
                 "title"
             ],
             "properties": {
@@ -2816,9 +2877,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "benefits": {
-                    "type": "string"
-                },
-                "company_id": {
                     "type": "string"
                 },
                 "country_id": {
@@ -2837,6 +2895,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "format": {
+                    "type": "string"
+                },
+                "hr_id": {
                     "type": "string"
                 },
                 "phone": {
@@ -2996,11 +3057,8 @@ const docTemplate = `{
         "http.HRMiniAppMeResponse": {
             "type": "object",
             "properties": {
-                "company": {
-                    "$ref": "#/definitions/http.CompanyResponse"
-                },
-                "company_id": {
-                    "type": "string"
+                "company_data": {
+                    "$ref": "#/definitions/domain.CompanyData"
                 },
                 "created_at": {
                     "type": "string"
@@ -3451,9 +3509,6 @@ const docTemplate = `{
         "http.UpdateCompanyHRRequest": {
             "type": "object",
             "properties": {
-                "company_id": {
-                    "type": "string"
-                },
                 "email": {
                     "type": "string"
                 },
@@ -3814,9 +3869,6 @@ const docTemplate = `{
                 "employee_count": {
                     "type": "integer"
                 },
-                "id": {
-                    "type": "string"
-                },
                 "logo_url": {
                     "type": "string"
                 },
@@ -3828,11 +3880,11 @@ const docTemplate = `{
         "http.VacancyParseRequest": {
             "type": "object",
             "required": [
-                "company_id",
+                "hr_id",
                 "user_input"
             ],
             "properties": {
-                "company_id": {
+                "hr_id": {
                     "type": "string"
                 },
                 "user_input": {
@@ -3848,9 +3900,6 @@ const docTemplate = `{
                 },
                 "company": {
                     "$ref": "#/definitions/http.VacancyCompanyResponse"
-                },
-                "company_id": {
-                    "type": "string"
                 },
                 "country_id": {
                     "type": "string"
