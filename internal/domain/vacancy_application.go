@@ -21,6 +21,7 @@ type VacancyApplication struct {
 	CoverLetter string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
+	SeenAt      *time.Time
 }
 
 type VacancyApplicationRepository interface {
@@ -31,7 +32,9 @@ type VacancyApplicationRepository interface {
 	ListByVacancy(ctx context.Context, vacancyID uuid.UUID, limit, offset int32) ([]VacancyApplication, error)
 	CountByUser(ctx context.Context, userID uuid.UUID) (int64, error)
 	CountByVacancy(ctx context.Context, vacancyID uuid.UUID) (int64, error)
+	CountUnseenByVacancy(ctx context.Context, vacancyID uuid.UUID) (int64, error)
 	UpdateStatus(ctx context.Context, id uuid.UUID, status string) (*VacancyApplication, error)
+	MarkSeen(ctx context.Context, id uuid.UUID) (*VacancyApplication, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 	DeleteByUser(ctx context.Context, userID uuid.UUID) error
 	DeleteByVacancy(ctx context.Context, vacancyID uuid.UUID) error
