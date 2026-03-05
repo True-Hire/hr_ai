@@ -213,6 +213,7 @@ type VacancyApplication struct {
 	CoverLetter pgtype.Text
 	CreatedAt   pgtype.Timestamp
 	UpdatedAt   pgtype.Timestamp
+	SeenAt      pgtype.Timestamp
 }
 
 type VacancySkill struct {

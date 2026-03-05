@@ -11,6 +11,17 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const countUnseenVacancyApplicationsByVacancy = `-- name: CountUnseenVacancyApplicationsByVacancy :one
+SELECT count(*) FROM vacancy_applications WHERE vacancy_id = $1 AND seen_at IS NULL
+`
+
+func (q *Queries) CountUnseenVacancyApplicationsByVacancy(ctx context.Context, vacancyID pgtype.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, countUnseenVacancyApplicationsByVacancy, vacancyID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countVacancyApplicationsByUser = `-- name: CountVacancyApplicationsByUser :one
 SELECT count(*) FROM vacancy_applications WHERE user_id = $1
 `
@@ -39,7 +50,7 @@ INSERT INTO vacancy_applications (
 ) VALUES (
     $1, $2, $3, $4, $5, now(), now()
 )
-RETURNING id, user_id, vacancy_id, status, cover_letter, created_at, updated_at
+RETURNING id, user_id, vacancy_id, status, cover_letter, created_at, updated_at, seen_at
 `
 
 type CreateVacancyApplicationParams struct {
@@ -67,6 +78,7 @@ func (q *Queries) CreateVacancyApplication(ctx context.Context, arg CreateVacanc
 		&i.CoverLetter,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.SeenAt,
 	)
 	return i, err
 }
@@ -99,7 +111,7 @@ func (q *Queries) DeleteVacancyApplicationsByVacancy(ctx context.Context, vacanc
 }
 
 const getVacancyApplicationByID = `-- name: GetVacancyApplicationByID :one
-SELECT id, user_id, vacancy_id, status, cover_letter, created_at, updated_at
+SELECT id, user_id, vacancy_id, status, cover_letter, created_at, updated_at, seen_at
 FROM vacancy_applications
 WHERE id = $1
 `
@@ -115,12 +127,13 @@ func (q *Queries) GetVacancyApplicationByID(ctx context.Context, id pgtype.UUID)
 		&i.CoverLetter,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.SeenAt,
 	)
 	return i, err
 }
 
 const getVacancyApplicationByUserAndVacancy = `-- name: GetVacancyApplicationByUserAndVacancy :one
-SELECT id, user_id, vacancy_id, status, cover_letter, created_at, updated_at
+SELECT id, user_id, vacancy_id, status, cover_letter, created_at, updated_at, seen_at
 FROM vacancy_applications
 WHERE user_id = $1 AND vacancy_id = $2
 `
@@ -141,12 +154,13 @@ func (q *Queries) GetVacancyApplicationByUserAndVacancy(ctx context.Context, arg
 		&i.CoverLetter,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.SeenAt,
 	)
 	return i, err
 }
 
 const listVacancyApplicationsByUser = `-- name: ListVacancyApplicationsByUser :many
-SELECT id, user_id, vacancy_id, status, cover_letter, created_at, updated_at
+SELECT id, user_id, vacancy_id, status, cover_letter, created_at, updated_at, seen_at
 FROM vacancy_applications
 WHERE user_id = $1
 ORDER BY created_at DESC
@@ -176,6 +190,7 @@ func (q *Queries) ListVacancyApplicationsByUser(ctx context.Context, arg ListVac
 			&i.CoverLetter,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.SeenAt,
 		); err != nil {
 			return nil, err
 		}
@@ -188,7 +203,7 @@ func (q *Queries) ListVacancyApplicationsByUser(ctx context.Context, arg ListVac
 }
 
 const listVacancyApplicationsByVacancy = `-- name: ListVacancyApplicationsByVacancy :many
-SELECT id, user_id, vacancy_id, status, cover_letter, created_at, updated_at
+SELECT id, user_id, vacancy_id, status, cover_letter, created_at, updated_at, seen_at
 FROM vacancy_applications
 WHERE vacancy_id = $1
 ORDER BY created_at DESC
@@ -218,6 +233,7 @@ func (q *Queries) ListVacancyApplicationsByVacancy(ctx context.Context, arg List
 			&i.CoverLetter,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.SeenAt,
 		); err != nil {
 			return nil, err
 		}
@@ -229,11 +245,34 @@ func (q *Queries) ListVacancyApplicationsByVacancy(ctx context.Context, arg List
 	return items, nil
 }
 
+const markVacancyApplicationSeen = `-- name: MarkVacancyApplicationSeen :one
+UPDATE vacancy_applications
+SET seen_at = now()
+WHERE id = $1 AND seen_at IS NULL
+RETURNING id, user_id, vacancy_id, status, cover_letter, created_at, updated_at, seen_at
+`
+
+func (q *Queries) MarkVacancyApplicationSeen(ctx context.Context, id pgtype.UUID) (VacancyApplication, error) {
+	row := q.db.QueryRow(ctx, markVacancyApplicationSeen, id)
+	var i VacancyApplication
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.VacancyID,
+		&i.Status,
+		&i.CoverLetter,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.SeenAt,
+	)
+	return i, err
+}
+
 const updateVacancyApplicationStatus = `-- name: UpdateVacancyApplicationStatus :one
 UPDATE vacancy_applications
 SET status = $2, updated_at = now()
 WHERE id = $1
-RETURNING id, user_id, vacancy_id, status, cover_letter, created_at, updated_at
+RETURNING id, user_id, vacancy_id, status, cover_letter, created_at, updated_at, seen_at
 `
 
 type UpdateVacancyApplicationStatusParams struct {
@@ -252,6 +291,7 @@ func (q *Queries) UpdateVacancyApplicationStatus(ctx context.Context, arg Update
 		&i.CoverLetter,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.SeenAt,
 	)
 	return i, err
 }
