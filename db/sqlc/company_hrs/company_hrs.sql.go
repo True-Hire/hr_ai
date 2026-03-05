@@ -25,31 +25,48 @@ func (q *Queries) CountCompanyHRs(ctx context.Context) (int64, error) {
 const createCompanyHR = `-- name: CreateCompanyHR :one
 INSERT INTO company_hrs (
     id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
-    position, status, company_id, language, created_at
+    position, status, company_data, language, created_at
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8,
     $9, $10, $11, $12, now()
 )
 RETURNING id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
-    position, status, password_hash, created_at, company_id, language
+    position, status, password_hash, created_at, company_data, language
 `
 
 type CreateCompanyHRParams struct {
-	ID         pgtype.UUID
-	FirstName  string
-	LastName   string
-	Patronymic pgtype.Text
-	Phone      pgtype.Text
-	Telegram   pgtype.Text
-	TelegramID pgtype.Text
-	Email      pgtype.Text
-	Position   pgtype.Text
-	Status     string
-	CompanyID  pgtype.UUID
-	Language   string
+	ID          pgtype.UUID
+	FirstName   string
+	LastName    string
+	Patronymic  pgtype.Text
+	Phone       pgtype.Text
+	Telegram    pgtype.Text
+	TelegramID  pgtype.Text
+	Email       pgtype.Text
+	Position    pgtype.Text
+	Status      string
+	CompanyData []byte
+	Language    string
 }
 
-func (q *Queries) CreateCompanyHR(ctx context.Context, arg CreateCompanyHRParams) (CompanyHr, error) {
+type CreateCompanyHRRow struct {
+	ID           pgtype.UUID
+	FirstName    string
+	LastName     string
+	Patronymic   pgtype.Text
+	Phone        pgtype.Text
+	Telegram     pgtype.Text
+	TelegramID   pgtype.Text
+	Email        pgtype.Text
+	Position     pgtype.Text
+	Status       string
+	PasswordHash pgtype.Text
+	CreatedAt    pgtype.Timestamp
+	CompanyData  []byte
+	Language     string
+}
+
+func (q *Queries) CreateCompanyHR(ctx context.Context, arg CreateCompanyHRParams) (CreateCompanyHRRow, error) {
 	row := q.db.QueryRow(ctx, createCompanyHR,
 		arg.ID,
 		arg.FirstName,
@@ -61,10 +78,10 @@ func (q *Queries) CreateCompanyHR(ctx context.Context, arg CreateCompanyHRParams
 		arg.Email,
 		arg.Position,
 		arg.Status,
-		arg.CompanyID,
+		arg.CompanyData,
 		arg.Language,
 	)
-	var i CompanyHr
+	var i CreateCompanyHRRow
 	err := row.Scan(
 		&i.ID,
 		&i.FirstName,
@@ -78,7 +95,7 @@ func (q *Queries) CreateCompanyHR(ctx context.Context, arg CreateCompanyHRParams
 		&i.Status,
 		&i.PasswordHash,
 		&i.CreatedAt,
-		&i.CompanyID,
+		&i.CompanyData,
 		&i.Language,
 	)
 	return i, err
@@ -96,14 +113,31 @@ func (q *Queries) DeleteCompanyHR(ctx context.Context, id pgtype.UUID) error {
 
 const getCompanyHRByEmail = `-- name: GetCompanyHRByEmail :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
-    position, status, password_hash, created_at, company_id, language
+    position, status, password_hash, created_at, company_data, language
 FROM company_hrs
 WHERE email = $1
 `
 
-func (q *Queries) GetCompanyHRByEmail(ctx context.Context, email pgtype.Text) (CompanyHr, error) {
+type GetCompanyHRByEmailRow struct {
+	ID           pgtype.UUID
+	FirstName    string
+	LastName     string
+	Patronymic   pgtype.Text
+	Phone        pgtype.Text
+	Telegram     pgtype.Text
+	TelegramID   pgtype.Text
+	Email        pgtype.Text
+	Position     pgtype.Text
+	Status       string
+	PasswordHash pgtype.Text
+	CreatedAt    pgtype.Timestamp
+	CompanyData  []byte
+	Language     string
+}
+
+func (q *Queries) GetCompanyHRByEmail(ctx context.Context, email pgtype.Text) (GetCompanyHRByEmailRow, error) {
 	row := q.db.QueryRow(ctx, getCompanyHRByEmail, email)
-	var i CompanyHr
+	var i GetCompanyHRByEmailRow
 	err := row.Scan(
 		&i.ID,
 		&i.FirstName,
@@ -117,7 +151,7 @@ func (q *Queries) GetCompanyHRByEmail(ctx context.Context, email pgtype.Text) (C
 		&i.Status,
 		&i.PasswordHash,
 		&i.CreatedAt,
-		&i.CompanyID,
+		&i.CompanyData,
 		&i.Language,
 	)
 	return i, err
@@ -125,14 +159,31 @@ func (q *Queries) GetCompanyHRByEmail(ctx context.Context, email pgtype.Text) (C
 
 const getCompanyHRByID = `-- name: GetCompanyHRByID :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
-    position, status, password_hash, created_at, company_id, language
+    position, status, password_hash, created_at, company_data, language
 FROM company_hrs
 WHERE id = $1
 `
 
-func (q *Queries) GetCompanyHRByID(ctx context.Context, id pgtype.UUID) (CompanyHr, error) {
+type GetCompanyHRByIDRow struct {
+	ID           pgtype.UUID
+	FirstName    string
+	LastName     string
+	Patronymic   pgtype.Text
+	Phone        pgtype.Text
+	Telegram     pgtype.Text
+	TelegramID   pgtype.Text
+	Email        pgtype.Text
+	Position     pgtype.Text
+	Status       string
+	PasswordHash pgtype.Text
+	CreatedAt    pgtype.Timestamp
+	CompanyData  []byte
+	Language     string
+}
+
+func (q *Queries) GetCompanyHRByID(ctx context.Context, id pgtype.UUID) (GetCompanyHRByIDRow, error) {
 	row := q.db.QueryRow(ctx, getCompanyHRByID, id)
-	var i CompanyHr
+	var i GetCompanyHRByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.FirstName,
@@ -146,7 +197,7 @@ func (q *Queries) GetCompanyHRByID(ctx context.Context, id pgtype.UUID) (Company
 		&i.Status,
 		&i.PasswordHash,
 		&i.CreatedAt,
-		&i.CompanyID,
+		&i.CompanyData,
 		&i.Language,
 	)
 	return i, err
@@ -154,14 +205,31 @@ func (q *Queries) GetCompanyHRByID(ctx context.Context, id pgtype.UUID) (Company
 
 const getCompanyHRByPhone = `-- name: GetCompanyHRByPhone :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
-    position, status, password_hash, created_at, company_id, language
+    position, status, password_hash, created_at, company_data, language
 FROM company_hrs
 WHERE phone = $1
 `
 
-func (q *Queries) GetCompanyHRByPhone(ctx context.Context, phone pgtype.Text) (CompanyHr, error) {
+type GetCompanyHRByPhoneRow struct {
+	ID           pgtype.UUID
+	FirstName    string
+	LastName     string
+	Patronymic   pgtype.Text
+	Phone        pgtype.Text
+	Telegram     pgtype.Text
+	TelegramID   pgtype.Text
+	Email        pgtype.Text
+	Position     pgtype.Text
+	Status       string
+	PasswordHash pgtype.Text
+	CreatedAt    pgtype.Timestamp
+	CompanyData  []byte
+	Language     string
+}
+
+func (q *Queries) GetCompanyHRByPhone(ctx context.Context, phone pgtype.Text) (GetCompanyHRByPhoneRow, error) {
 	row := q.db.QueryRow(ctx, getCompanyHRByPhone, phone)
-	var i CompanyHr
+	var i GetCompanyHRByPhoneRow
 	err := row.Scan(
 		&i.ID,
 		&i.FirstName,
@@ -175,7 +243,7 @@ func (q *Queries) GetCompanyHRByPhone(ctx context.Context, phone pgtype.Text) (C
 		&i.Status,
 		&i.PasswordHash,
 		&i.CreatedAt,
-		&i.CompanyID,
+		&i.CompanyData,
 		&i.Language,
 	)
 	return i, err
@@ -183,14 +251,31 @@ func (q *Queries) GetCompanyHRByPhone(ctx context.Context, phone pgtype.Text) (C
 
 const getCompanyHRByTelegramID = `-- name: GetCompanyHRByTelegramID :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
-    position, status, password_hash, created_at, company_id, language
+    position, status, password_hash, created_at, company_data, language
 FROM company_hrs
 WHERE telegram_id = $1
 `
 
-func (q *Queries) GetCompanyHRByTelegramID(ctx context.Context, telegramID pgtype.Text) (CompanyHr, error) {
+type GetCompanyHRByTelegramIDRow struct {
+	ID           pgtype.UUID
+	FirstName    string
+	LastName     string
+	Patronymic   pgtype.Text
+	Phone        pgtype.Text
+	Telegram     pgtype.Text
+	TelegramID   pgtype.Text
+	Email        pgtype.Text
+	Position     pgtype.Text
+	Status       string
+	PasswordHash pgtype.Text
+	CreatedAt    pgtype.Timestamp
+	CompanyData  []byte
+	Language     string
+}
+
+func (q *Queries) GetCompanyHRByTelegramID(ctx context.Context, telegramID pgtype.Text) (GetCompanyHRByTelegramIDRow, error) {
 	row := q.db.QueryRow(ctx, getCompanyHRByTelegramID, telegramID)
-	var i CompanyHr
+	var i GetCompanyHRByTelegramIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.FirstName,
@@ -204,7 +289,7 @@ func (q *Queries) GetCompanyHRByTelegramID(ctx context.Context, telegramID pgtyp
 		&i.Status,
 		&i.PasswordHash,
 		&i.CreatedAt,
-		&i.CompanyID,
+		&i.CompanyData,
 		&i.Language,
 	)
 	return i, err
@@ -212,7 +297,7 @@ func (q *Queries) GetCompanyHRByTelegramID(ctx context.Context, telegramID pgtyp
 
 const listCompanyHRs = `-- name: ListCompanyHRs :many
 SELECT id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
-    position, status, password_hash, created_at, company_id, language
+    position, status, password_hash, created_at, company_data, language
 FROM company_hrs
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2
@@ -223,15 +308,32 @@ type ListCompanyHRsParams struct {
 	Offset int32
 }
 
-func (q *Queries) ListCompanyHRs(ctx context.Context, arg ListCompanyHRsParams) ([]CompanyHr, error) {
+type ListCompanyHRsRow struct {
+	ID           pgtype.UUID
+	FirstName    string
+	LastName     string
+	Patronymic   pgtype.Text
+	Phone        pgtype.Text
+	Telegram     pgtype.Text
+	TelegramID   pgtype.Text
+	Email        pgtype.Text
+	Position     pgtype.Text
+	Status       string
+	PasswordHash pgtype.Text
+	CreatedAt    pgtype.Timestamp
+	CompanyData  []byte
+	Language     string
+}
+
+func (q *Queries) ListCompanyHRs(ctx context.Context, arg ListCompanyHRsParams) ([]ListCompanyHRsRow, error) {
 	rows, err := q.db.Query(ctx, listCompanyHRs, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []CompanyHr
+	var items []ListCompanyHRsRow
 	for rows.Next() {
-		var i CompanyHr
+		var i ListCompanyHRsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.FirstName,
@@ -245,7 +347,7 @@ func (q *Queries) ListCompanyHRs(ctx context.Context, arg ListCompanyHRsParams) 
 			&i.Status,
 			&i.PasswordHash,
 			&i.CreatedAt,
-			&i.CompanyID,
+			&i.CompanyData,
 			&i.Language,
 		); err != nil {
 			return nil, err
@@ -283,29 +385,46 @@ SET first_name = COALESCE(NULLIF($1, ''), first_name),
     email = COALESCE(NULLIF($7, ''), email),
     position = COALESCE(NULLIF($8, ''), position),
     status = COALESCE(NULLIF($9, ''), status),
-    company_id = CASE WHEN $10::UUID IS NOT NULL THEN $10 ELSE company_id END,
+    company_data = CASE WHEN $10::JSONB IS NOT NULL THEN $10 ELSE company_data END,
     language = COALESCE(NULLIF($11, ''), language)
 WHERE id = $12
 RETURNING id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
-    position, status, password_hash, created_at, company_id, language
+    position, status, password_hash, created_at, company_data, language
 `
 
 type UpdateCompanyHRParams struct {
-	FirstName  interface{}
-	LastName   interface{}
-	Patronymic interface{}
-	Phone      interface{}
-	Telegram   interface{}
-	TelegramID interface{}
-	Email      interface{}
-	Position   interface{}
-	Status     interface{}
-	CompanyID  pgtype.UUID
-	Language   interface{}
-	ID         pgtype.UUID
+	FirstName   interface{}
+	LastName    interface{}
+	Patronymic  interface{}
+	Phone       interface{}
+	Telegram    interface{}
+	TelegramID  interface{}
+	Email       interface{}
+	Position    interface{}
+	Status      interface{}
+	CompanyData []byte
+	Language    interface{}
+	ID          pgtype.UUID
 }
 
-func (q *Queries) UpdateCompanyHR(ctx context.Context, arg UpdateCompanyHRParams) (CompanyHr, error) {
+type UpdateCompanyHRRow struct {
+	ID           pgtype.UUID
+	FirstName    string
+	LastName     string
+	Patronymic   pgtype.Text
+	Phone        pgtype.Text
+	Telegram     pgtype.Text
+	TelegramID   pgtype.Text
+	Email        pgtype.Text
+	Position     pgtype.Text
+	Status       string
+	PasswordHash pgtype.Text
+	CreatedAt    pgtype.Timestamp
+	CompanyData  []byte
+	Language     string
+}
+
+func (q *Queries) UpdateCompanyHR(ctx context.Context, arg UpdateCompanyHRParams) (UpdateCompanyHRRow, error) {
 	row := q.db.QueryRow(ctx, updateCompanyHR,
 		arg.FirstName,
 		arg.LastName,
@@ -316,11 +435,11 @@ func (q *Queries) UpdateCompanyHR(ctx context.Context, arg UpdateCompanyHRParams
 		arg.Email,
 		arg.Position,
 		arg.Status,
-		arg.CompanyID,
+		arg.CompanyData,
 		arg.Language,
 		arg.ID,
 	)
-	var i CompanyHr
+	var i UpdateCompanyHRRow
 	err := row.Scan(
 		&i.ID,
 		&i.FirstName,
@@ -334,7 +453,7 @@ func (q *Queries) UpdateCompanyHR(ctx context.Context, arg UpdateCompanyHRParams
 		&i.Status,
 		&i.PasswordHash,
 		&i.CreatedAt,
-		&i.CompanyID,
+		&i.CompanyData,
 		&i.Language,
 	)
 	return i, err

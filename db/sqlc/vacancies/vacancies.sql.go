@@ -41,20 +41,9 @@ func (q *Queries) CountVacancies(ctx context.Context) (int64, error) {
 	return count, err
 }
 
-const countVacanciesByCompany = `-- name: CountVacanciesByCompany :one
-SELECT count(*) FROM vacancies WHERE company_id = $1
-`
-
-func (q *Queries) CountVacanciesByCompany(ctx context.Context, companyID pgtype.UUID) (int64, error) {
-	row := q.db.QueryRow(ctx, countVacanciesByCompany, companyID)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
 const createVacancy = `-- name: CreateVacancy :one
 INSERT INTO vacancies (
-    id, hr_id, company_id, country_id, salary_min, salary_max, salary_currency,
+    id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
     phone, telegram, email, address, status, source_lang, created_at
 ) VALUES (
@@ -62,7 +51,7 @@ INSERT INTO vacancies (
     $8, $9, $10, $11,
     $12, $13, $14, $15, $16, $17, now()
 )
-RETURNING id, hr_id, company_id, country_id, salary_min, salary_max, salary_currency,
+RETURNING id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
     phone, telegram, email, address, status, source_lang, created_at
 `
@@ -70,7 +59,7 @@ RETURNING id, hr_id, company_id, country_id, salary_min, salary_max, salary_curr
 type CreateVacancyParams struct {
 	ID             pgtype.UUID
 	HrID           pgtype.UUID
-	CompanyID      pgtype.UUID
+	CompanyData    []byte
 	CountryID      pgtype.UUID
 	SalaryMin      pgtype.Int4
 	SalaryMax      pgtype.Int4
@@ -90,7 +79,7 @@ type CreateVacancyParams struct {
 type CreateVacancyRow struct {
 	ID             pgtype.UUID
 	HrID           pgtype.UUID
-	CompanyID      pgtype.UUID
+	CompanyData    []byte
 	CountryID      pgtype.UUID
 	SalaryMin      pgtype.Int4
 	SalaryMax      pgtype.Int4
@@ -112,7 +101,7 @@ func (q *Queries) CreateVacancy(ctx context.Context, arg CreateVacancyParams) (C
 	row := q.db.QueryRow(ctx, createVacancy,
 		arg.ID,
 		arg.HrID,
-		arg.CompanyID,
+		arg.CompanyData,
 		arg.CountryID,
 		arg.SalaryMin,
 		arg.SalaryMax,
@@ -132,7 +121,7 @@ func (q *Queries) CreateVacancy(ctx context.Context, arg CreateVacancyParams) (C
 	err := row.Scan(
 		&i.ID,
 		&i.HrID,
-		&i.CompanyID,
+		&i.CompanyData,
 		&i.CountryID,
 		&i.SalaryMin,
 		&i.SalaryMax,
@@ -162,7 +151,7 @@ func (q *Queries) DeleteVacancy(ctx context.Context, id pgtype.UUID) error {
 }
 
 const getVacancyByID = `-- name: GetVacancyByID :one
-SELECT id, hr_id, company_id, country_id, salary_min, salary_max, salary_currency,
+SELECT id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
     phone, telegram, email, address, status, source_lang, created_at
 FROM vacancies
@@ -172,7 +161,7 @@ WHERE id = $1
 type GetVacancyByIDRow struct {
 	ID             pgtype.UUID
 	HrID           pgtype.UUID
-	CompanyID      pgtype.UUID
+	CompanyData    []byte
 	CountryID      pgtype.UUID
 	SalaryMin      pgtype.Int4
 	SalaryMax      pgtype.Int4
@@ -196,7 +185,7 @@ func (q *Queries) GetVacancyByID(ctx context.Context, id pgtype.UUID) (GetVacanc
 	err := row.Scan(
 		&i.ID,
 		&i.HrID,
-		&i.CompanyID,
+		&i.CompanyData,
 		&i.CountryID,
 		&i.SalaryMin,
 		&i.SalaryMax,
@@ -217,7 +206,7 @@ func (q *Queries) GetVacancyByID(ctx context.Context, id pgtype.UUID) (GetVacanc
 }
 
 const listVacancies = `-- name: ListVacancies :many
-SELECT id, hr_id, company_id, country_id, salary_min, salary_max, salary_currency,
+SELECT id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
     phone, telegram, email, address, status, source_lang, created_at
 FROM vacancies
@@ -233,7 +222,7 @@ type ListVacanciesParams struct {
 type ListVacanciesRow struct {
 	ID             pgtype.UUID
 	HrID           pgtype.UUID
-	CompanyID      pgtype.UUID
+	CompanyData    []byte
 	CountryID      pgtype.UUID
 	SalaryMin      pgtype.Int4
 	SalaryMax      pgtype.Int4
@@ -263,83 +252,7 @@ func (q *Queries) ListVacancies(ctx context.Context, arg ListVacanciesParams) ([
 		if err := rows.Scan(
 			&i.ID,
 			&i.HrID,
-			&i.CompanyID,
-			&i.CountryID,
-			&i.SalaryMin,
-			&i.SalaryMax,
-			&i.SalaryCurrency,
-			&i.ExperienceMin,
-			&i.ExperienceMax,
-			&i.Format,
-			&i.Schedule,
-			&i.Phone,
-			&i.Telegram,
-			&i.Email,
-			&i.Address,
-			&i.Status,
-			&i.SourceLang,
-			&i.CreatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listVacanciesByCompany = `-- name: ListVacanciesByCompany :many
-SELECT id, hr_id, company_id, country_id, salary_min, salary_max, salary_currency,
-    experience_min, experience_max, format, schedule,
-    phone, telegram, email, address, status, source_lang, created_at
-FROM vacancies
-WHERE company_id = $1
-ORDER BY created_at DESC
-LIMIT $2 OFFSET $3
-`
-
-type ListVacanciesByCompanyParams struct {
-	CompanyID pgtype.UUID
-	Limit     int32
-	Offset    int32
-}
-
-type ListVacanciesByCompanyRow struct {
-	ID             pgtype.UUID
-	HrID           pgtype.UUID
-	CompanyID      pgtype.UUID
-	CountryID      pgtype.UUID
-	SalaryMin      pgtype.Int4
-	SalaryMax      pgtype.Int4
-	SalaryCurrency string
-	ExperienceMin  pgtype.Int4
-	ExperienceMax  pgtype.Int4
-	Format         string
-	Schedule       string
-	Phone          pgtype.Text
-	Telegram       pgtype.Text
-	Email          pgtype.Text
-	Address        pgtype.Text
-	Status         string
-	SourceLang     string
-	CreatedAt      pgtype.Timestamp
-}
-
-func (q *Queries) ListVacanciesByCompany(ctx context.Context, arg ListVacanciesByCompanyParams) ([]ListVacanciesByCompanyRow, error) {
-	rows, err := q.db.Query(ctx, listVacanciesByCompany, arg.CompanyID, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []ListVacanciesByCompanyRow
-	for rows.Next() {
-		var i ListVacanciesByCompanyRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.HrID,
-			&i.CompanyID,
+			&i.CompanyData,
 			&i.CountryID,
 			&i.SalaryMin,
 			&i.SalaryMax,
@@ -367,7 +280,7 @@ func (q *Queries) ListVacanciesByCompany(ctx context.Context, arg ListVacanciesB
 }
 
 const listVacanciesByHR = `-- name: ListVacanciesByHR :many
-SELECT id, hr_id, company_id, country_id, salary_min, salary_max, salary_currency,
+SELECT id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
     phone, telegram, email, address, status, source_lang, created_at
 FROM vacancies
@@ -385,7 +298,7 @@ type ListVacanciesByHRParams struct {
 type ListVacanciesByHRRow struct {
 	ID             pgtype.UUID
 	HrID           pgtype.UUID
-	CompanyID      pgtype.UUID
+	CompanyData    []byte
 	CountryID      pgtype.UUID
 	SalaryMin      pgtype.Int4
 	SalaryMax      pgtype.Int4
@@ -415,7 +328,7 @@ func (q *Queries) ListVacanciesByHR(ctx context.Context, arg ListVacanciesByHRPa
 		if err := rows.Scan(
 			&i.ID,
 			&i.HrID,
-			&i.CompanyID,
+			&i.CompanyData,
 			&i.CountryID,
 			&i.SalaryMin,
 			&i.SalaryMax,
@@ -476,7 +389,7 @@ func (q *Queries) NullifyVacancyHRID(ctx context.Context, hrID pgtype.UUID) erro
 }
 
 const searchVacancies = `-- name: SearchVacancies :many
-SELECT DISTINCT v.id, v.hr_id, v.company_id, v.country_id, v.salary_min, v.salary_max, v.salary_currency,
+SELECT DISTINCT v.id, v.hr_id, v.company_data, v.country_id, v.salary_min, v.salary_max, v.salary_currency,
     v.experience_min, v.experience_max, v.format, v.schedule,
     v.phone, v.telegram, v.email, v.address, v.status, v.source_lang, v.created_at
 FROM vacancies v
@@ -497,7 +410,7 @@ type SearchVacanciesParams struct {
 type SearchVacanciesRow struct {
 	ID             pgtype.UUID
 	HrID           pgtype.UUID
-	CompanyID      pgtype.UUID
+	CompanyData    []byte
 	CountryID      pgtype.UUID
 	SalaryMin      pgtype.Int4
 	SalaryMax      pgtype.Int4
@@ -532,7 +445,7 @@ func (q *Queries) SearchVacancies(ctx context.Context, arg SearchVacanciesParams
 		if err := rows.Scan(
 			&i.ID,
 			&i.HrID,
-			&i.CompanyID,
+			&i.CompanyData,
 			&i.CountryID,
 			&i.SalaryMin,
 			&i.SalaryMax,
@@ -575,7 +488,7 @@ SET salary_min = CASE WHEN $1::INT = 0 THEN salary_min ELSE $1 END,
     status = COALESCE(NULLIF($12, ''), status),
     country_id = COALESCE($13, country_id)
 WHERE id = $14
-RETURNING id, hr_id, company_id, country_id, salary_min, salary_max, salary_currency,
+RETURNING id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
     phone, telegram, email, address, status, source_lang, created_at
 `
@@ -600,7 +513,7 @@ type UpdateVacancyParams struct {
 type UpdateVacancyRow struct {
 	ID             pgtype.UUID
 	HrID           pgtype.UUID
-	CompanyID      pgtype.UUID
+	CompanyData    []byte
 	CountryID      pgtype.UUID
 	SalaryMin      pgtype.Int4
 	SalaryMax      pgtype.Int4
@@ -639,7 +552,7 @@ func (q *Queries) UpdateVacancy(ctx context.Context, arg UpdateVacancyParams) (U
 	err := row.Scan(
 		&i.ID,
 		&i.HrID,
-		&i.CompanyID,
+		&i.CompanyData,
 		&i.CountryID,
 		&i.SalaryMin,
 		&i.SalaryMax,
