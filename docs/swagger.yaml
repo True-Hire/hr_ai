@@ -1,5 +1,51 @@
 basePath: /api/v1
 definitions:
+  domain.CompanyData:
+    properties:
+      address:
+        type: string
+      country:
+        type: string
+      email:
+        type: string
+      employee_count:
+        type: integer
+      instagram:
+        type: string
+      logo_url:
+        type: string
+      phone:
+        type: string
+      source_lang:
+        type: string
+      telegram:
+        type: string
+      telegram_channel:
+        type: string
+      texts:
+        items:
+          $ref: '#/definitions/domain.CompanyDataText'
+        type: array
+      web_site:
+        type: string
+    type: object
+  domain.CompanyDataText:
+    properties:
+      about:
+        type: string
+      activity_type:
+        type: string
+      company_type:
+        type: string
+      is_source:
+        type: boolean
+      lang:
+        type: string
+      market:
+        type: string
+      name:
+        type: string
+    type: object
   http.AuthTokenResponse:
     properties:
       access_token:
@@ -13,8 +59,8 @@ definitions:
     type: object
   http.CompanyHRResponse:
     properties:
-      company_id:
-        type: string
+      company_data:
+        $ref: '#/definitions/domain.CompanyData'
       created_at:
         type: string
       email:
@@ -105,8 +151,6 @@ definitions:
     type: object
   http.CreateCompanyHRRequest:
     properties:
-      company_id:
-        type: string
       email:
         type: string
       first_name:
@@ -242,8 +286,6 @@ definitions:
         type: string
       benefits:
         type: string
-      company_id:
-        type: string
       country_id:
         type: string
       description:
@@ -255,6 +297,8 @@ definitions:
       experience_min:
         type: integer
       format:
+        type: string
+      hr_id:
         type: string
       phone:
         type: string
@@ -279,7 +323,7 @@ definitions:
       title:
         type: string
     required:
-    - company_id
+    - hr_id
     - title
     type: object
   http.EducationItemResponse:
@@ -362,10 +406,8 @@ definitions:
     type: object
   http.HRMiniAppMeResponse:
     properties:
-      company:
-        $ref: '#/definitions/http.CompanyResponse'
-      company_id:
-        type: string
+      company_data:
+        $ref: '#/definitions/domain.CompanyData'
       created_at:
         type: string
       email:
@@ -659,8 +701,6 @@ definitions:
     type: object
   http.UpdateCompanyHRRequest:
     properties:
-      company_id:
-        type: string
       email:
         type: string
       first_name:
@@ -898,8 +938,6 @@ definitions:
         type: string
       employee_count:
         type: integer
-      id:
-        type: string
       logo_url:
         type: string
       name:
@@ -907,12 +945,12 @@ definitions:
     type: object
   http.VacancyParseRequest:
     properties:
-      company_id:
+      hr_id:
         type: string
       user_input:
         type: string
     required:
-    - company_id
+    - hr_id
     - user_input
     type: object
   http.VacancyResponse:
@@ -921,8 +959,6 @@ definitions:
         type: string
       company:
         $ref: '#/definitions/http.VacancyCompanyResponse'
-      company_id:
-        type: string
       country_id:
         type: string
       created_at:
@@ -1458,7 +1494,7 @@ paths:
             $ref: '#/definitions/http.ErrorResponse'
       security:
       - TelegramAuth: []
-      summary: Update current HR profile and optionally create/update company
+      summary: Update current HR profile and optionally create/update company data
       tags:
       - hr-miniapp
   /hr/auth/login:
@@ -2403,10 +2439,6 @@ paths:
         in: query
         name: page_size
         type: integer
-      - description: Filter by company ID
-        in: query
-        name: company_id
-        type: string
       produces:
       - application/json
       responses:
@@ -2418,7 +2450,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/http.ErrorResponse'
-      summary: List vacancies with pagination (optional company_id filter)
+      summary: List vacancies with pagination
       tags:
       - vacancies
     post:
