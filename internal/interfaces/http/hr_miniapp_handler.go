@@ -2,6 +2,7 @@ package http
 
 import (
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -144,6 +145,7 @@ func (h *HRMiniAppHandler) UpdateMe(c *gin.Context) {
 			}
 			cwt, err := h.companyService.CreateCompany(c.Request.Context(), input)
 			if err != nil {
+				log.Printf("hr-miniapp: failed to create company: %v", err)
 				c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to create company"})
 				return
 			}
@@ -164,6 +166,7 @@ func (h *HRMiniAppHandler) UpdateMe(c *gin.Context) {
 				Instagram:       req.Company.Instagram,
 			}
 			if _, err := h.companyService.UpdateCompany(c.Request.Context(), company); err != nil {
+				log.Printf("hr-miniapp: failed to update company: %v", err)
 				c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to update company"})
 				return
 			}
