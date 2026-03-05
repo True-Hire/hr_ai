@@ -14,22 +14,24 @@ import (
 )
 
 type HRBotService struct {
-	hrSvc        *CompanyHRService
-	vacancySvc   *VacancyService
-	stateSvc     *BotStateService
-	searchSvc    *SearchService
-	userSvc      *UserService
-	geminiClient *gemini.Client
+	hrSvc         *CompanyHRService
+	vacancySvc    *VacancyService
+	vacancyAppSvc *VacancyApplicationService
+	stateSvc      *BotStateService
+	searchSvc     *SearchService
+	userSvc       *UserService
+	geminiClient  *gemini.Client
 }
 
-func NewHRBotService(hrSvc *CompanyHRService, vacancySvc *VacancyService, stateSvc *BotStateService, searchSvc *SearchService, userSvc *UserService, geminiClient *gemini.Client) *HRBotService {
+func NewHRBotService(hrSvc *CompanyHRService, vacancySvc *VacancyService, vacancyAppSvc *VacancyApplicationService, stateSvc *BotStateService, searchSvc *SearchService, userSvc *UserService, geminiClient *gemini.Client) *HRBotService {
 	return &HRBotService{
-		hrSvc:        hrSvc,
-		vacancySvc:   vacancySvc,
-		stateSvc:     stateSvc,
-		searchSvc:    searchSvc,
-		userSvc:      userSvc,
-		geminiClient: geminiClient,
+		hrSvc:         hrSvc,
+		vacancySvc:    vacancySvc,
+		vacancyAppSvc: vacancyAppSvc,
+		stateSvc:      stateSvc,
+		searchSvc:     searchSvc,
+		userSvc:       userSvc,
+		geminiClient:  geminiClient,
 	}
 }
 
@@ -135,6 +137,18 @@ func (s *HRBotService) ListAllHRs(ctx context.Context) ([]domain.CompanyHR, erro
 		page++
 	}
 	return all, nil
+}
+
+func (s *HRBotService) GetVacancyStats(ctx context.Context, vacancyID uuid.UUID) (total, unseen int64, err error) {
+	total, err = s.vacancyAppSvc.CountByVacancy(ctx, vacancyID)
+	if err != nil {
+		return 0, 0, fmt.Errorf("count applications: %w", err)
+	}
+	unseen, err = s.vacancyAppSvc.CountUnseenByVacancy(ctx, vacancyID)
+	if err != nil {
+		return 0, 0, fmt.Errorf("count unseen applications: %w", err)
+	}
+	return total, unseen, nil
 }
 
 // -- Vacancy draft parsing (Gemini) --
