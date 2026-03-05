@@ -151,8 +151,8 @@ func (s *HRBotService) MergeVacancy(ctx context.Context, existingJSON, additiona
 	return s.geminiClient.MergeVacancy(ctx, existingJSON, additionalInfo)
 }
 
-func (s *HRBotService) CreateVacancyFromDraft(ctx context.Context, hrID uuid.UUID, draft *gemini.ParsedVacancyFull) (*VacancyWithDetails, error) {
-	return s.vacancySvc.CreateVacancyFromParsed(ctx, hrID, uuid.Nil, draft)
+func (s *HRBotService) CreateVacancyFromDraft(ctx context.Context, hrID, companyID uuid.UUID, draft *gemini.ParsedVacancyFull) (*VacancyWithDetails, error) {
+	return s.vacancySvc.CreateVacancyFromParsed(ctx, hrID, companyID, draft)
 }
 
 // -- Vacancy draft storage in Redis --

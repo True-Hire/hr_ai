@@ -455,14 +455,14 @@ func (hb *HRBot) registerHandlers() {
 			return c.Send(hrMsgError[lang], hrMenu(lang))
 		}
 
-		state, _ := hrBotSvc.GetBotState(ctx, sender.ID)
-		hrIDStr := ""
-		if state != nil {
-			hrIDStr = state.Data["hr_id"]
+		tgIDStr := strconv.FormatInt(sender.ID, 10)
+		hr, err := hrBotSvc.GetHRByTelegramID(ctx, tgIDStr)
+		if err != nil || hr == nil {
+			log.Printf("hr_vac_continue: failed to get HR for tg_id %d: %v", sender.ID, err)
+			return c.Send(hrMsgError[lang], hrMenu(lang))
 		}
-		hrID, _ := uuid.Parse(hrIDStr)
 
-		result, err := hrBotSvc.CreateVacancyFromDraft(ctx, hrID, draft)
+		result, err := hrBotSvc.CreateVacancyFromDraft(ctx, hr.ID, hr.CompanyID, draft)
 		if err != nil {
 			log.Printf("hr create vacancy from draft error for %d: %v", sender.ID, err)
 			return c.Send(hrMsgVacancyFailed[lang], hrMenu(lang))
