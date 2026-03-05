@@ -19,7 +19,6 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-
 // -- Localized messages for HR bot --
 
 var hrMsgWelcomeNew = map[string]string{
@@ -264,7 +263,7 @@ func NewHRBot(token string, hrBotSvc *application.HRBotService, webAppURL string
 		_, err = b.Raw("setChatMenuButton", map[string]interface{}{
 			"menu_button": tele.MenuButton{
 				Type:   tele.MenuButtonWebApp,
-				Text:   "Open App",
+				Text:   "Open",
 				WebApp: &tele.WebApp{URL: webAppURL},
 			},
 		})
@@ -462,7 +461,7 @@ func (hb *HRBot) registerHandlers() {
 			return c.Send(hrMsgError[lang], hrMenu(lang))
 		}
 
-		result, err := hrBotSvc.CreateVacancyFromDraft(ctx, hr.ID, hr.CompanyID, draft)
+		result, err := hrBotSvc.CreateVacancyFromDraft(ctx, hr.ID, hr.CompanyData, draft)
 		if err != nil {
 			log.Printf("hr create vacancy from draft error for %d: %v", sender.ID, err)
 			return c.Send(hrMsgVacancyFailed[lang], hrMenu(lang))

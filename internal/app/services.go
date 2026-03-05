@@ -41,6 +41,7 @@ type Services struct {
 	HRBot               *application.HRBotService
 	AccountDeletion     *application.AccountDeletionService
 	Storage          *application.StorageService
+	GeminiClient     *gemini.Client
 	CasbinEnforcer   *casbinlib.Enforcer
 	RedisClient      *redisclient.Client
 	JWTSecret        string
@@ -114,7 +115,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 
 	profileParseSvc := application.NewProfileParseService(geminiClient, pfSvc, pftSvc, expSvc, eduSvc, itSvc, skillSvc, userSvc, vectorIndexSvc)
 
-	vacancySvc := application.NewVacancyService(vacancyRepo, vacancyTextRepo, skillSvc, companySvc, geminiClient, vectorIndexSvc)
+	vacancySvc := application.NewVacancyService(vacancyRepo, vacancyTextRepo, skillSvc, geminiClient, vectorIndexSvc)
 	vacancySearchSvc := application.NewVacancySearchService(qdrantClient, geminiClient, vacancySvc, pfSvc, pftSvc, skillSvc)
 	vacancyAppSvc := application.NewVacancyApplicationService(vacancyAppRepo)
 
@@ -154,6 +155,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 		HRBot:              hrBotSvc,
 		AccountDeletion:    accountDeletionSvc,
 		Storage:          storageSvc,
+		GeminiClient:     geminiClient,
 		CasbinEnforcer:   enforcer,
 		RedisClient:      rc,
 		JWTSecret:        jwtSecret,
