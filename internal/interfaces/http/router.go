@@ -181,6 +181,10 @@ func NewRouter(svc *app.Services) *gin.Engine {
 		{
 			hrMiniapp.GET("/me", hrMiniAppHandler.GetMe)
 			hrMiniapp.PUT("/me", hrMiniAppHandler.UpdateMe)
+			hrMiniapp.GET("/hrs", companyHRHandler.List)
+			hrMiniapp.GET("/hrs/:id", companyHRHandler.GetByID)
+			hrMiniapp.PUT("/hrs/:id", companyHRHandler.Update)
+			hrMiniapp.DELETE("/hrs/:id", companyHRHandler.Delete)
 			hrMiniapp.GET("/vacancies", vacancyHandler.List)
 			hrMiniapp.GET("/vacancies/:id", vacancyHandler.GetByID)
 		}
