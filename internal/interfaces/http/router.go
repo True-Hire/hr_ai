@@ -175,6 +175,7 @@ func NewRouter(svc *app.Services) *gin.Engine {
 		}
 
 		hrMiniAppHandler := NewHRMiniAppHandler(svc.CompanyHR, svc.GeminiClient)
+		hrVacancyAppHandler := NewHRVacancyApplicationsHandler(svc.VacancyApplication, svc.Vacancy, svc.User, svc.Skill)
 
 		hrMiniapp := v1.Group("/hr-miniapp")
 		hrMiniapp.Use(TelegramHRAuthMiddleware(svc.TelegramHRBotToken, svc.CompanyHR))
@@ -187,6 +188,10 @@ func NewRouter(svc *app.Services) *gin.Engine {
 			hrMiniapp.DELETE("/hrs/:id", companyHRHandler.Delete)
 			hrMiniapp.GET("/vacancies", vacancyHandler.List)
 			hrMiniapp.GET("/vacancies/:id", vacancyHandler.GetByID)
+			hrMiniapp.GET("/vacancies/:id/applications", hrVacancyAppHandler.ListApplicants)
+			hrMiniapp.GET("/vacancies/:id/applications/stats", hrVacancyAppHandler.GetStats)
+			hrMiniapp.PUT("/vacancies/:id/applications/:app_id/status", hrVacancyAppHandler.UpdateStatus)
+			hrMiniapp.PUT("/vacancies/:id/applications/:app_id/seen", hrVacancyAppHandler.MarkSeen)
 		}
 	}
 
