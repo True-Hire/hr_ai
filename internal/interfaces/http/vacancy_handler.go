@@ -190,11 +190,23 @@ func (h *VacancyHandler) List(c *gin.Context) {
 	var result *application.ListVacanciesResult
 	var err error
 
-	if query != "" && h.vacancySearchSvc != nil {
-		result, err = h.vacancySearchSvc.SearchVacancies(c.Request.Context(), query, page, pageSize)
-	} else {
-		result, err = h.service.ListVacancies(c.Request.Context(), page, pageSize)
+	// If the caller is an HR, return only their vacancies
+	if hrID, exists := c.Get("hr_id"); exists {
+		hrUUID, parseErr := uuid.Parse(hrID.(string))
+		if parseErr == nil {
+			result, err = h.service.ListVacanciesByHR(c.Request.Context(), hrUUID, page, pageSize)
+		}
 	}
+
+	// Otherwise (regular user or no hr_id), use default listing
+	if result == nil && err == nil {
+		if query != "" && h.vacancySearchSvc != nil {
+			result, err = h.vacancySearchSvc.SearchVacancies(c.Request.Context(), query, page, pageSize)
+		} else {
+			result, err = h.service.ListVacancies(c.Request.Context(), page, pageSize)
+		}
+	}
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to list vacancies"})
 		return

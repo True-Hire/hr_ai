@@ -39,6 +39,9 @@ LIMIT $2 OFFSET $3;
 -- name: CountVacancies :one
 SELECT count(*) FROM vacancies;
 
+-- name: CountVacanciesByHR :one
+SELECT count(*) FROM vacancies WHERE hr_id = $1;
+
 -- name: UpdateVacancy :one
 UPDATE vacancies
 SET salary_min = CASE WHEN sqlc.arg(salary_min)::INT = 0 THEN salary_min ELSE sqlc.arg(salary_min) END,

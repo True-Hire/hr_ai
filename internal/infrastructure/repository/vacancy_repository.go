@@ -125,6 +125,10 @@ func (r *VacancyRepository) Count(ctx context.Context) (int64, error) {
 	return r.q.CountVacancies(ctx)
 }
 
+func (r *VacancyRepository) CountByHR(ctx context.Context, hrID uuid.UUID) (int64, error) {
+	return r.q.CountVacanciesByHR(ctx, uuidToPgtype(hrID))
+}
+
 func (r *VacancyRepository) CountSearch(ctx context.Context, lang, query string) (int64, error) {
 	return r.q.CountSearchVacancies(ctx, vacanciesdb.CountSearchVacanciesParams{
 		Lang:  lang,
