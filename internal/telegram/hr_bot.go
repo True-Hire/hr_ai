@@ -141,6 +141,18 @@ var hrMsgBtnCreateDescription = map[string]string{
 	"uz": "2️⃣ To'g'ri vakansiya tavsifini yaratish",
 }
 
+var hrMsgEnhancing = map[string]string{
+	"en": "✨ Creating a professional vacancy description...\n\nThis may take a moment.",
+	"ru": "✨ Создаю профессиональное описание вакансии...\n\nЭто может занять немного времени.",
+	"uz": "✨ Professional vakansiya tavsifi yaratilmoqda...\n\nBu biroz vaqt olishi mumkin.",
+}
+
+var hrMsgEnhanceFailed = map[string]string{
+	"en": "❌ Failed to create description. Creating vacancy with current data instead.",
+	"ru": "❌ Не удалось создать описание. Создаю вакансию с текущими данными.",
+	"uz": "❌ Tavsif yaratib bo'lmadi. Vakansiya joriy ma'lumotlar bilan yaratilmoqda.",
+}
+
 var hrMsgBtnAddInfo = map[string]string{
 	"en": "3️⃣ Add additional information",
 	"ru": "3️⃣ Добавить дополнительную информацию",
@@ -464,6 +476,54 @@ func (hb *HRBot) registerHandlers() {
 		result, err := hrBotSvc.CreateVacancyFromDraft(ctx, hr.ID, hr.CompanyData, draft)
 		if err != nil {
 			log.Printf("hr create vacancy from draft error for %d: %v", sender.ID, err)
+			return c.Send(hrMsgVacancyFailed[lang], hrMenu(lang))
+		}
+
+		_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
+		_ = hrBotSvc.ClearState(ctx, sender.ID)
+
+		title := vacancyTitle(result, lang)
+		_ = c.Send(hrMsgVacancyCreated[lang])
+		return c.Send(fmt.Sprintf("**%s** ✅", title), &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: hrMenu(lang)})
+	})
+
+	bot.Handle(&tele.Btn{Unique: "hr_vac_create_desc"}, func(c tele.Context) error {
+		sender := c.Sender()
+		_ = c.Respond(&tele.CallbackResponse{})
+		_ = c.Delete()
+
+		lang := hb.resolveHRLang(ctx, sender)
+
+		draft, err := hrBotSvc.GetVacancyDraft(ctx, sender.ID)
+		if err != nil || draft == nil {
+			return c.Send(hrMsgError[lang], hrMenu(lang))
+		}
+
+		// Send "enhancing..." feedback
+		_ = c.Send(hrMsgEnhancing[lang])
+
+		// Enhance via Gemini
+		enhanced, err := hrBotSvc.EnhanceVacancyDraft(ctx, draft)
+		if err != nil {
+			log.Printf("hr_vac_create_desc: enhance failed for %d: %v", sender.ID, err)
+			// Fall back to original draft
+			enhanced = draft
+			_ = c.Send(hrMsgEnhanceFailed[lang])
+		}
+
+		// Save enhanced draft and show review
+		_ = hrBotSvc.SaveVacancyDraft(ctx, sender.ID, enhanced)
+
+		tgIDStr := strconv.FormatInt(sender.ID, 10)
+		hr, err := hrBotSvc.GetHRByTelegramID(ctx, tgIDStr)
+		if err != nil || hr == nil {
+			log.Printf("hr_vac_create_desc: failed to get HR for tg_id %d: %v", sender.ID, err)
+			return c.Send(hrMsgError[lang], hrMenu(lang))
+		}
+
+		result, err := hrBotSvc.CreateVacancyFromDraft(ctx, hr.ID, hr.CompanyData, enhanced)
+		if err != nil {
+			log.Printf("hr create vacancy from enhanced draft error for %d: %v", sender.ID, err)
 			return c.Send(hrMsgVacancyFailed[lang], hrMenu(lang))
 		}
 
