@@ -299,6 +299,34 @@ NEW ADDITIONAL INFORMATION:
 Return ONLY valid JSON in the same format as the existing data.`, existingJSON, additionalInfo)
 }
 
+func buildVacancyEnhancePrompt(draftJSON string) string {
+	return fmt.Sprintf(`You are a professional HR copywriter. You are given a raw vacancy draft (parsed from an HR manager's informal input). Your task is to rewrite it into a polished, professional job posting.
+
+IMPORTANT: You must keep ALL the existing structured data (salary, experience, format, schedule, phone, telegram, email, address, skills) EXACTLY as-is. Only rewrite the TEXT FIELDS to be professional and compelling.
+
+TEXT FIELDS to rewrite (in all 3 languages: en, ru, uz):
+- title: Clean, professional job title (e.g. "Senior Go Backend Developer" not "we need a go dev")
+- description: A compelling 2-3 sentence overview of the role and why someone should apply
+- responsibilities: Clear, bullet-point-style list of duties (separated by "; ")
+- requirements: Clear list of must-have qualifications (separated by "; ")
+- benefits: Attractive list of what the company offers (separated by "; ")
+
+WRITING GUIDELINES:
+- Professional but engaging tone
+- Be specific and detailed — expand on vague points
+- For responsibilities: start each item with an action verb
+- For requirements: be clear about what's mandatory vs nice-to-have
+- For benefits: highlight both tangible (salary, insurance) and intangible (growth, culture) perks
+- Translate naturally — don't do word-for-word translation. Each language should read as if written by a native speaker.
+- Russian job postings often use "Мы ищем..." or "Обязанности:" style
+- Uzbek job postings should use professional Uzbek, not transliterated Russian
+
+Return ONLY valid JSON in the EXACT SAME format as the input (same structure, same non-text field values, rewritten text fields).
+
+VACANCY DRAFT:
+%s`, draftJSON)
+}
+
 func buildTranslateToEnglishPrompt(text string) string {
 	return fmt.Sprintf(`You are a translator. Translate the following text to English. If the text is already in English, return it as-is.
 

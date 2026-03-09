@@ -310,6 +310,18 @@ func (c *Client) ParseVacancyFromFile(ctx context.Context, fileData []byte, mime
 	return &parsed, nil
 }
 
+func (c *Client) EnhanceVacancyDescription(ctx context.Context, draftJSON string) (*ParsedVacancyFull, error) {
+	text, err := c.generateJSON(ctx, []part{{Text: buildVacancyEnhancePrompt(draftJSON)}})
+	if err != nil {
+		return nil, err
+	}
+	var parsed ParsedVacancyFull
+	if err := json.Unmarshal([]byte(text), &parsed); err != nil {
+		return nil, fmt.Errorf("parse gemini enhanced vacancy JSON: %w (raw: %s)", err, text)
+	}
+	return &parsed, nil
+}
+
 func (c *Client) EmbedText(ctx context.Context, text string) ([]float32, error) {
 	reqBody := map[string]any{
 		"model": "models/gemini-embedding-001",
