@@ -566,7 +566,14 @@ func (hb *HRBot) registerHandlers() {
 			log.Printf("hr set adding info state error for %d: %v", sender.ID, err)
 		}
 
-		return c.Send(hrMsgSendAdditionalInfo[lang])
+		// Show current draft content + missing fields, then ask for additional info
+		draft, _ := hrBotSvc.GetVacancyDraft(ctx, sender.ID)
+		if draft != nil {
+			_ = c.Send(hb.buildAddInfoMessage(draft, lang), &tele.SendOptions{ParseMode: tele.ModeMarkdown})
+		} else {
+			_ = c.Send(hrMsgSendAdditionalInfo[lang])
+		}
+		return nil
 	})
 
 	// Text message handler
@@ -904,6 +911,94 @@ func (hb *HRBot) sendVacancyReview(c tele.Context, draft *gemini.ParsedVacancyFu
 	)
 
 	return c.Send(sb.String(), &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: markup})
+}
+
+// buildAddInfoMessage shows the current vacancy content, missing fields, and asks for more info.
+func (hb *HRBot) buildAddInfoMessage(draft *gemini.ParsedVacancyFull, lang string) string {
+	var sb strings.Builder
+
+	// Current data header
+	currentLabel := map[string]string{
+		"en": "📋 *Current vacancy data:*\n\n",
+		"ru": "📋 *Текущие данные вакансии:*\n\n",
+		"uz": "📋 *Joriy vakansiya ma'lumotlari:*\n\n",
+	}
+	sb.WriteString(currentLabel[lang])
+
+	// Title
+	if title := draftField(draft, "title", lang); title != "" {
+		sb.WriteString(fmt.Sprintf("*%s*\n", title))
+	}
+
+	// Key details in compact form
+	if draft.SalaryMin > 0 || draft.SalaryMax > 0 {
+		sb.WriteString(fmt.Sprintf("💰 %s – %s %s\n", formatNumber(int64(draft.SalaryMin)), formatNumber(int64(draft.SalaryMax)), draft.SalaryCurrency))
+	}
+	if draft.Format != "" {
+		formatNames := map[string]map[string]string{
+			"office": {"en": "Office", "ru": "Офис", "uz": "Ofis"},
+			"remote": {"en": "Remote", "ru": "Удалёнка", "uz": "Masofaviy"},
+			"hybrid": {"en": "Hybrid", "ru": "Гибрид", "uz": "Gibrid"},
+		}
+		if names, ok := formatNames[draft.Format]; ok {
+			sb.WriteString(fmt.Sprintf("📍 %s\n", names[lang]))
+		}
+	}
+	if draft.ExperienceMin > 0 || draft.ExperienceMax > 0 {
+		expYears := map[string]string{"en": "years", "ru": "лет", "uz": "yil"}
+		if draft.ExperienceMin > 0 && draft.ExperienceMax > 0 {
+			sb.WriteString(fmt.Sprintf("💼 %d–%d %s\n", draft.ExperienceMin, draft.ExperienceMax, expYears[lang]))
+		} else if draft.ExperienceMin > 0 {
+			sb.WriteString(fmt.Sprintf("💼 %d+ %s\n", draft.ExperienceMin, expYears[lang]))
+		}
+	}
+	if len(draft.Skills) > 0 {
+		sb.WriteString(fmt.Sprintf("🛠 %s\n", strings.Join(draft.Skills, ", ")))
+	}
+	sb.WriteString("\n")
+
+	// Missing fields
+	var missing []string
+	if draft.SalaryMin == 0 && draft.SalaryMax == 0 {
+		missing = append(missing, hrMsgMissingSalary[lang])
+	}
+	if draft.Format == "" {
+		missing = append(missing, hrMsgMissingFormat[lang])
+	}
+	if draftField(draft, "responsibilities", lang) == "" {
+		missing = append(missing, hrMsgMissingResponsibilities[lang])
+	}
+	if draftField(draft, "requirements", lang) == "" {
+		missing = append(missing, hrMsgMissingRequirements[lang])
+	}
+	if draft.ExperienceMin == 0 && draft.ExperienceMax == 0 {
+		missing = append(missing, hrMsgMissingExperience[lang])
+	}
+
+	if len(missing) > 0 {
+		missingLabel := map[string]string{
+			"en": "⚠️ Send the missing information:",
+			"ru": "⚠️ Отправьте недостающую информацию:",
+			"uz": "⚠️ Yetishmayotgan ma'lumotlarni yuboring:",
+		}
+		sb.WriteString(fmt.Sprintf("%s\n", missingLabel[lang]))
+		for _, m := range missing {
+			sb.WriteString(fmt.Sprintf("• %s\n", m))
+		}
+	} else {
+		sb.WriteString(hrMsgSendAdditionalInfo[lang])
+	}
+
+	sb.WriteString("\n")
+
+	howToSend := map[string]string{
+		"en": "You can:\n✍️ write\n🎤 send a voice message\n📎 attach a file\n\n⚡ The more detail — the more accurate the match.",
+		"ru": "Вы можете:\n✍️ написать\n🎤 отправить голосовое\n📎 прикрепить файл\n\n⚡ Чем подробнее — тем точнее подбор.",
+		"uz": "Siz quyidagilarni yuborishingiz mumkin:\n✍️ yozish\n🎤 ovozli xabar yuborish\n📎 fayl biriktirish\n\n⚡ Qanchalik batafsil — shunchalik aniq tanlov.",
+	}
+	sb.WriteString(howToSend[lang])
+
+	return sb.String()
 }
 
 // draftField returns the text field value for the given language, falling back to English.
