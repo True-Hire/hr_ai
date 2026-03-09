@@ -62,6 +62,8 @@ func NewRouter(svc *app.Services) *gin.Engine {
 		svc.User, svc.ProfileField, svc.ProfileFieldText,
 		svc.ExperienceItem, svc.EducationItem, svc.ItemText, svc.Skill)
 	hrVacancyAppHandler := NewHRVacancyApplicationsHandler(svc.VacancyApplication, svc.Vacancy, svc.User, svc.Skill)
+	hrSavedUsersHandler := NewHRSavedUsersHandler(svc.HRSavedUser, svc.User, svc.Skill)
+	hrCombinedAuth := HRCombinedAuthMiddleware(svc.JWTSecret, svc.TelegramHRBotToken, svc.CompanyHR)
 
 	// Serve Mini App HTML
 	router.GET("/web/app", func(c *gin.Context) {
@@ -205,6 +207,15 @@ func NewRouter(svc *app.Services) *gin.Engine {
 			hrMiniapp.GET("/vacancies/:id/applications/stats", hrVacancyAppHandler.GetStats)
 			hrMiniapp.PUT("/vacancies/:id/applications/:app_id/status", hrVacancyAppHandler.UpdateStatus)
 			hrMiniapp.PUT("/vacancies/:id/applications/:app_id/seen", hrVacancyAppHandler.MarkSeen)
+		}
+
+		// HR saved users — combined auth: works with both TG miniapp and JWT
+		savedUsers := v1.Group("/hr/saved-users")
+		savedUsers.Use(hrCombinedAuth)
+		{
+			savedUsers.POST("", hrSavedUsersHandler.Save)
+			savedUsers.GET("", hrSavedUsersHandler.List)
+			savedUsers.DELETE("/:user_id", hrSavedUsersHandler.Delete)
 		}
 	}
 
