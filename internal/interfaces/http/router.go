@@ -61,6 +61,9 @@ func NewRouter(svc *app.Services) *gin.Engine {
 	miniAppHandler := NewMiniAppHandler(svc.VacancySearch, svc.Vacancy, svc.VacancyApplication,
 		svc.User, svc.ProfileField, svc.ProfileFieldText,
 		svc.ExperienceItem, svc.EducationItem, svc.ItemText, svc.Skill)
+	hrVacancyAppHandler := NewHRVacancyApplicationsHandler(svc.VacancyApplication, svc.Vacancy, svc.User, svc.Skill)
+	hrSavedUsersHandler := NewHRSavedUsersHandler(svc.HRSavedUser, svc.User, svc.Skill)
+	hrCombinedAuth := HRCombinedAuthMiddleware(svc.JWTSecret, svc.TelegramHRBotToken, svc.CompanyHR)
 
 	// Serve Mini App HTML
 	router.GET("/web/app", func(c *gin.Context) {
@@ -135,7 +138,20 @@ func NewRouter(svc *app.Services) *gin.Engine {
 			vacancies.GET("/:id", JWTMiddleware(svc.JWTSecret), CasbinMiddleware(svc.CasbinEnforcer, "vacancies", "read"), vacancyHandler.GetByID)
 			vacancies.PUT("/:id", HRAuthMiddleware(svc.JWTSecret), CasbinMiddleware(svc.CasbinEnforcer, "vacancies", "update"), vacancyHandler.Update)
 			vacancies.DELETE("/:id", HRAuthMiddleware(svc.JWTSecret), CasbinMiddleware(svc.CasbinEnforcer, "vacancies", "delete"), vacancyHandler.Delete)
+
+			// User JWT: apply & check applications
+			vacancies.POST("/:id/apply", AuthMiddleware(svc.JWTSecret), miniAppHandler.Apply)
+			vacancies.GET("/:id/application", AuthMiddleware(svc.JWTSecret), miniAppHandler.GetApplicationStatus)
+
+			// HR JWT: manage applications
+			vacancies.GET("/:id/applications", HRAuthMiddleware(svc.JWTSecret), hrVacancyAppHandler.ListApplicants)
+			vacancies.GET("/:id/applications/stats", HRAuthMiddleware(svc.JWTSecret), hrVacancyAppHandler.GetStats)
+			vacancies.PUT("/:id/applications/:app_id/status", HRAuthMiddleware(svc.JWTSecret), hrVacancyAppHandler.UpdateStatus)
+			vacancies.PUT("/:id/applications/:app_id/seen", HRAuthMiddleware(svc.JWTSecret), hrVacancyAppHandler.MarkSeen)
 		}
+
+		// User JWT: list my applications
+		v1.GET("/applications", AuthMiddleware(svc.JWTSecret), miniAppHandler.ListMyApplications)
 
 		search := v1.Group("/search")
 		{
@@ -175,7 +191,6 @@ func NewRouter(svc *app.Services) *gin.Engine {
 		}
 
 		hrMiniAppHandler := NewHRMiniAppHandler(svc.CompanyHR, svc.GeminiClient)
-		hrVacancyAppHandler := NewHRVacancyApplicationsHandler(svc.VacancyApplication, svc.Vacancy, svc.User, svc.Skill)
 
 		hrMiniapp := v1.Group("/hr-miniapp")
 		hrMiniapp.Use(TelegramHRAuthMiddleware(svc.TelegramHRBotToken, svc.CompanyHR))
@@ -192,6 +207,15 @@ func NewRouter(svc *app.Services) *gin.Engine {
 			hrMiniapp.GET("/vacancies/:id/applications/stats", hrVacancyAppHandler.GetStats)
 			hrMiniapp.PUT("/vacancies/:id/applications/:app_id/status", hrVacancyAppHandler.UpdateStatus)
 			hrMiniapp.PUT("/vacancies/:id/applications/:app_id/seen", hrVacancyAppHandler.MarkSeen)
+		}
+
+		// HR saved users — combined auth: works with both TG miniapp and JWT
+		savedUsers := v1.Group("/hr/saved-users")
+		savedUsers.Use(hrCombinedAuth)
+		{
+			savedUsers.POST("", hrSavedUsersHandler.Save)
+			savedUsers.GET("", hrSavedUsersHandler.List)
+			savedUsers.DELETE("/:user_id", hrSavedUsersHandler.Delete)
 		}
 	}
 

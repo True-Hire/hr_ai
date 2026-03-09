@@ -181,6 +181,43 @@ func TelegramHRAuthMiddleware(hrBotToken string, hrSvc *application.CompanyHRSer
 	}
 }
 
+// HRCombinedAuthMiddleware accepts both Telegram Mini App initData ("tma ...")
+// and JWT Bearer tokens ("Bearer ..."). Both set "hr_id" in context.
+func HRCombinedAuthMiddleware(jwtSecret, hrBotToken string, hrSvc *application.CompanyHRService) gin.HandlerFunc {
+	tgMiddleware := TelegramHRAuthMiddleware(hrBotToken, hrSvc)
+	jwtMiddleware := HRAuthMiddleware(jwtSecret)
+
+	return func(c *gin.Context) {
+		header := c.GetHeader("Authorization")
+		if header == "" {
+			header = c.GetHeader("X-Telegram-Init-Data")
+			if header != "" {
+				header = "tma " + header
+				c.Request.Header.Set("Authorization", header)
+			}
+		}
+		if header == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, ErrorResponse{Error: "missing authorization header"})
+			return
+		}
+
+		parts := strings.SplitN(header, " ", 2)
+		if len(parts) < 2 {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, ErrorResponse{Error: "invalid authorization header"})
+			return
+		}
+
+		switch parts[0] {
+		case "tma":
+			tgMiddleware(c)
+		case "Bearer":
+			jwtMiddleware(c)
+		default:
+			c.AbortWithStatusJSON(http.StatusUnauthorized, ErrorResponse{Error: "unsupported authorization type"})
+		}
+	}
+}
+
 func hmacSHA256(key, data []byte) []byte {
 	h := hmac.New(sha256.New, key)
 	h.Write(data)

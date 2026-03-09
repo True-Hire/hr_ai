@@ -170,3 +170,13 @@ sql:
         package: "vacancyapplications"
         out: "db/sqlc/vacancy_applications"
         sql_package: "pgx/v5"
+
+# HR_SAVED_USERS
+  - engine: "postgresql"
+    queries: "db/queries/hr_saved_users/"
+    schema: "db/migrations/"
+    gen:
+      go:
+        package: "hrsavedusers"
+        out: "db/sqlc/hr_saved_users"
+        sql_package: "pgx/v5"
