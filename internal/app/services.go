@@ -40,6 +40,7 @@ type Services struct {
 	Bot                 *application.BotService
 	HRBot               *application.HRBotService
 	AccountDeletion     *application.AccountDeletionService
+	HRSavedUser         *application.HRSavedUserService
 	Storage          *application.StorageService
 	GeminiClient     *gemini.Client
 	CasbinEnforcer   *casbinlib.Enforcer
@@ -128,6 +129,9 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 	)
 	botStateSvc := application.NewBotStateService(rc)
 
+	hrSavedUserRepo := repository.NewHRSavedUserRepository(pool)
+	hrSavedUserSvc := application.NewHRSavedUserService(hrSavedUserRepo)
+
 	hrBotSvc := application.NewHRBotService(companyHRSvc, vacancySvc, vacancyAppSvc, botStateSvc, searchSvc, userSvc, geminiClient)
 
 	return &Services{
@@ -154,6 +158,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 		Bot:                application.NewBotService(userSvc, companyHRSvc, profileParseSvc, storageSvc, botStateSvc, geminiClient),
 		HRBot:              hrBotSvc,
 		AccountDeletion:    accountDeletionSvc,
+		HRSavedUser:        hrSavedUserSvc,
 		Storage:          storageSvc,
 		GeminiClient:     geminiClient,
 		CasbinEnforcer:   enforcer,
