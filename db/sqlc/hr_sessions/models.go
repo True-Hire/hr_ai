@@ -96,6 +96,13 @@ type ExperienceItem struct {
 	UpdatedAt pgtype.Timestamp
 }
 
+type HrSavedUser struct {
+	HrID      pgtype.UUID
+	UserID    pgtype.UUID
+	Note      pgtype.Text
+	CreatedAt pgtype.Timestamp
+}
+
 type HrSession struct {
 	ID               pgtype.UUID
 	HrID             pgtype.UUID
