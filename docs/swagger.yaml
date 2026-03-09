@@ -419,7 +419,11 @@ definitions:
         type: integer
       page_size:
         type: integer
+      seen:
+        type: integer
       total:
+        type: integer
+      unseen:
         type: integer
     type: object
   http.HRApplicationStatsResponse:
@@ -747,6 +751,39 @@ definitions:
     required:
     - device_id
     - refresh_token
+    type: object
+  http.SaveUserRequest:
+    properties:
+      note:
+        type: string
+      user_id:
+        type: string
+    required:
+    - user_id
+    type: object
+  http.SavedUserListResponse:
+    properties:
+      page:
+        type: integer
+      page_size:
+        type: integer
+      saved_users:
+        items:
+          $ref: '#/definitions/http.SavedUserResponse'
+        type: array
+      total:
+        type: integer
+    type: object
+  http.SavedUserResponse:
+    properties:
+      note:
+        type: string
+      saved_at:
+        type: string
+      user:
+        $ref: '#/definitions/http.HRApplicantUserResponse'
+      user_id:
+        type: string
     type: object
   http.SetPasswordRequest:
     properties:
@@ -1564,6 +1601,113 @@ paths:
       summary: Update current HR profile and optionally create/update company data
       tags:
       - hr-miniapp
+  /hr-miniapp/saved-users:
+    get:
+      parameters:
+      - description: Search by name
+        in: query
+        name: q
+        type: string
+      - description: Filter by skills (comma-separated)
+        in: query
+        name: skills
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.SavedUserListResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: List saved users with optional filtering
+      tags:
+      - hr-saved-users
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User to save
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.SaveUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.SavedUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: Save a user to HR's saved list
+      tags:
+      - hr-saved-users
+  /hr-miniapp/saved-users/{user_id}:
+    delete:
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: Remove a user from HR's saved list
+      tags:
+      - hr-saved-users
   /hr-miniapp/vacancies/{id}/applications:
     get:
       parameters:
