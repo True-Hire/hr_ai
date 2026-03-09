@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -163,6 +164,14 @@ func (s *HRBotService) ParseVacancyFromFile(ctx context.Context, fileData []byte
 
 func (s *HRBotService) MergeVacancy(ctx context.Context, existingJSON, additionalInfo string) (*gemini.ParsedVacancyFull, error) {
 	return s.geminiClient.MergeVacancy(ctx, existingJSON, additionalInfo)
+}
+
+func (s *HRBotService) EnhanceVacancyDraft(ctx context.Context, draft *gemini.ParsedVacancyFull) (*gemini.ParsedVacancyFull, error) {
+	draftJSON, err := json.Marshal(draft)
+	if err != nil {
+		return nil, fmt.Errorf("marshal draft for enhance: %w", err)
+	}
+	return s.geminiClient.EnhanceVacancyDescription(ctx, string(draftJSON))
 }
 
 func (s *HRBotService) CreateVacancyFromDraft(ctx context.Context, hrID uuid.UUID, companyData *domain.CompanyData, draft *gemini.ParsedVacancyFull) (*VacancyWithDetails, error) {
