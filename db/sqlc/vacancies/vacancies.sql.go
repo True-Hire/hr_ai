@@ -41,6 +41,17 @@ func (q *Queries) CountVacancies(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const countVacanciesByHR = `-- name: CountVacanciesByHR :one
+SELECT count(*) FROM vacancies WHERE hr_id = $1
+`
+
+func (q *Queries) CountVacanciesByHR(ctx context.Context, hrID pgtype.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, countVacanciesByHR, hrID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createVacancy = `-- name: CreateVacancy :one
 INSERT INTO vacancies (
     id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
