@@ -168,8 +168,18 @@ func (s *SearchService) SearchMatchingCandidates(ctx context.Context, vacancyID 
 		vacancySkillNames[strings.ToLower(sk.Name)] = true
 	}
 
+	hasVacancySkills := len(vacancySkillNames) > 0
+
 	matches := make([]CandidateMatch, 0, len(results))
 	for _, r := range results {
+		// Skill overlap score (0-1)
+		skillScore := s.calculateSkillOverlap(ctx, r.UserID, vacancySkillNames)
+
+		// Skip candidates with zero skill overlap when vacancy has skills defined
+		if hasVacancySkills && skillScore == 0 {
+			continue
+		}
+
 		totalExp := s.calculateTotalExperience(ctx, r.UserID)
 
 		// Vector similarity score normalized to 0-1
@@ -178,11 +188,8 @@ func (s *SearchService) SearchMatchingCandidates(ctx context.Context, vacancyID 
 		// Experience fit score (0-1)
 		expScore := calculateExperienceFit(totalExp, expMin, expMax)
 
-		// Skill overlap score (0-1)
-		skillScore := s.calculateSkillOverlap(ctx, r.UserID, vacancySkillNames)
-
-		// Weighted: vector 50% + experience 25% + skills 25%
-		matchPct := int(math.Round((vectorNorm*0.50 + expScore*0.25 + skillScore*0.25) * 100))
+		// Weighted: vector 30% + skills 40% + experience 30%
+		matchPct := int(math.Round((vectorNorm*0.30 + skillScore*0.40 + expScore*0.30) * 100))
 		if matchPct > 99 {
 			matchPct = 99
 		}
