@@ -490,7 +490,7 @@ func (hb *HRBot) registerHandlers() {
 		matchCount := hrBotSvc.CountMatchingCandidates(ctx, vacancyTitle(result, "en"), skills)
 
 		msg := buildVacancyCreatedMessage(result, lang, matchCount)
-		return c.Send(msg, &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: hrMenu(lang)})
+		return c.Send(msg, &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: vacancyPublishedMenu(lang, result.Vacancy.ID.String())})
 	})
 
 	bot.Handle(&tele.Btn{Unique: "hr_vac_create_desc"}, func(c tele.Context) error {
@@ -544,7 +544,7 @@ func (hb *HRBot) registerHandlers() {
 		matchCount := hrBotSvc.CountMatchingCandidates(ctx, vacancyTitle(result, "en"), skills)
 
 		msg := buildVacancyCreatedMessage(result, lang, matchCount)
-		return c.Send(msg, &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: hrMenu(lang)})
+		return c.Send(msg, &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: vacancyPublishedMenu(lang, result.Vacancy.ID.String())})
 	})
 
 	bot.Handle(&tele.Btn{Unique: "hr_vac_add_info"}, func(c tele.Context) error {
@@ -585,6 +585,24 @@ func (hb *HRBot) registerHandlers() {
 		} else {
 			_ = c.Send(hrMsgSendAdditionalInfo[lang])
 		}
+		return nil
+	})
+
+	// -- Vacancy published action buttons (placeholders) --
+	bot.Handle(&tele.Btn{Unique: "hr_pub_candidates"}, func(c tele.Context) error {
+		_ = c.Respond(&tele.CallbackResponse{Text: "Coming soon..."})
+		return nil
+	})
+	bot.Handle(&tele.Btn{Unique: "hr_pub_view"}, func(c tele.Context) error {
+		_ = c.Respond(&tele.CallbackResponse{Text: "Coming soon..."})
+		return nil
+	})
+	bot.Handle(&tele.Btn{Unique: "hr_pub_edit"}, func(c tele.Context) error {
+		_ = c.Respond(&tele.CallbackResponse{Text: "Coming soon..."})
+		return nil
+	})
+	bot.Handle(&tele.Btn{Unique: "hr_pub_stop"}, func(c tele.Context) error {
+		_ = c.Respond(&tele.CallbackResponse{Text: "Coming soon..."})
 		return nil
 	})
 
@@ -1165,6 +1183,38 @@ func (hb *HRBot) hrInlineMenu(lang string) *tele.ReplyMarkup {
 	}
 	rows = append(rows, markup.Row(markup.Data(hrMenuBtnChangeLang[lang], "hr_menu", "change_lang")))
 	markup.Inline(rows...)
+	return markup
+}
+
+var hrBtnShowCandidates = map[string]string{
+	"en": "👀 Show candidates",
+	"ru": "👀 Показать кандидатов",
+	"uz": "👀 Nomzodlarni ko'rsatish",
+}
+var hrBtnViewVacancy = map[string]string{
+	"en": "📄 View vacancy",
+	"ru": "📄 Посмотреть вакансию",
+	"uz": "📄 Vakansiyani ko'rish",
+}
+var hrBtnEditVacancy = map[string]string{
+	"en": "🔄 Add or edit info",
+	"ru": "🔄 Добавить или изменить информацию",
+	"uz": "🔄 Ma'lumot qo'shish yoki o'zgartirish",
+}
+var hrBtnStopPublication = map[string]string{
+	"en": "⏹️ Stop publication",
+	"ru": "⏹️ Остановить публикацию",
+	"uz": "⏹️ E'lonni to'xtatish",
+}
+
+func vacancyPublishedMenu(lang, vacancyID string) *tele.ReplyMarkup {
+	markup := &tele.ReplyMarkup{}
+	markup.Inline(
+		markup.Row(markup.Data(hrBtnShowCandidates[lang], "hr_pub_candidates", vacancyID)),
+		markup.Row(markup.Data(hrBtnViewVacancy[lang], "hr_pub_view", vacancyID)),
+		markup.Row(markup.Data(hrBtnEditVacancy[lang], "hr_pub_edit", vacancyID)),
+		markup.Row(markup.Data(hrBtnStopPublication[lang], "hr_pub_stop", vacancyID)),
+	)
 	return markup
 }
 
