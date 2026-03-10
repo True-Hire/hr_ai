@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 
@@ -150,6 +151,25 @@ func (s *HRBotService) GetVacancyStats(ctx context.Context, vacancyID uuid.UUID)
 		return 0, 0, fmt.Errorf("count unseen applications: %w", err)
 	}
 	return total, unseen, nil
+}
+
+func (s *HRBotService) CountMatchingCandidates(ctx context.Context, vacancyTitle string, skills []string) int {
+	query := vacancyTitle
+	if len(skills) > 0 {
+		query += " " + strings.Join(skills, " ")
+	}
+	results, err := s.searchSvc.SearchUsers(ctx, query, 100)
+	if err != nil {
+		return 0
+	}
+	// Count results with score above a threshold (rough match)
+	count := 0
+	for _, r := range results {
+		if r.Score > 0.3 {
+			count++
+		}
+	}
+	return count
 }
 
 // -- Vacancy draft parsing (Gemini) --
