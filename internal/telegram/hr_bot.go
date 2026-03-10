@@ -482,9 +482,15 @@ func (hb *HRBot) registerHandlers() {
 		_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 		_ = hrBotSvc.ClearState(ctx, sender.ID)
 
-		title := vacancyTitle(result, lang)
-		_ = c.Send(hrMsgVacancyCreated[lang])
-		return c.Send(fmt.Sprintf("**%s** ✅", title), &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: hrMenu(lang)})
+		// Count matching candidates
+		var skills []string
+		for _, sk := range result.Skills {
+			skills = append(skills, sk.Name)
+		}
+		matchCount := hrBotSvc.CountMatchingCandidates(ctx, vacancyTitle(result, "en"), skills)
+
+		msg := buildVacancyCreatedMessage(result, lang, matchCount)
+		return c.Send(msg, &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: vacancyPublishedMenu(lang, result.Vacancy.ID.String(), hb.webAppURL)})
 	})
 
 	bot.Handle(&tele.Btn{Unique: "hr_vac_create_desc"}, func(c tele.Context) error {
@@ -530,9 +536,15 @@ func (hb *HRBot) registerHandlers() {
 		_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 		_ = hrBotSvc.ClearState(ctx, sender.ID)
 
-		title := vacancyTitle(result, lang)
-		_ = c.Send(hrMsgVacancyCreated[lang])
-		return c.Send(fmt.Sprintf("**%s** ✅", title), &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: hrMenu(lang)})
+		// Count matching candidates
+		var skills []string
+		for _, sk := range result.Skills {
+			skills = append(skills, sk.Name)
+		}
+		matchCount := hrBotSvc.CountMatchingCandidates(ctx, vacancyTitle(result, "en"), skills)
+
+		msg := buildVacancyCreatedMessage(result, lang, matchCount)
+		return c.Send(msg, &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: vacancyPublishedMenu(lang, result.Vacancy.ID.String(), hb.webAppURL)})
 	})
 
 	bot.Handle(&tele.Btn{Unique: "hr_vac_add_info"}, func(c tele.Context) error {
@@ -566,7 +578,32 @@ func (hb *HRBot) registerHandlers() {
 			log.Printf("hr set adding info state error for %d: %v", sender.ID, err)
 		}
 
-		return c.Send(hrMsgSendAdditionalInfo[lang])
+		// Show current draft content + missing fields, then ask for additional info
+		draft, _ := hrBotSvc.GetVacancyDraft(ctx, sender.ID)
+		if draft != nil {
+			_ = c.Send(hb.buildAddInfoMessage(draft, lang), &tele.SendOptions{ParseMode: tele.ModeMarkdown})
+		} else {
+			_ = c.Send(hrMsgSendAdditionalInfo[lang])
+		}
+		return nil
+	})
+
+	// -- Vacancy published action buttons (placeholders) --
+	bot.Handle(&tele.Btn{Unique: "hr_pub_candidates"}, func(c tele.Context) error {
+		_ = c.Respond(&tele.CallbackResponse{Text: "Coming soon..."})
+		return nil
+	})
+	bot.Handle(&tele.Btn{Unique: "hr_pub_view"}, func(c tele.Context) error {
+		_ = c.Respond(&tele.CallbackResponse{Text: "Coming soon..."})
+		return nil
+	})
+	bot.Handle(&tele.Btn{Unique: "hr_pub_edit"}, func(c tele.Context) error {
+		_ = c.Respond(&tele.CallbackResponse{Text: "Coming soon..."})
+		return nil
+	})
+	bot.Handle(&tele.Btn{Unique: "hr_pub_stop"}, func(c tele.Context) error {
+		_ = c.Respond(&tele.CallbackResponse{Text: "Coming soon..."})
+		return nil
 	})
 
 	// Text message handler
@@ -906,6 +943,94 @@ func (hb *HRBot) sendVacancyReview(c tele.Context, draft *gemini.ParsedVacancyFu
 	return c.Send(sb.String(), &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: markup})
 }
 
+// buildAddInfoMessage shows the current vacancy content, missing fields, and asks for more info.
+func (hb *HRBot) buildAddInfoMessage(draft *gemini.ParsedVacancyFull, lang string) string {
+	var sb strings.Builder
+
+	// Current data header
+	currentLabel := map[string]string{
+		"en": "📋 *Current vacancy data:*\n\n",
+		"ru": "📋 *Текущие данные вакансии:*\n\n",
+		"uz": "📋 *Joriy vakansiya ma'lumotlari:*\n\n",
+	}
+	sb.WriteString(currentLabel[lang])
+
+	// Title
+	if title := draftField(draft, "title", lang); title != "" {
+		sb.WriteString(fmt.Sprintf("*%s*\n", title))
+	}
+
+	// Key details in compact form
+	if draft.SalaryMin > 0 || draft.SalaryMax > 0 {
+		sb.WriteString(fmt.Sprintf("💰 %s – %s %s\n", formatNumber(int64(draft.SalaryMin)), formatNumber(int64(draft.SalaryMax)), draft.SalaryCurrency))
+	}
+	if draft.Format != "" {
+		formatNames := map[string]map[string]string{
+			"office": {"en": "Office", "ru": "Офис", "uz": "Ofis"},
+			"remote": {"en": "Remote", "ru": "Удалёнка", "uz": "Masofaviy"},
+			"hybrid": {"en": "Hybrid", "ru": "Гибрид", "uz": "Gibrid"},
+		}
+		if names, ok := formatNames[draft.Format]; ok {
+			sb.WriteString(fmt.Sprintf("📍 %s\n", names[lang]))
+		}
+	}
+	if draft.ExperienceMin > 0 || draft.ExperienceMax > 0 {
+		expYears := map[string]string{"en": "years", "ru": "лет", "uz": "yil"}
+		if draft.ExperienceMin > 0 && draft.ExperienceMax > 0 {
+			sb.WriteString(fmt.Sprintf("💼 %d–%d %s\n", draft.ExperienceMin, draft.ExperienceMax, expYears[lang]))
+		} else if draft.ExperienceMin > 0 {
+			sb.WriteString(fmt.Sprintf("💼 %d+ %s\n", draft.ExperienceMin, expYears[lang]))
+		}
+	}
+	if len(draft.Skills) > 0 {
+		sb.WriteString(fmt.Sprintf("🛠 %s\n", strings.Join(draft.Skills, ", ")))
+	}
+	sb.WriteString("\n")
+
+	// Missing fields
+	var missing []string
+	if draft.SalaryMin == 0 && draft.SalaryMax == 0 {
+		missing = append(missing, hrMsgMissingSalary[lang])
+	}
+	if draft.Format == "" {
+		missing = append(missing, hrMsgMissingFormat[lang])
+	}
+	if draftField(draft, "responsibilities", lang) == "" {
+		missing = append(missing, hrMsgMissingResponsibilities[lang])
+	}
+	if draftField(draft, "requirements", lang) == "" {
+		missing = append(missing, hrMsgMissingRequirements[lang])
+	}
+	if draft.ExperienceMin == 0 && draft.ExperienceMax == 0 {
+		missing = append(missing, hrMsgMissingExperience[lang])
+	}
+
+	if len(missing) > 0 {
+		missingLabel := map[string]string{
+			"en": "⚠️ Send the missing information:",
+			"ru": "⚠️ Отправьте недостающую информацию:",
+			"uz": "⚠️ Yetishmayotgan ma'lumotlarni yuboring:",
+		}
+		sb.WriteString(fmt.Sprintf("%s\n", missingLabel[lang]))
+		for _, m := range missing {
+			sb.WriteString(fmt.Sprintf("• %s\n", m))
+		}
+	} else {
+		sb.WriteString(hrMsgSendAdditionalInfo[lang])
+	}
+
+	sb.WriteString("\n")
+
+	howToSend := map[string]string{
+		"en": "You can:\n✍️ write\n🎤 send a voice message\n📎 attach a file\n\n⚡ The more detail — the more accurate the match.",
+		"ru": "Вы можете:\n✍️ написать\n🎤 отправить голосовое\n📎 прикрепить файл\n\n⚡ Чем подробнее — тем точнее подбор.",
+		"uz": "Siz quyidagilarni yuborishingiz mumkin:\n✍️ yozish\n🎤 ovozli xabar yuborish\n📎 fayl biriktirish\n\n⚡ Qanchalik batafsil — shunchalik aniq tanlov.",
+	}
+	sb.WriteString(howToSend[lang])
+
+	return sb.String()
+}
+
 // draftField returns the text field value for the given language, falling back to English.
 func draftField(draft *gemini.ParsedVacancyFull, field, lang string) string {
 	if fields, ok := draft.Fields[field]; ok {
@@ -1059,6 +1184,92 @@ func (hb *HRBot) hrInlineMenu(lang string) *tele.ReplyMarkup {
 	rows = append(rows, markup.Row(markup.Data(hrMenuBtnChangeLang[lang], "hr_menu", "change_lang")))
 	markup.Inline(rows...)
 	return markup
+}
+
+var hrBtnShowCandidates = map[string]string{
+	"en": "👀 Show candidates",
+	"ru": "👀 Показать кандидатов",
+	"uz": "👀 Nomzodlarni ko'rsatish",
+}
+var hrBtnViewVacancy = map[string]string{
+	"en": "📄 View vacancy",
+	"ru": "📄 Посмотреть вакансию",
+	"uz": "📄 Vakansiyani ko'rish",
+}
+var hrBtnEditVacancy = map[string]string{
+	"en": "🔄 Add or edit info",
+	"ru": "🔄 Добавить или изменить информацию",
+	"uz": "🔄 Ma'lumot qo'shish yoki o'zgartirish",
+}
+var hrBtnStopPublication = map[string]string{
+	"en": "⏹️ Stop publication",
+	"ru": "⏹️ Остановить публикацию",
+	"uz": "⏹️ E'lonni to'xtatish",
+}
+
+func vacancyPublishedMenu(lang, vacancyID, webAppURL string) *tele.ReplyMarkup {
+	markup := &tele.ReplyMarkup{}
+	rows := []tele.Row{
+		markup.Row(markup.Data(hrBtnShowCandidates[lang], "hr_pub_candidates", vacancyID)),
+	}
+	if webAppURL != "" {
+		rows = append(rows, markup.Row(markup.WebApp(hrBtnViewVacancy[lang], &tele.WebApp{
+			URL: webAppURL + "/vacancies/" + vacancyID,
+		})))
+	} else {
+		rows = append(rows, markup.Row(markup.Data(hrBtnViewVacancy[lang], "hr_pub_view", vacancyID)))
+	}
+	rows = append(rows,
+		markup.Row(markup.Data(hrBtnEditVacancy[lang], "hr_pub_edit", vacancyID)),
+		markup.Row(markup.Data(hrBtnStopPublication[lang], "hr_pub_stop", vacancyID)),
+	)
+	markup.Inline(rows...)
+	return markup
+}
+
+func buildVacancyCreatedMessage(v *application.VacancyWithDetails, lang string, matchingCount int) string {
+	title := vacancyTitle(v, lang)
+	date := v.Vacancy.CreatedAt.Format("02.01.2006")
+	shortID := v.Vacancy.ID.String()[:8]
+
+	switch lang {
+	case "ru":
+		msg := fmt.Sprintf("✅ *Вакансия опубликована!*\n\n"+
+			"📌 ID вакансии: #%s\n"+
+			"💼 %s\n"+
+			"📅 Дата публикации: %s\n"+
+			"👁 Статус: Активна\n\n"+
+			"Первые отклики ожидаются в течение 2–24 часов.",
+			shortID, title, date)
+		if matchingCount > 0 {
+			msg += fmt.Sprintf("\n\n📊 В базе предварительно подходят: *%d кандидатов*.", matchingCount)
+		}
+		return msg
+	case "uz":
+		msg := fmt.Sprintf("✅ *Vakansiya e'lon qilindi!*\n\n"+
+			"📌 Vakansiya ID: #%s\n"+
+			"💼 %s\n"+
+			"📅 E'lon sanasi: %s\n"+
+			"👁 Holat: Faol\n\n"+
+			"Birinchi javoblar 2–24 soat ichida kutilmoqda.",
+			shortID, title, date)
+		if matchingCount > 0 {
+			msg += fmt.Sprintf("\n\n📊 Bazada taxminan *%d nomzod* mos keladi.", matchingCount)
+		}
+		return msg
+	default:
+		msg := fmt.Sprintf("✅ *Vacancy published!*\n\n"+
+			"📌 Vacancy ID: #%s\n"+
+			"💼 %s\n"+
+			"📅 Published: %s\n"+
+			"👁 Status: Active\n\n"+
+			"First responses are expected within 2–24 hours.",
+			shortID, title, date)
+		if matchingCount > 0 {
+			msg += fmt.Sprintf("\n\n📊 Preliminary matching candidates: *%d*.", matchingCount)
+		}
+		return msg
+	}
 }
 
 func vacancyTitle(v *application.VacancyWithDetails, lang string) string {
