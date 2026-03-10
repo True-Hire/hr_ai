@@ -490,7 +490,7 @@ func (hb *HRBot) registerHandlers() {
 		matchCount := hrBotSvc.CountMatchingCandidates(ctx, vacancyTitle(result, "en"), skills)
 
 		msg := buildVacancyCreatedMessage(result, lang, matchCount)
-		return c.Send(msg, &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: vacancyPublishedMenu(lang, result.Vacancy.ID.String())})
+		return c.Send(msg, &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: vacancyPublishedMenu(lang, result.Vacancy.ID.String(), hb.webAppURL)})
 	})
 
 	bot.Handle(&tele.Btn{Unique: "hr_vac_create_desc"}, func(c tele.Context) error {
@@ -544,7 +544,7 @@ func (hb *HRBot) registerHandlers() {
 		matchCount := hrBotSvc.CountMatchingCandidates(ctx, vacancyTitle(result, "en"), skills)
 
 		msg := buildVacancyCreatedMessage(result, lang, matchCount)
-		return c.Send(msg, &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: vacancyPublishedMenu(lang, result.Vacancy.ID.String())})
+		return c.Send(msg, &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: vacancyPublishedMenu(lang, result.Vacancy.ID.String(), hb.webAppURL)})
 	})
 
 	bot.Handle(&tele.Btn{Unique: "hr_vac_add_info"}, func(c tele.Context) error {
@@ -1207,14 +1207,23 @@ var hrBtnStopPublication = map[string]string{
 	"uz": "⏹️ E'lonni to'xtatish",
 }
 
-func vacancyPublishedMenu(lang, vacancyID string) *tele.ReplyMarkup {
+func vacancyPublishedMenu(lang, vacancyID, webAppURL string) *tele.ReplyMarkup {
 	markup := &tele.ReplyMarkup{}
-	markup.Inline(
+	rows := []tele.Row{
 		markup.Row(markup.Data(hrBtnShowCandidates[lang], "hr_pub_candidates", vacancyID)),
-		markup.Row(markup.Data(hrBtnViewVacancy[lang], "hr_pub_view", vacancyID)),
+	}
+	if webAppURL != "" {
+		rows = append(rows, markup.Row(markup.WebApp(hrBtnViewVacancy[lang], &tele.WebApp{
+			URL: webAppURL + "/vacancies/" + vacancyID,
+		})))
+	} else {
+		rows = append(rows, markup.Row(markup.Data(hrBtnViewVacancy[lang], "hr_pub_view", vacancyID)))
+	}
+	rows = append(rows,
 		markup.Row(markup.Data(hrBtnEditVacancy[lang], "hr_pub_edit", vacancyID)),
 		markup.Row(markup.Data(hrBtnStopPublication[lang], "hr_pub_stop", vacancyID)),
 	)
+	markup.Inline(rows...)
 	return markup
 }
 
