@@ -49,6 +49,46 @@ func NewUserHandler(
 	}
 }
 
+// listByVacancy returns candidates matching a specific vacancy, sorted by match percentage.
+func (h *UserHandler) listByVacancy(c *gin.Context, vacancyID string, lang string) {
+	vid, err := uuid.Parse(vacancyID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid vacancy_id"})
+		return
+	}
+
+	pageSize := parseQueryInt32(c, "page_size", 20)
+
+	matches, err := h.searchSvc.SearchMatchingCandidates(c.Request.Context(), vid, int(pageSize))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to match candidates"})
+		return
+	}
+
+	users := make([]UserResponse, 0, len(matches))
+	for _, m := range matches {
+		user, err := h.service.GetUser(c.Request.Context(), m.UserID)
+		if err != nil {
+			continue
+		}
+		profile := h.buildUserProfile(c, user.ID, lang)
+		resp := toUserResponseWithProfile(user, profile)
+		pct := m.MatchPercentage
+		exp := m.TotalExperienceYears
+		resp.MatchPercentage = &pct
+		resp.TotalExperienceYears = &exp
+		resp.SearchScore = &m.VectorScore
+		users = append(users, resp)
+	}
+
+	c.JSON(http.StatusOK, PaginatedUsersResponse{
+		Users:    users,
+		Total:    int64(len(users)),
+		Page:     1,
+		PageSize: pageSize,
+	})
+}
+
 // Create godoc
 // @Summary Create a new user
 // @Tags users
@@ -160,6 +200,7 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 // @Tags users
 // @Produce json
 // @Param q query string false "Search query (any language). When provided, returns semantically ranked results"
+// @Param vacancy_id query string false "Vacancy ID (UUID). When provided, returns matching candidates sorted by match percentage"
 // @Param page query int false "Page number (pagination mode)" default(1)
 // @Param page_size query int false "Page size" default(20)
 // @Param lang query string false "Language code (uz, ru, en)" default(en)
@@ -168,6 +209,12 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 // @Router /users [get]
 func (h *UserHandler) List(c *gin.Context) {
 	lang := c.DefaultQuery("lang", "en")
+
+	// If vacancy_id provided, return matching candidates
+	if vacancyID := c.Query("vacancy_id"); vacancyID != "" {
+		h.listByVacancy(c, vacancyID, lang)
+		return
+	}
 
 	// If search query provided, use semantic search
 	if q := c.Query("q"); q != "" {

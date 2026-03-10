@@ -105,7 +105,6 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 	}
 
 	vectorIndexSvc := application.NewVectorIndexService(qdrantClient, geminiClient, pfSvc, pftSvc, expSvc, itSvc, skillSvc, userSvc, vacancyRepo, vacancyTextRepo)
-	searchSvc := application.NewSearchService(qdrantClient, geminiClient, userSvc)
 
 	companySvc := application.NewCompanyService(companyRepo, companyTextRepo, geminiClient, cacheSvc)
 
@@ -118,6 +117,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 
 	vacancySvc := application.NewVacancyService(vacancyRepo, vacancyTextRepo, skillSvc, geminiClient, vectorIndexSvc)
 	vacancySearchSvc := application.NewVacancySearchService(qdrantClient, geminiClient, vacancySvc, pfSvc, pftSvc, skillSvc)
+	searchSvc := application.NewSearchService(qdrantClient, geminiClient, userSvc, vacancySvc, expSvc, skillSvc)
 	vacancyAppSvc := application.NewVacancyApplicationService(vacancyAppRepo)
 
 	companyHRSvc := application.NewCompanyHRService(companyHRRepo)
