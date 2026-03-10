@@ -1209,15 +1209,22 @@ var hrBtnStopPublication = map[string]string{
 
 func vacancyPublishedMenu(lang, vacancyID, webAppURL string) *tele.ReplyMarkup {
 	markup := &tele.ReplyMarkup{}
-	rows := []tele.Row{
-		markup.Row(markup.Data(hrBtnShowCandidates[lang], "hr_pub_candidates", vacancyID)),
-	}
+	var rows []tele.Row
+
 	if webAppURL != "" {
-		rows = append(rows, markup.Row(markup.WebApp(hrBtnViewVacancy[lang], &tele.WebApp{
-			URL: webAppURL + "/vacancies/" + vacancyID,
-		})))
+		rows = append(rows,
+			markup.Row(markup.WebApp(hrBtnShowCandidates[lang], &tele.WebApp{
+				URL: webAppURL + "/?vacancy_id=" + vacancyID,
+			})),
+			markup.Row(markup.WebApp(hrBtnViewVacancy[lang], &tele.WebApp{
+				URL: webAppURL + "/vacancies/" + vacancyID,
+			})),
+		)
 	} else {
-		rows = append(rows, markup.Row(markup.Data(hrBtnViewVacancy[lang], "hr_pub_view", vacancyID)))
+		rows = append(rows,
+			markup.Row(markup.Data(hrBtnShowCandidates[lang], "hr_pub_candidates", vacancyID)),
+			markup.Row(markup.Data(hrBtnViewVacancy[lang], "hr_pub_view", vacancyID)),
+		)
 	}
 	rows = append(rows,
 		markup.Row(markup.Data(hrBtnEditVacancy[lang], "hr_pub_edit", vacancyID)),
