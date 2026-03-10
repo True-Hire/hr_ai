@@ -347,6 +347,10 @@ func (hb *HRBot) registerHandlers() {
 	bot.Handle("/start", func(c tele.Context) error {
 		sender := c.Sender()
 
+		// Clear any leftover state from previous flow
+		_ = hrBotSvc.ClearState(ctx, sender.ID)
+		_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
+
 		result, err := hrBotSvc.HandleStart(ctx, sender.ID)
 		if err != nil {
 			log.Printf("hr handle /start error for %d: %v", sender.ID, err)
@@ -422,6 +426,10 @@ func (hb *HRBot) registerHandlers() {
 		action := c.Callback().Data
 		_ = c.Respond(&tele.CallbackResponse{})
 
+		// Clear any previous state/draft when navigating via menu
+		_ = hrBotSvc.ClearState(ctx, sender.ID)
+		_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
+
 		tgID := strconv.FormatInt(sender.ID, 10)
 		hr, err := hrBotSvc.GetHRByTelegramID(ctx, tgID)
 		if err != nil {
@@ -463,6 +471,8 @@ func (hb *HRBot) registerHandlers() {
 
 		draft, err := hrBotSvc.GetVacancyDraft(ctx, sender.ID)
 		if err != nil || draft == nil {
+			_ = hrBotSvc.ClearState(ctx, sender.ID)
+			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 			return c.Send(hrMsgError[lang], hrMenu(lang))
 		}
 
@@ -470,12 +480,16 @@ func (hb *HRBot) registerHandlers() {
 		hr, err := hrBotSvc.GetHRByTelegramID(ctx, tgIDStr)
 		if err != nil || hr == nil {
 			log.Printf("hr_vac_continue: failed to get HR for tg_id %d: %v", sender.ID, err)
+			_ = hrBotSvc.ClearState(ctx, sender.ID)
+			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 			return c.Send(hrMsgError[lang], hrMenu(lang))
 		}
 
 		result, err := hrBotSvc.CreateVacancyFromDraft(ctx, hr.ID, hr.CompanyData, draft)
 		if err != nil {
 			log.Printf("hr create vacancy from draft error for %d: %v", sender.ID, err)
+			_ = hrBotSvc.ClearState(ctx, sender.ID)
+			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 			return c.Send(hrMsgVacancyFailed[lang], hrMenu(lang))
 		}
 
@@ -502,6 +516,8 @@ func (hb *HRBot) registerHandlers() {
 
 		draft, err := hrBotSvc.GetVacancyDraft(ctx, sender.ID)
 		if err != nil || draft == nil {
+			_ = hrBotSvc.ClearState(ctx, sender.ID)
+			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 			return c.Send(hrMsgError[lang], hrMenu(lang))
 		}
 
@@ -524,12 +540,16 @@ func (hb *HRBot) registerHandlers() {
 		hr, err := hrBotSvc.GetHRByTelegramID(ctx, tgIDStr)
 		if err != nil || hr == nil {
 			log.Printf("hr_vac_create_desc: failed to get HR for tg_id %d: %v", sender.ID, err)
+			_ = hrBotSvc.ClearState(ctx, sender.ID)
+			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 			return c.Send(hrMsgError[lang], hrMenu(lang))
 		}
 
 		result, err := hrBotSvc.CreateVacancyFromDraft(ctx, hr.ID, hr.CompanyData, enhanced)
 		if err != nil {
 			log.Printf("hr create vacancy from enhanced draft error for %d: %v", sender.ID, err)
+			_ = hrBotSvc.ClearState(ctx, sender.ID)
+			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 			return c.Send(hrMsgVacancyFailed[lang], hrMenu(lang))
 		}
 
@@ -635,15 +655,20 @@ func (hb *HRBot) registerHandlers() {
 		text := c.Text()
 
 		if isMenuButton(text, hrMenuBtnCreateVacancy) {
+			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 			if err := hrBotSvc.SetState(ctx, sender.ID, domain.HRBotStatePostingVacancy, map[string]string{"language": lang, "hr_id": hr.ID.String()}); err != nil {
 				log.Printf("hr set posting state error for %d: %v", sender.ID, err)
 			}
 			return c.Send(hrMsgPostVacancy[lang])
 		}
 		if isMenuButton(text, hrMenuBtnActiveVacancies) {
+			_ = hrBotSvc.ClearState(ctx, sender.ID)
+			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 			return hb.handleMyVacancies(ctx, c, hr)
 		}
 		if isMenuButton(text, hrMenuBtnFindCandidates) {
+			_ = hrBotSvc.ClearState(ctx, sender.ID)
+			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 			if hb.webAppURL != "" {
 				markup := &tele.ReplyMarkup{}
 				markup.Inline(
@@ -654,6 +679,8 @@ func (hb *HRBot) registerHandlers() {
 			return hb.handleFindCandidatesStart(ctx, c, hr)
 		}
 		if isMenuButton(text, hrMenuBtnChangeLang) {
+			_ = hrBotSvc.ClearState(ctx, sender.ID)
+			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 			markup := &tele.ReplyMarkup{}
 			markup.Inline(
 				markup.Row(
