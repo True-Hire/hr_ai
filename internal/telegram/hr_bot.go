@@ -482,9 +482,15 @@ func (hb *HRBot) registerHandlers() {
 		_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 		_ = hrBotSvc.ClearState(ctx, sender.ID)
 
-		title := vacancyTitle(result, lang)
-		_ = c.Send(hrMsgVacancyCreated[lang])
-		return c.Send(fmt.Sprintf("**%s** ✅", title), &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: hrMenu(lang)})
+		// Count matching candidates
+		var skills []string
+		for _, sk := range result.Skills {
+			skills = append(skills, sk.Name)
+		}
+		matchCount := hrBotSvc.CountMatchingCandidates(ctx, vacancyTitle(result, "en"), skills)
+
+		msg := buildVacancyCreatedMessage(result, lang, matchCount)
+		return c.Send(msg, &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: hrMenu(lang)})
 	})
 
 	bot.Handle(&tele.Btn{Unique: "hr_vac_create_desc"}, func(c tele.Context) error {
@@ -530,9 +536,15 @@ func (hb *HRBot) registerHandlers() {
 		_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 		_ = hrBotSvc.ClearState(ctx, sender.ID)
 
-		title := vacancyTitle(result, lang)
-		_ = c.Send(hrMsgVacancyCreated[lang])
-		return c.Send(fmt.Sprintf("**%s** ✅", title), &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: hrMenu(lang)})
+		// Count matching candidates
+		var skills []string
+		for _, sk := range result.Skills {
+			skills = append(skills, sk.Name)
+		}
+		matchCount := hrBotSvc.CountMatchingCandidates(ctx, vacancyTitle(result, "en"), skills)
+
+		msg := buildVacancyCreatedMessage(result, lang, matchCount)
+		return c.Send(msg, &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: hrMenu(lang)})
 	})
 
 	bot.Handle(&tele.Btn{Unique: "hr_vac_add_info"}, func(c tele.Context) error {
@@ -1154,6 +1166,51 @@ func (hb *HRBot) hrInlineMenu(lang string) *tele.ReplyMarkup {
 	rows = append(rows, markup.Row(markup.Data(hrMenuBtnChangeLang[lang], "hr_menu", "change_lang")))
 	markup.Inline(rows...)
 	return markup
+}
+
+func buildVacancyCreatedMessage(v *application.VacancyWithDetails, lang string, matchingCount int) string {
+	title := vacancyTitle(v, lang)
+	date := v.Vacancy.CreatedAt.Format("02.01.2006")
+	shortID := v.Vacancy.ID.String()[:8]
+
+	switch lang {
+	case "ru":
+		msg := fmt.Sprintf("✅ *Вакансия опубликована!*\n\n"+
+			"📌 ID вакансии: #%s\n"+
+			"💼 %s\n"+
+			"📅 Дата публикации: %s\n"+
+			"👁 Статус: Активна\n\n"+
+			"Первые отклики ожидаются в течение 2–24 часов.",
+			shortID, title, date)
+		if matchingCount > 0 {
+			msg += fmt.Sprintf("\n\n📊 В базе предварительно подходят: *%d кандидатов*.", matchingCount)
+		}
+		return msg
+	case "uz":
+		msg := fmt.Sprintf("✅ *Vakansiya e'lon qilindi!*\n\n"+
+			"📌 Vakansiya ID: #%s\n"+
+			"💼 %s\n"+
+			"📅 E'lon sanasi: %s\n"+
+			"👁 Holat: Faol\n\n"+
+			"Birinchi javoblar 2–24 soat ichida kutilmoqda.",
+			shortID, title, date)
+		if matchingCount > 0 {
+			msg += fmt.Sprintf("\n\n📊 Bazada taxminan *%d nomzod* mos keladi.", matchingCount)
+		}
+		return msg
+	default:
+		msg := fmt.Sprintf("✅ *Vacancy published!*\n\n"+
+			"📌 Vacancy ID: #%s\n"+
+			"💼 %s\n"+
+			"📅 Published: %s\n"+
+			"👁 Status: Active\n\n"+
+			"First responses are expected within 2–24 hours.",
+			shortID, title, date)
+		if matchingCount > 0 {
+			msg += fmt.Sprintf("\n\n📊 Preliminary matching candidates: *%d*.", matchingCount)
+		}
+		return msg
+	}
 }
 
 func vacancyTitle(v *application.VacancyWithDetails, lang string) string {
