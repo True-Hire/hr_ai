@@ -399,6 +399,41 @@ func (s *VacancyService) ListVacanciesByHR(ctx context.Context, hrID uuid.UUID, 
 	return &ListVacanciesResult{Vacancies: result, Total: total}, nil
 }
 
+func (s *VacancyService) ListVacanciesFiltered(ctx context.Context, filter domain.VacancyFilter, page, pageSize int32) (*ListVacanciesResult, error) {
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 20
+	}
+	offset := (page - 1) * pageSize
+
+	total, err := s.repo.CountFiltered(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("service count filtered vacancies: %w", err)
+	}
+
+	vacancies, err := s.repo.ListFiltered(ctx, filter, pageSize, offset)
+	if err != nil {
+		return nil, fmt.Errorf("service list filtered vacancies: %w", err)
+	}
+
+	result := make([]VacancyWithDetails, 0, len(vacancies))
+	for _, v := range vacancies {
+		texts, err := s.textRepo.ListByVacancy(ctx, v.ID)
+		if err != nil {
+			return nil, fmt.Errorf("list vacancy texts for %s: %w", v.ID, err)
+		}
+		skills, err := s.skillSvc.ListVacancySkills(ctx, v.ID)
+		if err != nil {
+			return nil, fmt.Errorf("list vacancy skills for %s: %w", v.ID, err)
+		}
+		result = append(result, VacancyWithDetails{Vacancy: &v, Texts: texts, Skills: skills})
+	}
+
+	return &ListVacanciesResult{Vacancies: result, Total: total}, nil
+}
+
 type UpdateVacancyInput struct {
 	ID               uuid.UUID
 	CountryID        uuid.UUID

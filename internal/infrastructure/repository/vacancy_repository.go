@@ -16,11 +16,12 @@ import (
 )
 
 type VacancyRepository struct {
-	q *vacanciesdb.Queries
+	q    *vacanciesdb.Queries
+	pool *pgxpool.Pool
 }
 
 func NewVacancyRepository(pool *pgxpool.Pool) *VacancyRepository {
-	return &VacancyRepository{q: vacanciesdb.New(pool)}
+	return &VacancyRepository{q: vacanciesdb.New(pool), pool: pool}
 }
 
 func (r *VacancyRepository) Create(ctx context.Context, v *domain.Vacancy) (*domain.Vacancy, error) {
@@ -98,6 +99,149 @@ func (r *VacancyRepository) ListByHR(ctx context.Context, hrID uuid.UUID, limit,
 		result = append(result, *v)
 	}
 	return result, nil
+}
+
+func buildVacancyFilterQuery(prefix string, filter domain.VacancyFilter, limit, offset int32) (string, []any) {
+	var conditions []string
+	var args []any
+	argIdx := 1
+
+	if filter.HRID != uuid.Nil {
+		conditions = append(conditions, fmt.Sprintf("hr_id = $%d", argIdx))
+		args = append(args, filter.HRID)
+		argIdx++
+	}
+	if filter.Status != "" {
+		conditions = append(conditions, fmt.Sprintf("status = $%d", argIdx))
+		args = append(args, filter.Status)
+		argIdx++
+	}
+	if filter.Format != "" {
+		conditions = append(conditions, fmt.Sprintf("format = $%d", argIdx))
+		args = append(args, filter.Format)
+		argIdx++
+	}
+	if filter.Schedule != "" {
+		conditions = append(conditions, fmt.Sprintf("schedule = $%d", argIdx))
+		args = append(args, filter.Schedule)
+		argIdx++
+	}
+	if filter.SalaryCurrency != "" {
+		conditions = append(conditions, fmt.Sprintf("salary_currency = $%d", argIdx))
+		args = append(args, filter.SalaryCurrency)
+		argIdx++
+	}
+	if filter.SalaryMin > 0 {
+		conditions = append(conditions, fmt.Sprintf("salary_max >= $%d", argIdx))
+		args = append(args, filter.SalaryMin)
+		argIdx++
+	}
+	if filter.SalaryMax > 0 {
+		conditions = append(conditions, fmt.Sprintf("salary_min <= $%d", argIdx))
+		args = append(args, filter.SalaryMax)
+		argIdx++
+	}
+	if filter.ExperienceMin > 0 {
+		conditions = append(conditions, fmt.Sprintf("(experience_max >= $%d OR experience_max = 0 OR experience_max IS NULL)", argIdx))
+		args = append(args, filter.ExperienceMin)
+		argIdx++
+	}
+	if filter.ExperienceMax > 0 {
+		conditions = append(conditions, fmt.Sprintf("experience_min <= $%d", argIdx))
+		args = append(args, filter.ExperienceMax)
+		argIdx++
+	}
+	if filter.CountryID != uuid.Nil {
+		conditions = append(conditions, fmt.Sprintf("country_id = $%d", argIdx))
+		args = append(args, filter.CountryID)
+		argIdx++
+	}
+
+	where := ""
+	if len(conditions) > 0 {
+		where = " WHERE " + conditions[0]
+		for _, c := range conditions[1:] {
+			where += " AND " + c
+		}
+	}
+
+	query := prefix + where
+
+	if limit > 0 {
+		query += " ORDER BY created_at DESC"
+		query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", argIdx, argIdx+1)
+		args = append(args, limit, offset)
+	}
+
+	return query, args
+}
+
+func (r *VacancyRepository) ListFiltered(ctx context.Context, filter domain.VacancyFilter, limit, offset int32) ([]domain.Vacancy, error) {
+	query, args := buildVacancyFilterQuery(
+		`SELECT id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
+		    experience_min, experience_max, format, schedule,
+		    phone, telegram, email, address, status, source_lang, created_at
+		FROM vacancies`,
+		filter, limit, offset,
+	)
+
+	rows, err := r.pool.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("list filtered vacancies: %w", err)
+	}
+	defer rows.Close()
+
+	var result []domain.Vacancy
+	for rows.Next() {
+		var v domain.Vacancy
+		var id, hrID, countryID pgtype.UUID
+		var salaryMin, salaryMax, expMin, expMax pgtype.Int4
+		var phone, telegram, email, address pgtype.Text
+		var companyData []byte
+		var createdAt pgtype.Timestamp
+
+		if err := rows.Scan(
+			&id, &hrID, &companyData, &countryID,
+			&salaryMin, &salaryMax, &v.SalaryCurrency,
+			&expMin, &expMax, &v.Format, &v.Schedule,
+			&phone, &telegram, &email, &address,
+			&v.Status, &v.SourceLang, &createdAt,
+		); err != nil {
+			return nil, fmt.Errorf("scan filtered vacancy: %w", err)
+		}
+
+		v.ID = pgtypeToUUID(id)
+		v.HRID = pgtypeToUUID(hrID)
+		v.CountryID = pgtypeUUIDToNullable(countryID)
+		v.SalaryMin = pgtypeToInt32(salaryMin)
+		v.SalaryMax = pgtypeToInt32(salaryMax)
+		v.ExperienceMin = pgtypeToInt32(expMin)
+		v.ExperienceMax = pgtypeToInt32(expMax)
+		v.Phone = pgtypeToString(phone)
+		v.Telegram = pgtypeToString(telegram)
+		v.Email = pgtypeToString(email)
+		v.Address = pgtypeToString(address)
+		v.CreatedAt = createdAt.Time
+
+		cd, err := unmarshalCompanyData(companyData)
+		if err != nil {
+			return nil, err
+		}
+		v.CompanyData = cd
+
+		result = append(result, v)
+	}
+
+	return result, nil
+}
+
+func (r *VacancyRepository) CountFiltered(ctx context.Context, filter domain.VacancyFilter) (int64, error) {
+	query, args := buildVacancyFilterQuery("SELECT COUNT(*) FROM vacancies", filter, 0, 0)
+	var count int64
+	if err := r.pool.QueryRow(ctx, query, args...).Scan(&count); err != nil {
+		return 0, fmt.Errorf("count filtered vacancies: %w", err)
+	}
+	return count, nil
 }
 
 func (r *VacancyRepository) Search(ctx context.Context, lang, query string, limit, offset int32) ([]domain.Vacancy, error) {
