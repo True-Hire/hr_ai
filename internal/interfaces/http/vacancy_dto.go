@@ -94,12 +94,14 @@ type VacancyResponse struct {
 	Telegram       string                  `json:"telegram,omitempty"`
 	Email          string                  `json:"email,omitempty"`
 	Address        string                  `json:"address,omitempty"`
-	Status         string                  `json:"status"`
-	SourceLang     string                  `json:"source_lang"`
-	CreatedAt      string                  `json:"created_at"`
-	Company        *VacancyCompanyResponse `json:"company,omitempty"`
-	Text           *VacancyTextResponse    `json:"text"`
-	Skills         []SkillResponse         `json:"skills"`
+	Status                  string                  `json:"status"`
+	SourceLang              string                  `json:"source_lang"`
+	CreatedAt               string                  `json:"created_at"`
+	Company                 *VacancyCompanyResponse `json:"company,omitempty"`
+	Text                    *VacancyTextResponse    `json:"text"`
+	Skills                  []SkillResponse         `json:"skills"`
+	ApplicationCount        *int64                  `json:"application_count,omitempty"`
+	MatchingCandidatesCount *int                    `json:"matching_candidates_count,omitempty"`
 }
 
 type PaginatedVacanciesResponse struct {
