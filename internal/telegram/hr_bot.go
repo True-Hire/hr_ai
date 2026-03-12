@@ -81,6 +81,30 @@ var hrMenuBtnChangeLang = map[string]string{
 	"uz": "🌍 Tilni o'zgartirish",
 }
 
+var hrMsgCompanyDataStep = map[string]string{
+	"en": "📋 *Step 1 — Tell about your company*\n\nBased on this information, I can create a better vacancy for you.\n\nYou can:\n\n✍️ write\n🎤 send a voice message\n📎 attach a file\n\nSend company information:",
+	"ru": "📋 *1-Этап — Расскажите о своей компании*\n\nНа основе этой информации я смогу создать более качественную вакансию.\n\nВы можете:\n\n✍️ написать\n🎤 отправить голосовое\n📎 прикрепить файл\n\nОтправьте информацию о компании:",
+	"uz": "📋 *1-Bosqich — Kompaniya haqida ma'lumot bering*\n\nShunga qarab men yaxshiroq vakansiya yaratib bera olaman.\n\nSiz quyidagilarni yuborishingiz mumkin:\n\n✍️ yozish\n🎤 ovozli xabar yuborish\n📎 fayl biriktirish\n\nKompaniya haqida ma'lumot yuboring:",
+}
+
+var hrMsgParsingCompany = map[string]string{
+	"en": "🔎 Got the information. Analyzing company data...",
+	"ru": "🔎 Получил информацию. Анализирую данные компании…",
+	"uz": "🔎 Ma'lumotni oldim. Kompaniya ma'lumotlarini tahlil qilmoqdaman…",
+}
+
+var hrMsgCompanySaved = map[string]string{
+	"en": "✅ Company information saved!\n\nNow let's create your vacancy.",
+	"ru": "✅ Информация о компании сохранена!\n\nТеперь давайте создадим вакансию.",
+	"uz": "✅ Kompaniya ma'lumotlari saqlandi!\n\nEndi vakansiya yaratamiz.",
+}
+
+var hrMsgCompanyFailed = map[string]string{
+	"en": "❌ Failed to process company information. Please try again.",
+	"ru": "❌ Не удалось обработать информацию о компании. Попробуйте ещё раз.",
+	"uz": "❌ Kompaniya ma'lumotlarini qayta ishlashda xatolik. Qaytadan urinib ko'ring.",
+}
+
 var hrMsgPostVacancy = map[string]string{
 	"en": "Send the information in one message:\n— Position\n— City\n— Work format\n— Salary range\n— Key responsibilities\n— Requirements\n— Level (Junior / Middle / Senior)\n— Urgency\n\nYou can:\n\n✍️ write\n🎤 send a voice message\n📎 attach a file\n\n⚡ The more detail — the more accurate the match.",
 	"ru": "Отправьте информацию одним сообщением:\n— Должность\n— Город\n— Формат работы\n— Зарплатная вилка\n— Основные обязанности\n— Требования\n— Уровень (Junior / Middle / Senior)\n— Срочность закрытия\n\nВы можете:\n\n✍️ написать\n🎤 отправить голосовое\n📎 прикрепить файл\n\n⚡ Чем подробнее — тем точнее подбор.",
@@ -439,6 +463,13 @@ func (hb *HRBot) registerHandlers() {
 
 		switch action {
 		case "create_vacancy":
+			// Check if company data is filled before allowing vacancy creation
+			if !hrBotSvc.HasCompanyData(hr) {
+				if err := hrBotSvc.SetState(ctx, sender.ID, domain.HRBotStateCollectingCompanyData, map[string]string{"language": lang, "hr_id": hr.ID.String()}); err != nil {
+					log.Printf("hr set company data state error for %d: %v", sender.ID, err)
+				}
+				return c.Send(hrMsgCompanyDataStep[lang], &tele.SendOptions{ParseMode: tele.ModeMarkdown})
+			}
 			if err := hrBotSvc.SetState(ctx, sender.ID, domain.HRBotStatePostingVacancy, map[string]string{"language": lang, "hr_id": hr.ID.String()}); err != nil {
 				log.Printf("hr set posting state error for %d: %v", sender.ID, err)
 			}
@@ -636,6 +667,8 @@ func (hb *HRBot) registerHandlers() {
 			case domain.HRBotStateSharingPhone:
 				lang := langOrDefault(state.Data["language"])
 				return c.Send(hrMsgPhoneReminder[lang])
+			case domain.HRBotStateCollectingCompanyData:
+				return hb.handleCompanyDataInput(ctx, c, state, "text", c.Text(), nil, "")
 			case domain.HRBotStatePostingVacancy:
 				return hb.handleVacancyInput(ctx, c, state, "text", c.Text(), nil, "")
 			case domain.HRBotStateAddingVacancyInfo:
@@ -656,6 +689,13 @@ func (hb *HRBot) registerHandlers() {
 
 		if isMenuButton(text, hrMenuBtnCreateVacancy) {
 			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
+			// Check if company data is filled before allowing vacancy creation
+			if !hrBotSvc.HasCompanyData(hr) {
+				if err := hrBotSvc.SetState(ctx, sender.ID, domain.HRBotStateCollectingCompanyData, map[string]string{"language": lang, "hr_id": hr.ID.String()}); err != nil {
+					log.Printf("hr set company data state error for %d: %v", sender.ID, err)
+				}
+				return c.Send(hrMsgCompanyDataStep[lang], &tele.SendOptions{ParseMode: tele.ModeMarkdown})
+			}
 			if err := hrBotSvc.SetState(ctx, sender.ID, domain.HRBotStatePostingVacancy, map[string]string{"language": lang, "hr_id": hr.ID.String()}); err != nil {
 				log.Printf("hr set posting state error for %d: %v", sender.ID, err)
 			}
@@ -701,19 +741,24 @@ func (hb *HRBot) registerHandlers() {
 		voice := c.Message().Voice
 
 		state, _ := hrBotSvc.GetBotState(ctx, sender.ID)
-		if state != nil && (state.State == domain.HRBotStatePostingVacancy || state.State == domain.HRBotStateAddingVacancyInfo) {
-			reader, err := bot.File(&voice.File)
-			if err != nil {
-				lang := langOrDefault(state.Data["language"])
-				return c.Send(hrMsgDownloadFailed[lang])
+		if state != nil {
+			if state.State == domain.HRBotStatePostingVacancy || state.State == domain.HRBotStateAddingVacancyInfo || state.State == domain.HRBotStateCollectingCompanyData {
+				reader, err := bot.File(&voice.File)
+				if err != nil {
+					lang := langOrDefault(state.Data["language"])
+					return c.Send(hrMsgDownloadFailed[lang])
+				}
+				fileData, _ := io.ReadAll(reader)
+				reader.Close()
+				mimeType := voice.MIME
+				if mimeType == "" {
+					mimeType = "audio/ogg"
+				}
+				if state.State == domain.HRBotStateCollectingCompanyData {
+					return hb.handleCompanyDataInput(ctx, c, state, "voice", "", fileData, mimeType)
+				}
+				return hb.handleVacancyInput(ctx, c, state, "voice", "", fileData, mimeType)
 			}
-			fileData, _ := io.ReadAll(reader)
-			reader.Close()
-			mimeType := voice.MIME
-			if mimeType == "" {
-				mimeType = "audio/ogg"
-			}
-			return hb.handleVacancyInput(ctx, c, state, "voice", "", fileData, mimeType)
 		}
 
 		lang := hb.resolveHRLang(ctx, sender)
@@ -726,18 +771,23 @@ func (hb *HRBot) registerHandlers() {
 		doc := c.Message().Document
 
 		state, _ := hrBotSvc.GetBotState(ctx, sender.ID)
-		if state != nil && (state.State == domain.HRBotStatePostingVacancy || state.State == domain.HRBotStateAddingVacancyInfo) {
-			lang := langOrDefault(state.Data["language"])
-			if !isAllowedMIME(doc.MIME) {
-				return c.Send(hrMsgUnsupportedFile[lang])
+		if state != nil {
+			if state.State == domain.HRBotStatePostingVacancy || state.State == domain.HRBotStateAddingVacancyInfo || state.State == domain.HRBotStateCollectingCompanyData {
+				lang := langOrDefault(state.Data["language"])
+				if !isAllowedMIME(doc.MIME) {
+					return c.Send(hrMsgUnsupportedFile[lang])
+				}
+				reader, err := bot.File(&doc.File)
+				if err != nil {
+					return c.Send(hrMsgDownloadFailed[lang])
+				}
+				fileData, _ := io.ReadAll(reader)
+				reader.Close()
+				if state.State == domain.HRBotStateCollectingCompanyData {
+					return hb.handleCompanyDataInput(ctx, c, state, "file", "", fileData, doc.MIME)
+				}
+				return hb.handleVacancyInput(ctx, c, state, "file", "", fileData, doc.MIME)
 			}
-			reader, err := bot.File(&doc.File)
-			if err != nil {
-				return c.Send(hrMsgDownloadFailed[lang])
-			}
-			fileData, _ := io.ReadAll(reader)
-			reader.Close()
-			return hb.handleVacancyInput(ctx, c, state, "file", "", fileData, doc.MIME)
 		}
 
 		lang := hb.resolveHRLang(ctx, sender)
@@ -750,7 +800,7 @@ func (hb *HRBot) registerHandlers() {
 		photo := c.Message().Photo
 
 		state, _ := hrBotSvc.GetBotState(ctx, sender.ID)
-		if state != nil && (state.State == domain.HRBotStatePostingVacancy || state.State == domain.HRBotStateAddingVacancyInfo) {
+		if state != nil && (state.State == domain.HRBotStatePostingVacancy || state.State == domain.HRBotStateAddingVacancyInfo || state.State == domain.HRBotStateCollectingCompanyData) {
 			reader, err := bot.File(&photo.File)
 			if err != nil {
 				lang := langOrDefault(state.Data["language"])
@@ -758,12 +808,60 @@ func (hb *HRBot) registerHandlers() {
 			}
 			fileData, _ := io.ReadAll(reader)
 			reader.Close()
+			if state.State == domain.HRBotStateCollectingCompanyData {
+				return hb.handleCompanyDataInput(ctx, c, state, "file", "", fileData, "image/jpeg")
+			}
 			return hb.handleVacancyInput(ctx, c, state, "file", "", fileData, "image/jpeg")
 		}
 
 		lang := hb.resolveHRLang(ctx, sender)
 		return c.Send(hrMsgUseMenu[lang], hrMenu(lang))
 	})
+}
+
+func (hb *HRBot) handleCompanyDataInput(ctx context.Context, c tele.Context, state *domain.BotState, inputType, text string, fileData []byte, mimeType string) error {
+	sender := c.Sender()
+	lang := langOrDefault(state.Data["language"])
+	hrIDStr := state.Data["hr_id"]
+
+	// Send appropriate "processing" message
+	_ = c.Send(hrMsgParsingCompany[lang])
+
+	var parsed *gemini.ParsedCompanyFull
+	var err error
+
+	if inputType == "text" {
+		parsed, err = hb.hrBotSvc.ParseCompanyFromText(ctx, text)
+	} else if len(fileData) > 0 {
+		parsed, err = hb.hrBotSvc.ParseCompanyFromFile(ctx, fileData, mimeType)
+	}
+
+	if err != nil {
+		log.Printf("hr parse company data error for %d: %v", sender.ID, err)
+		_ = hb.hrBotSvc.ClearState(ctx, sender.ID)
+		return c.Send(hrMsgCompanyFailed[lang], hrMenu(lang))
+	}
+
+	hrID, parseErr := uuid.Parse(hrIDStr)
+	if parseErr != nil {
+		_ = hb.hrBotSvc.ClearState(ctx, sender.ID)
+		return c.Send(hrMsgError[lang], hrMenu(lang))
+	}
+
+	_, err = hb.hrBotSvc.SaveCompanyData(ctx, hrID, parsed)
+	if err != nil {
+		log.Printf("hr save company data error for %d: %v", sender.ID, err)
+		_ = hb.hrBotSvc.ClearState(ctx, sender.ID)
+		return c.Send(hrMsgCompanyFailed[lang], hrMenu(lang))
+	}
+
+	// Company data saved — transition to vacancy posting
+	_ = c.Send(hrMsgCompanySaved[lang])
+
+	if err := hb.hrBotSvc.SetState(ctx, sender.ID, domain.HRBotStatePostingVacancy, map[string]string{"language": lang, "hr_id": hrIDStr}); err != nil {
+		log.Printf("hr set posting state after company data error for %d: %v", sender.ID, err)
+	}
+	return c.Send(hrMsgPostVacancy[lang])
 }
 
 func (hb *HRBot) handleVacancyInput(ctx context.Context, c tele.Context, state *domain.BotState, inputType, text string, fileData []byte, mimeType string) error {
