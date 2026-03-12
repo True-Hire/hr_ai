@@ -11,8 +11,9 @@ const (
 	BotStateSharingPhone     = "sharing_phone"
 	BotStateCollectingResume = "collecting_resume"
 
-	HRBotStateSharingPhone        = "hr_sharing_phone"
-	HRBotStatePostingVacancy      = "hr_posting_vacancy"
-	HRBotStateVacancyReview       = "hr_vacancy_review"
-	HRBotStateAddingVacancyInfo   = "hr_adding_vacancy_info"
+	HRBotStateSharingPhone         = "hr_sharing_phone"
+	HRBotStateCollectingCompanyData = "hr_collecting_company_data"
+	HRBotStatePostingVacancy       = "hr_posting_vacancy"
+	HRBotStateVacancyReview        = "hr_vacancy_review"
+	HRBotStateAddingVacancyInfo    = "hr_adding_vacancy_info"
 )

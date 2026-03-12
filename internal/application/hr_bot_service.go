@@ -172,6 +172,76 @@ func (s *HRBotService) CountMatchingCandidates(ctx context.Context, vacancyTitle
 	return count
 }
 
+// -- Company data parsing (Gemini) --
+
+func (s *HRBotService) ParseCompanyFromText(ctx context.Context, text string) (*gemini.ParsedCompanyFull, error) {
+	return s.geminiClient.ParseCompanyFromText(ctx, text)
+}
+
+func (s *HRBotService) ParseCompanyFromFile(ctx context.Context, fileData []byte, mimeType string) (*gemini.ParsedCompanyFull, error) {
+	return s.geminiClient.ParseCompanyFromFile(ctx, fileData, mimeType)
+}
+
+func (s *HRBotService) SaveCompanyData(ctx context.Context, hrID uuid.UUID, parsed *gemini.ParsedCompanyFull) (*domain.CompanyHR, error) {
+	hr, err := s.hrSvc.GetCompanyHR(ctx, hrID)
+	if err != nil {
+		return nil, fmt.Errorf("get hr for company data: %w", err)
+	}
+
+	texts := make([]domain.CompanyDataText, 0, 3)
+	for _, lang := range []string{"uz", "ru", "en"} {
+		t := domain.CompanyDataText{
+			Lang:     lang,
+			IsSource: lang == parsed.SourceLang,
+		}
+		if f, ok := parsed.Fields["name"]; ok {
+			t.Name = f[lang]
+		}
+		if f, ok := parsed.Fields["activity_type"]; ok {
+			t.ActivityType = f[lang]
+		}
+		if f, ok := parsed.Fields["company_type"]; ok {
+			t.CompanyType = f[lang]
+		}
+		if f, ok := parsed.Fields["about"]; ok {
+			t.About = f[lang]
+		}
+		if f, ok := parsed.Fields["market"]; ok {
+			t.Market = f[lang]
+		}
+		texts = append(texts, t)
+	}
+
+	hr.CompanyData = &domain.CompanyData{
+		EmployeeCount:   parsed.EmployeeCount,
+		Country:         parsed.Country,
+		Address:         parsed.Address,
+		Phone:           parsed.Phone,
+		Telegram:        parsed.Telegram,
+		TelegramChannel: parsed.TelegramChannel,
+		Email:           parsed.Email,
+		WebSite:         parsed.WebSite,
+		Instagram:       parsed.Instagram,
+		SourceLang:      parsed.SourceLang,
+		Texts:           texts,
+	}
+
+	return s.hrSvc.UpdateCompanyHR(ctx, hr)
+}
+
+func (s *HRBotService) HasCompanyData(hr *domain.CompanyHR) bool {
+	if hr.CompanyData == nil {
+		return false
+	}
+	// Check if at least one text has a company name
+	for _, t := range hr.CompanyData.Texts {
+		if t.Name != "" {
+			return true
+		}
+	}
+	return false
+}
+
 // -- Vacancy draft parsing (Gemini) --
 
 func (s *HRBotService) ParseVacancyFromText(ctx context.Context, text string) (*gemini.ParsedVacancyFull, error) {
