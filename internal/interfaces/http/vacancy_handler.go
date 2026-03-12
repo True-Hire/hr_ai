@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -16,10 +17,12 @@ type VacancyHandler struct {
 	service          *application.VacancyService
 	companyHRSvc     *application.CompanyHRService
 	vacancySearchSvc *application.VacancySearchService
+	vacancyAppSvc    *application.VacancyApplicationService
+	searchSvc        *application.SearchService
 }
 
-func NewVacancyHandler(service *application.VacancyService, companyHRSvc *application.CompanyHRService, vacancySearchSvc *application.VacancySearchService) *VacancyHandler {
-	return &VacancyHandler{service: service, companyHRSvc: companyHRSvc, vacancySearchSvc: vacancySearchSvc}
+func NewVacancyHandler(service *application.VacancyService, companyHRSvc *application.CompanyHRService, vacancySearchSvc *application.VacancySearchService, vacancyAppSvc *application.VacancyApplicationService, searchSvc *application.SearchService) *VacancyHandler {
+	return &VacancyHandler{service: service, companyHRSvc: companyHRSvc, vacancySearchSvc: vacancySearchSvc, vacancyAppSvc: vacancyAppSvc, searchSvc: searchSvc}
 }
 
 // Create godoc
@@ -222,14 +225,40 @@ func (h *VacancyHandler) List(c *gin.Context) {
 	}
 
 	resp := PaginatedVacanciesResponse{
-		Vacancies: make([]VacancyResponse, 0, len(result.Vacancies)),
+		Vacancies: make([]VacancyResponse, len(result.Vacancies)),
 		Total:     result.Total,
 		Page:      page,
 		PageSize:  pageSize,
 	}
-	for _, vwd := range result.Vacancies {
-		resp.Vacancies = append(resp.Vacancies, toVacancyResponse(&vwd, lang))
+
+	// Build base responses
+	for i, vwd := range result.Vacancies {
+		resp.Vacancies[i] = toVacancyResponse(&vwd, lang)
 	}
+
+	// Enrich with application counts and matching candidates concurrently
+	ctx := c.Request.Context()
+	var wg sync.WaitGroup
+	for i, vwd := range result.Vacancies {
+		wg.Add(1)
+		go func(idx int, v application.VacancyWithDetails) {
+			defer wg.Done()
+
+			// Application count (cheap DB query)
+			if h.vacancyAppSvc != nil {
+				if count, err := h.vacancyAppSvc.CountByVacancy(ctx, v.Vacancy.ID); err == nil {
+					resp.Vacancies[idx].ApplicationCount = &count
+				}
+			}
+
+			// Matching candidates count (Qdrant vector search, no Gemini calls)
+			if h.searchSvc != nil {
+				count := h.searchSvc.CountMatchingCandidatesByVacancy(ctx, v.Vacancy.ID)
+				resp.Vacancies[idx].MatchingCandidatesCount = &count
+			}
+		}(i, vwd)
+	}
+	wg.Wait()
 
 	c.JSON(http.StatusOK, resp)
 }
