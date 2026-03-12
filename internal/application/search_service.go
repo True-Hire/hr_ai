@@ -123,6 +123,62 @@ type CandidateMatch struct {
 	VectorScore          float64
 }
 
+// CountMatchingCandidatesByVacancy counts candidates matching a vacancy using
+// pre-stored vacancy embeddings from Qdrant. No Gemini API calls needed.
+func (s *SearchService) CountMatchingCandidatesByVacancy(ctx context.Context, vacancyID uuid.UUID) int {
+	// Get stored vacancy vectors from vacancy_vectors collection
+	points, err := s.qdrantClient.ScrollByPayload(ctx, vacancyCollectionName, "vacancy_id", vacancyID.String(), 4)
+	if err != nil || len(points) == 0 {
+		return 0
+	}
+
+	// Pick the best vector: prefer "title" or "skills" (highest weight)
+	var bestVector []float32
+	bestWeight := 0.0
+	for _, p := range points {
+		w := 0.0
+		if section, ok := p.Payload["weight"]; ok {
+			if wf, ok := section.(float64); ok {
+				w = wf
+			}
+		}
+		if w > bestWeight || bestVector == nil {
+			bestWeight = w
+			bestVector = p.Vector
+		}
+	}
+
+	if bestVector == nil {
+		return 0
+	}
+
+	// Search user_profile_vectors with the vacancy's vector
+	scored, err := s.qdrantClient.Search(ctx, collectionName, bestVector, 200)
+	if err != nil {
+		return 0
+	}
+
+	// Group by user_id and count unique users above threshold
+	userScores := make(map[string]float64)
+	for _, sp := range scored {
+		uid, ok := sp.Payload["user_id"].(string)
+		if !ok {
+			continue
+		}
+		if sp.Score > userScores[uid] {
+			userScores[uid] = sp.Score
+		}
+	}
+
+	count := 0
+	for _, score := range userScores {
+		if score > 0.3 {
+			count++
+		}
+	}
+	return count
+}
+
 // SearchMatchingCandidates finds users matching a specific vacancy.
 // Match percentage is computed from vector similarity (70%) + experience fit (30%).
 // Results are sorted by match percentage descending.
