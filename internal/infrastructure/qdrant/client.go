@@ -172,6 +172,65 @@ func (c *Client) DeletePointsByPayload(ctx context.Context, collection string, k
 	return nil
 }
 
+// ScrollByPayload returns points (with vectors) matching a payload filter.
+func (c *Client) ScrollByPayload(ctx context.Context, collection, key, value string, limit int) ([]Point, error) {
+	url := fmt.Sprintf("%s/collections/%s/points/scroll", c.baseURL, collection)
+
+	body := map[string]any{
+		"filter": map[string]any{
+			"must": []map[string]any{
+				{
+					"key": key,
+					"match": map[string]any{
+						"value": value,
+					},
+				},
+			},
+		},
+		"limit":       limit,
+		"with_vector":  true,
+		"with_payload": true,
+	}
+
+	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		return nil, fmt.Errorf("marshal scroll request: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(jsonBody))
+	if err != nil {
+		return nil, fmt.Errorf("create scroll request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("api-key", c.apiKey)
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("scroll points: %w", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read scroll response: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("scroll error (status %d): %s", resp.StatusCode, string(respBody))
+	}
+
+	var result struct {
+		Result struct {
+			Points []Point `json:"points"`
+		} `json:"result"`
+	}
+	if err := json.Unmarshal(respBody, &result); err != nil {
+		return nil, fmt.Errorf("unmarshal scroll response: %w", err)
+	}
+
+	return result.Result.Points, nil
+}
+
 func (c *Client) Search(ctx context.Context, collection string, vector []float32, limit int) ([]ScoredPoint, error) {
 	url := fmt.Sprintf("%s/collections/%s/points/search", c.baseURL, collection)
 
