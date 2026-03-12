@@ -61,7 +61,7 @@ type SavedUserListResponse struct {
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Security TelegramAuth
-// @Router /hr-miniapp/saved-users [post]
+// @Router /hr/saved-users [post]
 func (h *HRSavedUsersHandler) Save(c *gin.Context) {
 	hrID, err := uuid.Parse(c.GetString("hr_id"))
 	if err != nil {
@@ -108,7 +108,7 @@ func (h *HRSavedUsersHandler) Save(c *gin.Context) {
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Security TelegramAuth
-// @Router /hr-miniapp/saved-users [get]
+// @Router /hr/saved-users [get]
 func (h *HRSavedUsersHandler) List(c *gin.Context) {
 	hrID, err := uuid.Parse(c.GetString("hr_id"))
 	if err != nil {
@@ -179,7 +179,7 @@ func (h *HRSavedUsersHandler) List(c *gin.Context) {
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Security TelegramAuth
-// @Router /hr-miniapp/saved-users/{user_id} [delete]
+// @Router /hr/saved-users/{user_id} [delete]
 func (h *HRSavedUsersHandler) Delete(c *gin.Context) {
 	hrID, err := uuid.Parse(c.GetString("hr_id"))
 	if err != nil {
