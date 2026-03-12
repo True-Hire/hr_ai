@@ -221,6 +221,50 @@ type ParsedCompany struct {
 	Fields     map[string]map[string]string `json:"fields"`
 }
 
+// ParsedCompanyFull is the result from Gemini when parsing free-form company description text.
+type ParsedCompanyFull struct {
+	SourceLang      string                       `json:"source_lang"`
+	Fields          map[string]map[string]string `json:"fields"`
+	EmployeeCount   int32                        `json:"employee_count"`
+	Country         string                       `json:"country"`
+	Address         string                       `json:"address"`
+	Phone           string                       `json:"phone"`
+	Telegram        string                       `json:"telegram"`
+	TelegramChannel string                       `json:"telegram_channel"`
+	Email           string                       `json:"email"`
+	WebSite         string                       `json:"web_site"`
+	Instagram       string                       `json:"instagram"`
+}
+
+func (c *Client) ParseCompanyFromText(ctx context.Context, userInput string) (*ParsedCompanyFull, error) {
+	text, err := c.generateJSON(ctx, []part{{Text: buildCompanyParsePrompt(userInput)}})
+	if err != nil {
+		return nil, err
+	}
+	var parsed ParsedCompanyFull
+	if err := json.Unmarshal([]byte(text), &parsed); err != nil {
+		return nil, fmt.Errorf("parse gemini company full JSON: %w (raw: %s)", err, text)
+	}
+	return &parsed, nil
+}
+
+func (c *Client) ParseCompanyFromFile(ctx context.Context, fileData []byte, mimeType string) (*ParsedCompanyFull, error) {
+	encoded := base64.StdEncoding.EncodeToString(fileData)
+	prompt := buildCompanyParsePrompt("(see attached file)")
+	text, err := c.generateJSON(ctx, []part{
+		{Text: prompt},
+		{InlineData: &inlineData{MimeType: mimeType, Data: encoded}},
+	})
+	if err != nil {
+		return nil, err
+	}
+	var parsed ParsedCompanyFull
+	if err := json.Unmarshal([]byte(text), &parsed); err != nil {
+		return nil, fmt.Errorf("parse gemini company file JSON: %w (raw: %s)", err, text)
+	}
+	return &parsed, nil
+}
+
 func (c *Client) TranslateCompany(ctx context.Context, input string) (*ParsedCompany, error) {
 	text, err := c.generateJSON(ctx, []part{{Text: buildCompanyPrompt(input)}})
 	if err != nil {

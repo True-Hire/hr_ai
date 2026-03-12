@@ -173,6 +173,60 @@ Company data:
 %s`, userInput)
 }
 
+func buildCompanyParsePrompt(userInput string) string {
+	return fmt.Sprintf(`You are an AI that extracts company information from free-form text. The HR manager is describing their company in any format — extract all relevant details and translate text fields into 3 languages: Uzbek (uz), Russian (ru), and English (en).
+
+Detect which language the input is primarily written in and set source_lang to one of: "uz", "ru", "en".
+
+TEXT FIELDS (translated into 3 languages):
+- name: Company name (transliterate, don't translate)
+- activity_type: Type of business activity
+- company_type: Type of company (e.g. LLC, OOO, etc.)
+- about: Description of the company
+- market: Market or industry the company operates in
+
+NON-TEXT FIELDS (extract as-is):
+- employee_count: Number of employees as integer (0 if not mentioned)
+- country: Country where company is based (empty string if not mentioned)
+- address: Office address (empty string if not mentioned)
+- phone: Phone number (empty string if not mentioned)
+- telegram: Telegram contact (empty string if not mentioned)
+- telegram_channel: Telegram channel (empty string if not mentioned)
+- email: Email address (empty string if not mentioned)
+- web_site: Website URL (empty string if not mentioned)
+- instagram: Instagram handle (empty string if not mentioned)
+
+IMPORTANT RULES:
+- Extract as much information as possible from the text
+- For text fields, translate accurately and naturally into all 3 languages
+- Only include text fields where you can extract meaningful content
+- Do NOT include text fields with empty or placeholder content
+
+Return ONLY valid JSON in this exact format:
+{
+  "source_lang": "ru",
+  "fields": {
+    "name": {"uz": "...", "ru": "...", "en": "..."},
+    "activity_type": {"uz": "...", "ru": "...", "en": "..."},
+    "company_type": {"uz": "...", "ru": "...", "en": "..."},
+    "about": {"uz": "...", "ru": "...", "en": "..."},
+    "market": {"uz": "...", "ru": "...", "en": "..."}
+  },
+  "employee_count": 50,
+  "country": "Uzbekistan",
+  "address": "Tashkent, Amir Temur 1",
+  "phone": "+998901234567",
+  "telegram": "@company",
+  "telegram_channel": "@company_channel",
+  "email": "info@company.com",
+  "web_site": "https://company.com",
+  "instagram": "@company"
+}
+
+HR's company description:
+%s`, userInput)
+}
+
 func buildVacancyPrompt(userInput string) string {
 	return fmt.Sprintf(`You are an AI that translates vacancy/job posting information into 3 languages: Uzbek (uz), Russian (ru), and English (en).
 
