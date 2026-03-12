@@ -173,11 +173,23 @@ func (h *VacancyHandler) GetByID(c *gin.Context) {
 }
 
 // List godoc
-// @Summary List vacancies with pagination
+// @Summary List vacancies with pagination and optional filters
 // @Tags vacancies
 // @Produce json
 // @Param page query int false "Page number" default(1)
 // @Param page_size query int false "Page size" default(20)
+// @Param q query string false "Search query"
+// @Param lang query string false "Language code" default(en)
+// @Param status query string false "Filter by status (active, draft, closed)"
+// @Param format query string false "Filter by format (office, remote, hybrid)"
+// @Param schedule query string false "Filter by schedule (full-time, part-time)"
+// @Param salary_currency query string false "Filter by salary currency"
+// @Param salary_min query int false "Min salary (returns vacancies that pay at least this)"
+// @Param salary_max query int false "Max salary (returns vacancies that pay at most this)"
+// @Param experience_min query int false "Min experience (returns vacancies accepting this level)"
+// @Param experience_max query int false "Max experience (returns vacancies accepting this level)"
+// @Param country_id query string false "Filter by country ID (UUID)"
+// @Param hr_id query string false "Filter by HR ID (UUID)"
 // @Success 200 {object} PaginatedVacanciesResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /vacancies [get]
@@ -187,27 +199,24 @@ func (h *VacancyHandler) List(c *gin.Context) {
 	query := c.Query("q")
 	lang := c.DefaultQuery("lang", "en")
 
+	// Build filter from query params
+	filter := h.buildVacancyFilter(c)
+
 	var result *application.ListVacanciesResult
 	var err error
 
-	// If the caller is an HR, return only their vacancies
-	if hrID, exists := c.Get("hr_id"); exists {
-		hrUUID, parseErr := uuid.Parse(hrID.(string))
-		if parseErr == nil {
-			result, err = h.service.ListVacanciesByHR(c.Request.Context(), hrUUID, page, pageSize)
-		}
-	}
-
-	// Otherwise (regular user or no hr_id), use default listing
-	if result == nil && err == nil {
-		if query != "" && h.vacancySearchSvc != nil {
-			result, err = h.vacancySearchSvc.SearchVacancies(c.Request.Context(), query, page, pageSize)
-		} else {
-			result, err = h.service.ListVacancies(c.Request.Context(), page, pageSize)
-		}
+	// If semantic search query is provided, use vector search
+	if query != "" && h.vacancySearchSvc != nil {
+		result, err = h.vacancySearchSvc.SearchVacancies(c.Request.Context(), query, page, pageSize)
+	} else if hasVacancyFilters(filter) {
+		// Use filtered query when any filter is set
+		result, err = h.service.ListVacanciesFiltered(c.Request.Context(), filter, page, pageSize)
+	} else {
+		result, err = h.service.ListVacancies(c.Request.Context(), page, pageSize)
 	}
 
 	if err != nil {
+		log.Printf("list vacancies error: %v", err)
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to list vacancies"})
 		return
 	}
@@ -223,6 +232,49 @@ func (h *VacancyHandler) List(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, resp)
+}
+
+func (h *VacancyHandler) buildVacancyFilter(c *gin.Context) domain.VacancyFilter {
+	var filter domain.VacancyFilter
+
+	// HR calling via middleware → auto-filter by their ID
+	if hrID, exists := c.Get("hr_id"); exists {
+		if parsed, err := uuid.Parse(hrID.(string)); err == nil {
+			filter.HRID = parsed
+		}
+	}
+
+	// Explicit hr_id query param overrides (for admin use)
+	if hrIDParam := c.Query("hr_id"); hrIDParam != "" {
+		if parsed, err := uuid.Parse(hrIDParam); err == nil {
+			filter.HRID = parsed
+		}
+	}
+
+	filter.Status = c.Query("status")
+	filter.Format = c.Query("format")
+	filter.Schedule = c.Query("schedule")
+	filter.SalaryCurrency = c.Query("salary_currency")
+	filter.SalaryMin = parseQueryInt32(c, "salary_min", 0)
+	filter.SalaryMax = parseQueryInt32(c, "salary_max", 0)
+	filter.ExperienceMin = parseQueryInt32(c, "experience_min", 0)
+	filter.ExperienceMax = parseQueryInt32(c, "experience_max", 0)
+
+	if countryID := c.Query("country_id"); countryID != "" {
+		if parsed, err := uuid.Parse(countryID); err == nil {
+			filter.CountryID = parsed
+		}
+	}
+
+	return filter
+}
+
+func hasVacancyFilters(f domain.VacancyFilter) bool {
+	return f.HRID != uuid.Nil || f.Status != "" || f.Format != "" ||
+		f.Schedule != "" || f.SalaryCurrency != "" ||
+		f.SalaryMin > 0 || f.SalaryMax > 0 ||
+		f.ExperienceMin > 0 || f.ExperienceMax > 0 ||
+		f.CountryID != uuid.Nil
 }
 
 // Update godoc
