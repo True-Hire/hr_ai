@@ -14,12 +14,14 @@ import (
 )
 
 type HRSessionRepository struct {
-	q *hrsessionsdb.Queries
+	q    *hrsessionsdb.Queries
+	pool *pgxpool.Pool
 }
 
 func NewHRSessionRepository(pool *pgxpool.Pool) *HRSessionRepository {
 	return &HRSessionRepository{
-		q: hrsessionsdb.New(pool),
+		q:    hrsessionsdb.New(pool),
+		pool: pool,
 	}
 }
 
@@ -73,6 +75,14 @@ func (r *HRSessionRepository) SoftDelete(ctx context.Context, id uuid.UUID) erro
 func (r *HRSessionRepository) SoftDeleteByHR(ctx context.Context, hrID uuid.UUID) error {
 	if err := r.q.SoftDeleteHRSessions(ctx, uuidToPgtype(hrID)); err != nil {
 		return fmt.Errorf("soft delete hr sessions: %w", err)
+	}
+	return nil
+}
+
+func (r *HRSessionRepository) HardDeleteByHR(ctx context.Context, hrID uuid.UUID) error {
+	_, err := r.pool.Exec(ctx, "DELETE FROM hr_sessions WHERE hr_id = $1", uuidToPgtype(hrID))
+	if err != nil {
+		return fmt.Errorf("hard delete hr sessions: %w", err)
 	}
 	return nil
 }
