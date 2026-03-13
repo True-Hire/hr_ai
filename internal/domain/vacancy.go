@@ -10,6 +10,11 @@ import (
 
 var ErrVacancyNotFound = errors.New("vacancy not found")
 
+const (
+	VacancyStatusActive = "active"
+	VacancyStatusDraft  = "draft"
+)
+
 type Vacancy struct {
 	ID             uuid.UUID
 	HRID           uuid.UUID
