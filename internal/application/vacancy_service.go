@@ -95,7 +95,7 @@ func (s *VacancyService) CreateVacancy(ctx context.Context, input *CreateVacancy
 		Email:          input.Email,
 		Address:        input.Address,
 		SourceLang:     parsed.SourceLang,
-		Status:         "draft",
+		Status:         domain.VacancyStatusActive,
 	}
 
 	if vacancy.SalaryCurrency == "" {
@@ -172,7 +172,7 @@ func (s *VacancyService) ParseVacancy(ctx context.Context, hrID uuid.UUID, compa
 		Email:          parsed.Email,
 		Address:        parsed.Address,
 		SourceLang:     parsed.SourceLang,
-		Status:         "draft",
+		Status:         domain.VacancyStatusActive,
 	}
 
 	created, err := s.repo.Create(ctx, vacancy)
@@ -234,7 +234,7 @@ func (s *VacancyService) CreateVacancyFromParsed(ctx context.Context, hrID uuid.
 		Email:          parsed.Email,
 		Address:        parsed.Address,
 		SourceLang:     parsed.SourceLang,
-		Status:         "draft",
+		Status:         domain.VacancyStatusActive,
 	}
 
 	created, err := s.repo.Create(ctx, vacancy)
@@ -540,6 +540,93 @@ func (s *VacancyService) UpdateVacancy(ctx context.Context, input *UpdateVacancy
 	}
 
 	return &VacancyWithDetails{Vacancy: updated, Texts: texts, Skills: skills}, nil
+}
+
+func (s *VacancyService) UpdateVacancyFromParsed(ctx context.Context, vacancyID uuid.UUID, parsed *gemini.ParsedVacancyFull) (*VacancyWithDetails, error) {
+	existing, err := s.repo.GetByID(ctx, vacancyID)
+	if err != nil {
+		return nil, fmt.Errorf("get vacancy for update: %w", err)
+	}
+
+	// Update fields from parsed data
+	if parsed.SalaryMin > 0 {
+		existing.SalaryMin = parsed.SalaryMin
+	}
+	if parsed.SalaryMax > 0 {
+		existing.SalaryMax = parsed.SalaryMax
+	}
+	if parsed.SalaryCurrency != "" {
+		existing.SalaryCurrency = parsed.SalaryCurrency
+	}
+	if parsed.ExperienceMin > 0 {
+		existing.ExperienceMin = parsed.ExperienceMin
+	}
+	if parsed.ExperienceMax > 0 {
+		existing.ExperienceMax = parsed.ExperienceMax
+	}
+	if parsed.Format != "" {
+		existing.Format = parsed.Format
+	}
+	if parsed.Schedule != "" {
+		existing.Schedule = parsed.Schedule
+	}
+	if parsed.Phone != "" {
+		existing.Phone = parsed.Phone
+	}
+	if parsed.Telegram != "" {
+		existing.Telegram = parsed.Telegram
+	}
+	if parsed.Email != "" {
+		existing.Email = parsed.Email
+	}
+	if parsed.Address != "" {
+		existing.Address = parsed.Address
+	}
+
+	updated, err := s.repo.Update(ctx, existing)
+	if err != nil {
+		return nil, fmt.Errorf("update vacancy: %w", err)
+	}
+
+	// Replace texts
+	if err := s.textRepo.DeleteByVacancy(ctx, updated.ID); err != nil {
+		return nil, fmt.Errorf("delete old vacancy texts: %w", err)
+	}
+	texts, err := s.storeVacancyTexts(ctx, updated.ID, parsed.SourceLang, parsed.Fields)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update skills
+	var skills []domain.Skill
+	if len(parsed.Skills) > 0 {
+		skills, err = s.skillSvc.SetVacancySkills(ctx, updated.ID, parsed.Skills)
+		if err != nil {
+			return nil, fmt.Errorf("set vacancy skills: %w", err)
+		}
+	} else {
+		skills, _ = s.skillSvc.ListVacancySkills(ctx, updated.ID)
+	}
+
+	if s.vectorIndexSvc != nil {
+		go func() {
+			if err := s.vectorIndexSvc.IndexVacancy(context.Background(), updated.ID); err != nil {
+				log.Printf("reindex vacancy %s after edit: %v", updated.ID, err)
+			}
+		}()
+	}
+
+	return &VacancyWithDetails{Vacancy: updated, Texts: texts, Skills: skills}, nil
+}
+
+func (s *VacancyService) UpdateVacancyStatus(ctx context.Context, id uuid.UUID, status string) error {
+	v, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("get vacancy: %w", err)
+	}
+	v.Status = status
+	_, err = s.repo.Update(ctx, v)
+	return err
 }
 
 func (s *VacancyService) DeleteVacancy(ctx context.Context, id uuid.UUID) error {

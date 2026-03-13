@@ -109,6 +109,22 @@ func (s *HRBotService) GetUser(ctx context.Context, userID uuid.UUID) (*domain.U
 	return s.userSvc.GetUser(ctx, userID)
 }
 
+func (s *HRBotService) StopVacancy(ctx context.Context, vacancyID uuid.UUID) error {
+	return s.vacancySvc.UpdateVacancyStatus(ctx, vacancyID, domain.VacancyStatusDraft)
+}
+
+func (s *HRBotService) ActivateVacancy(ctx context.Context, vacancyID uuid.UUID) error {
+	return s.vacancySvc.UpdateVacancyStatus(ctx, vacancyID, domain.VacancyStatusActive)
+}
+
+func (s *HRBotService) GetVacancy(ctx context.Context, vacancyID uuid.UUID) (*VacancyWithDetails, error) {
+	return s.vacancySvc.GetVacancy(ctx, vacancyID)
+}
+
+func (s *HRBotService) UpdatePublishedVacancy(ctx context.Context, vacancyID uuid.UUID, parsed *gemini.ParsedVacancyFull) (*VacancyWithDetails, error) {
+	return s.vacancySvc.UpdateVacancyFromParsed(ctx, vacancyID, parsed)
+}
+
 func (s *HRBotService) ListMyVacancies(ctx context.Context, hrID uuid.UUID) ([]VacancyWithDetails, error) {
 	result, err := s.vacancySvc.ListVacancies(ctx, 1, 100)
 	if err != nil {
@@ -229,6 +245,16 @@ func (s *HRBotService) SaveCompanyData(ctx context.Context, hrID uuid.UUID, pars
 	return s.hrSvc.UpdateCompanyHR(ctx, hr)
 }
 
+// SaveCompanyDataFromDraft saves a pre-built CompanyData draft to the HR record in Postgres.
+func (s *HRBotService) SaveCompanyDataFromDraft(ctx context.Context, hrID uuid.UUID, draft *domain.CompanyData) (*domain.CompanyHR, error) {
+	hr, err := s.hrSvc.GetCompanyHR(ctx, hrID)
+	if err != nil {
+		return nil, fmt.Errorf("get hr for company data: %w", err)
+	}
+	hr.CompanyData = draft
+	return s.hrSvc.UpdateCompanyHR(ctx, hr)
+}
+
 func (s *HRBotService) HasCompanyData(hr *domain.CompanyHR) bool {
 	if hr.CompanyData == nil {
 		return false
@@ -266,6 +292,72 @@ func (s *HRBotService) EnhanceVacancyDraft(ctx context.Context, draft *gemini.Pa
 
 func (s *HRBotService) CreateVacancyFromDraft(ctx context.Context, hrID uuid.UUID, companyData *domain.CompanyData, draft *gemini.ParsedVacancyFull) (*VacancyWithDetails, error) {
 	return s.vacancySvc.CreateVacancyFromParsed(ctx, hrID, companyData, draft)
+}
+
+// -- Company data draft storage in Redis --
+
+func (s *HRBotService) SaveCompanyDraft(ctx context.Context, telegramID int64, draft *domain.CompanyData) error {
+	key := fmt.Sprintf("hr_bot:company_draft:%d", telegramID)
+	return s.stateSvc.redis.Set(ctx, key, draft, s.stateSvc.ttl)
+}
+
+func (s *HRBotService) GetCompanyDraft(ctx context.Context, telegramID int64) (*domain.CompanyData, error) {
+	key := fmt.Sprintf("hr_bot:company_draft:%d", telegramID)
+	var draft domain.CompanyData
+	found, err := s.stateSvc.redis.Get(ctx, key, &draft)
+	if err != nil {
+		return nil, fmt.Errorf("get company draft: %w", err)
+	}
+	if !found {
+		return nil, nil
+	}
+	return &draft, nil
+}
+
+func (s *HRBotService) ClearCompanyDraft(ctx context.Context, telegramID int64) error {
+	key := fmt.Sprintf("hr_bot:company_draft:%d", telegramID)
+	return s.stateSvc.redis.Delete(ctx, key)
+}
+
+// ConvertParsedToCompanyData converts Gemini output to domain.CompanyData without saving to DB.
+func (s *HRBotService) ConvertParsedToCompanyData(parsed *gemini.ParsedCompanyFull) *domain.CompanyData {
+	texts := make([]domain.CompanyDataText, 0, 3)
+	for _, lang := range []string{"uz", "ru", "en"} {
+		t := domain.CompanyDataText{
+			Lang:     lang,
+			IsSource: lang == parsed.SourceLang,
+		}
+		if f, ok := parsed.Fields["name"]; ok {
+			t.Name = f[lang]
+		}
+		if f, ok := parsed.Fields["activity_type"]; ok {
+			t.ActivityType = f[lang]
+		}
+		if f, ok := parsed.Fields["company_type"]; ok {
+			t.CompanyType = f[lang]
+		}
+		if f, ok := parsed.Fields["about"]; ok {
+			t.About = f[lang]
+		}
+		if f, ok := parsed.Fields["market"]; ok {
+			t.Market = f[lang]
+		}
+		texts = append(texts, t)
+	}
+
+	return &domain.CompanyData{
+		EmployeeCount:   parsed.EmployeeCount,
+		Country:         parsed.Country,
+		Address:         parsed.Address,
+		Phone:           parsed.Phone,
+		Telegram:        parsed.Telegram,
+		TelegramChannel: parsed.TelegramChannel,
+		Email:           parsed.Email,
+		WebSite:         parsed.WebSite,
+		Instagram:       parsed.Instagram,
+		SourceLang:      parsed.SourceLang,
+		Texts:           texts,
+	}
 }
 
 // -- Vacancy draft storage in Redis --
