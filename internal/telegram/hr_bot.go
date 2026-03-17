@@ -243,6 +243,18 @@ var hrMsgBtnAddInfo = map[string]string{
 	"uz": "✏️ Qo'shimcha ma'lumot qo'shish",
 }
 
+var hrMsgBtnConfirmCreate = map[string]string{
+	"en": "✅ Create vacancy",
+	"ru": "✅ Создать вакансию",
+	"uz": "✅ Vakansiya yaratish",
+}
+
+var hrMsgBtnAddMoreInfo = map[string]string{
+	"en": "✏️ Add or change information",
+	"ru": "✏️ Добавить или изменить информацию",
+	"uz": "✏️ Ma'lumot qo'shish yoki o'zgartirish",
+}
+
 var hrMsgSendAdditionalInfo = map[string]string{
 	"en": "Send additional information about the vacancy.\n\nYou can:\n✍️ write\n🎤 send a voice message\n📎 attach a file",
 	"ru": "Отправьте дополнительную информацию о вакансии.\n\nВы можете:\n✍️ написать\n🎤 отправить голосовое\n📎 прикрепить файл",
@@ -679,35 +691,7 @@ func (hb *HRBot) registerHandlers() {
 			return c.Send(hrMsgError[lang], hrMenu(lang))
 		}
 
-		tgIDStr := strconv.FormatInt(sender.ID, 10)
-		hr, err := hrBotSvc.GetHRByTelegramID(ctx, tgIDStr)
-		if err != nil || hr == nil {
-			log.Printf("hr_vac_continue: failed to get HR for tg_id %d: %v", sender.ID, err)
-			_ = hrBotSvc.ClearState(ctx, sender.ID)
-			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
-			return c.Send(hrMsgError[lang], hrMenu(lang))
-		}
-
-		result, err := hrBotSvc.CreateVacancyFromDraft(ctx, hr.ID, hr.CompanyData, draft)
-		if err != nil {
-			log.Printf("hr create vacancy from draft error for %d: %v", sender.ID, err)
-			_ = hrBotSvc.ClearState(ctx, sender.ID)
-			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
-			return c.Send(hrMsgVacancyFailed[lang], hrMenu(lang))
-		}
-
-		_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
-		_ = hrBotSvc.ClearState(ctx, sender.ID)
-
-		// Count matching candidates
-		var skills []string
-		for _, sk := range result.Skills {
-			skills = append(skills, sk.Name)
-		}
-		matchCount := hrBotSvc.CountMatchingCandidates(ctx, vacancyTitle(result, "en"), skills)
-
-		msg := buildVacancyCreatedMessage(result, lang, matchCount)
-		return c.Send(msg, &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: vacancyPublishedMenu(lang, result.Vacancy.ID.String(), hb.webAppURL)})
+		return hb.sendVacancyConfirmation(c, draft, lang)
 	})
 
 	bot.Handle(&tele.Btn{Unique: "hr_vac_create_desc"}, func(c tele.Context) error {
@@ -736,21 +720,38 @@ func (hb *HRBot) registerHandlers() {
 			_ = c.Send(hrMsgEnhanceFailed[lang])
 		}
 
-		// Save enhanced draft and show review
+		// Save enhanced draft to Redis and show confirmation
 		_ = hrBotSvc.SaveVacancyDraft(ctx, sender.ID, enhanced)
 
-		tgIDStr := strconv.FormatInt(sender.ID, 10)
-		hr, err := hrBotSvc.GetHRByTelegramID(ctx, tgIDStr)
-		if err != nil || hr == nil {
-			log.Printf("hr_vac_create_desc: failed to get HR for tg_id %d: %v", sender.ID, err)
+		return hb.sendVacancyConfirmation(c, enhanced, lang)
+	})
+
+	bot.Handle(&tele.Btn{Unique: "hr_vac_confirm"}, func(c tele.Context) error {
+		sender := c.Sender()
+		_ = c.Respond(&tele.CallbackResponse{})
+		_ = c.Delete()
+
+		lang := hb.resolveHRLang(ctx, sender)
+
+		draft, err := hrBotSvc.GetVacancyDraft(ctx, sender.ID)
+		if err != nil || draft == nil {
 			_ = hrBotSvc.ClearState(ctx, sender.ID)
 			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 			return c.Send(hrMsgError[lang], hrMenu(lang))
 		}
 
-		result, err := hrBotSvc.CreateVacancyFromDraft(ctx, hr.ID, hr.CompanyData, enhanced)
+		tgIDStr := strconv.FormatInt(sender.ID, 10)
+		hr, err := hrBotSvc.GetHRByTelegramID(ctx, tgIDStr)
+		if err != nil || hr == nil {
+			log.Printf("hr_vac_confirm: failed to get HR for tg_id %d: %v", sender.ID, err)
+			_ = hrBotSvc.ClearState(ctx, sender.ID)
+			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
+			return c.Send(hrMsgError[lang], hrMenu(lang))
+		}
+
+		result, err := hrBotSvc.CreateVacancyFromDraft(ctx, hr.ID, hr.CompanyData, draft)
 		if err != nil {
-			log.Printf("hr create vacancy from enhanced draft error for %d: %v", sender.ID, err)
+			log.Printf("hr_vac_confirm: create vacancy error for %d: %v", sender.ID, err)
 			_ = hrBotSvc.ClearState(ctx, sender.ID)
 			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 			return c.Send(hrMsgVacancyFailed[lang], hrMenu(lang))
@@ -1641,6 +1642,96 @@ func (hb *HRBot) sendVacancyReview(c tele.Context, draft *gemini.ParsedVacancyFu
 		markup.Row(markup.Data(hrMsgBtnAddMissingInfo[lang], "hr_vac_add_info")),
 		markup.Row(markup.Data(hrMsgBtnContinueCurrent[lang], "hr_vac_continue")),
 		markup.Row(markup.Data(hrMsgBtnCreateDescription[lang], "hr_vac_create_desc")),
+	)
+
+	return c.Send(sb.String(), &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: markup})
+}
+
+// sendVacancyConfirmation shows the vacancy preview with two buttons: create and add/change info.
+func (hb *HRBot) sendVacancyConfirmation(c tele.Context, draft *gemini.ParsedVacancyFull, lang string) error {
+	var sb strings.Builder
+
+	header := map[string]string{
+		"en": "📋 *Your vacancy:*\n\n",
+		"ru": "📋 *Ваша вакансия:*\n\n",
+		"uz": "📋 *Sizning vakansiyangiz:*\n\n",
+	}
+	sb.WriteString(header[lang])
+
+	// Title
+	if title := draftField(draft, "title", lang); title != "" {
+		sb.WriteString(fmt.Sprintf("*%s*\n", title))
+	}
+
+	// Salary
+	if draft.SalaryMin > 0 || draft.SalaryMax > 0 {
+		sb.WriteString(fmt.Sprintf("💰 %s – %s %s\n", formatNumber(int64(draft.SalaryMin)), formatNumber(int64(draft.SalaryMax)), draft.SalaryCurrency))
+	}
+
+	// Format
+	if draft.Format != "" {
+		formatNames := map[string]map[string]string{
+			"office": {"en": "Office", "ru": "Офис", "uz": "Ofis"},
+			"remote": {"en": "Remote", "ru": "Удалёнка", "uz": "Masofaviy"},
+			"hybrid": {"en": "Hybrid", "ru": "Гибрид", "uz": "Gibrid"},
+		}
+		if names, ok := formatNames[draft.Format]; ok {
+			sb.WriteString(fmt.Sprintf("📍 %s\n", names[lang]))
+		}
+	}
+
+	// Experience
+	if draft.ExperienceMin > 0 || draft.ExperienceMax > 0 {
+		expLabel := map[string]string{"en": "Experience", "ru": "Опыт", "uz": "Tajriba"}
+		sb.WriteString(fmt.Sprintf("📅 %s: %d–%d\n", expLabel[lang], draft.ExperienceMin, draft.ExperienceMax))
+	}
+
+	// Description
+	if desc := draftField(draft, "description", lang); desc != "" {
+		sb.WriteString(fmt.Sprintf("\n%s\n", desc))
+	}
+
+	// Responsibilities
+	if resp := draftField(draft, "responsibilities", lang); resp != "" {
+		respLabel := map[string]string{"en": "Responsibilities", "ru": "Обязанности", "uz": "Vazifalar"}
+		sb.WriteString(fmt.Sprintf("\n*%s:*\n%s\n", respLabel[lang], resp))
+	}
+
+	// Requirements
+	if req := draftField(draft, "requirements", lang); req != "" {
+		reqLabel := map[string]string{"en": "Requirements", "ru": "Требования", "uz": "Talablar"}
+		sb.WriteString(fmt.Sprintf("\n*%s:*\n%s\n", reqLabel[lang], req))
+	}
+
+	// Conditions
+	if cond := draftField(draft, "conditions", lang); cond != "" {
+		condLabel := map[string]string{"en": "Conditions", "ru": "Условия", "uz": "Shartlar"}
+		sb.WriteString(fmt.Sprintf("\n*%s:*\n%s\n", condLabel[lang], cond))
+	}
+
+	// Skills
+	if len(draft.Skills) > 0 {
+		sb.WriteString(fmt.Sprintf("\n🛠 %s\n", strings.Join(draft.Skills, ", ")))
+	}
+
+	// Contacts
+	var contacts []string
+	if draft.Phone != "" {
+		contacts = append(contacts, fmt.Sprintf("📞 %s", draft.Phone))
+	}
+	if draft.Email != "" {
+		contacts = append(contacts, fmt.Sprintf("📧 %s", draft.Email))
+	}
+	if len(contacts) > 0 {
+		sb.WriteString("\n")
+		sb.WriteString(strings.Join(contacts, "  "))
+		sb.WriteString("\n")
+	}
+
+	markup := &tele.ReplyMarkup{}
+	markup.Inline(
+		markup.Row(markup.Data(hrMsgBtnConfirmCreate[lang], "hr_vac_confirm")),
+		markup.Row(markup.Data(hrMsgBtnAddMoreInfo[lang], "hr_vac_add_info")),
 	)
 
 	return c.Send(sb.String(), &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: markup})
