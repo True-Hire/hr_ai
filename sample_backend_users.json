@@ -1,0 +1,1502 @@
+[
+  {
+    "first_name": "Sardor",
+    "last_name": "Alimov",
+    "patronymic": "Rustamovich",
+    "phone": "+998901234501",
+    "telegram": "@sardor_alimov",
+    "telegram_id": "300000001",
+    "email": "sardor.alimov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 58,
+    "estimated_salary_min": 5000000,
+    "estimated_salary_max": 8000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-06-12",
+    "profile": {
+      "title": "Junior Go Developer",
+      "about": "Начинающий Go-разработчик с опытом создания REST API и работы с PostgreSQL. Увлечён микросервисной архитектурой и стремлюсь к развитию в области backend-разработки. Активно изучаю Docker и основы DevOps.",
+      "skills": ["Go", "PostgreSQL", "Redis", "Docker", "Git", "REST API", "SQL"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B1"}
+      ],
+      "certifications": ["Najot Ta'lim Go Backend Certificate"],
+      "achievements": "Разработал внутренний инструмент для автоматизации отчётности, сокративший время подготовки отчётов на 40%.",
+      "experience": [
+        {
+          "id": "exp-be-001-a",
+          "company": "Fido Biznes",
+          "position": "Junior Go Developer",
+          "start_date": "2024-03-01",
+          "end_date": "",
+          "projects": [{"project": "Payment Gateway Module", "items": ["Разработка REST API для обработки платежей", "Интеграция с банковскими системами через HTTP-клиент"]}],
+          "web_site": "https://fidobiznes.uz",
+          "description": "Разработка и поддержка микросервисов на Go для платёжной платформы компании."
+        },
+        {
+          "id": "exp-be-001-b",
+          "company": "Freelance",
+          "position": "Backend Developer",
+          "start_date": "2023-06-01",
+          "end_date": "2024-02-28",
+          "projects": [{"project": "Telegram Bot for E-commerce", "items": ["Создание бота для приёма заказов", "Подключение PostgreSQL для хранения данных"]}],
+          "web_site": "",
+          "description": "Фриланс-разработка ботов и небольших веб-сервисов на Go."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-be-001-a",
+          "institution": "PDP Academy",
+          "degree": "bachelor",
+          "field_of_study": "Software Engineering",
+          "start_date": "2021-09-01",
+          "end_date": "2023-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Прошёл интенсивный курс по Go-разработке и основам компьютерных наук."
+        }
+      ]
+    }
+  },
+  {
+    "first_name": "Dilshod",
+    "last_name": "Karimov",
+    "patronymic": "Bahodirovich",
+    "phone": "+998931234502",
+    "telegram": "@dilshod_karimov",
+    "telegram_id": "300000002",
+    "email": "dilshod.karimov@mail.ru",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 61,
+    "estimated_salary_min": 6000000,
+    "estimated_salary_max": 9000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-08-20",
+    "profile": {
+      "title": "Junior Go Developer",
+      "about": "Go-разработчик с опытом работы около полутора лет. Работаю с PostgreSQL, Redis и Docker, создаю REST API для внутренних сервисов. Стремлюсь углубить знания в области микросервисов и gRPC.",
+      "skills": ["Go", "PostgreSQL", "Redis", "Docker", "Git", "Linux", "REST API"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "B2"},
+        {"name": "English", "level": "B1"}
+      ],
+      "certifications": ["Stepik Go Programming Certificate"],
+      "achievements": "Реализовал систему кэширования на Redis, которая ускорила ответ API на 60%.",
+      "experience": [
+        {
+          "id": "exp-be-002-a",
+          "company": "Mediapark",
+          "position": "Junior Go Developer",
+          "start_date": "2024-01-15",
+          "end_date": "",
+          "projects": [{"project": "Content Management API", "items": ["Разработка CRUD-эндпоинтов для управления контентом", "Настройка Docker-контейнеров для локальной разработки"]}],
+          "web_site": "https://mediapark.uz",
+          "description": "Поддержка и развитие бэкенд-сервисов для медиа-платформы на Go."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-be-002-a",
+          "institution": "Najot Ta'lim",
+          "degree": "bachelor",
+          "field_of_study": "Backend Development",
+          "start_date": "2022-09-01",
+          "end_date": "2023-12-31",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Изучал основы программирования, Go, базы данных и DevOps."
+        }
+      ]
+    }
+  },
+  {
+    "first_name": "Aziza",
+    "last_name": "Rahimova",
+    "patronymic": "Shuhratovna",
+    "phone": "+998941234503",
+    "telegram": "@aziza_rahimova",
+    "telegram_id": "300000003",
+    "email": "aziza.rahimova@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 74,
+    "estimated_salary_min": 12000000,
+    "estimated_salary_max": 18000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-03-15",
+    "profile": {
+      "title": "Middle Go Developer",
+      "about": "Go-разработчик с 3-летним опытом в финтех-сфере. Работаю с микросервисной архитектурой, gRPC и Kafka. Имею опыт проектирования высоконагруженных систем обработки платежей.",
+      "skills": ["Go", "PostgreSQL", "Redis", "Docker", "Kubernetes", "gRPC", "Kafka", "CI/CD", "Git", "REST API", "Swagger"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B2"}
+      ],
+      "certifications": ["AWS Cloud Practitioner", "Docker Certified Associate"],
+      "achievements": "Спроектировала и внедрила систему обработки транзакций, обрабатывающую более 10 000 запросов в минуту.",
+      "experience": [
+        {
+          "id": "exp-be-003-a",
+          "company": "Payme",
+          "position": "Middle Go Developer",
+          "start_date": "2023-09-01",
+          "end_date": "",
+          "projects": [{"project": "Transaction Processing Service", "items": ["Разработка микросервисов для обработки транзакций", "Внедрение gRPC для межсервисного взаимодействия", "Настройка мониторинга через Prometheus и Grafana"]}],
+          "web_site": "https://payme.uz",
+          "description": "Разработка ключевых микросервисов платёжной системы Payme на Go."
+        },
+        {
+          "id": "exp-be-003-b",
+          "company": "Billz",
+          "position": "Junior Go Developer",
+          "start_date": "2022-03-01",
+          "end_date": "2023-08-31",
+          "projects": [{"project": "Inventory Management API", "items": ["Создание API для управления складскими остатками", "Интеграция с внешними ERP-системами"]}],
+          "web_site": "https://billz.io",
+          "description": "Разработка бэкенд-сервисов для SaaS-платформы автоматизации розничной торговли."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-be-003-a",
+          "institution": "TUIT",
+          "degree": "bachelor",
+          "field_of_study": "Computer Science",
+          "start_date": "2018-09-01",
+          "end_date": "2022-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Получила степень бакалавра по направлению информатика и программная инженерия."
+        }
+      ]
+    }
+  },
+  {
+    "first_name": "Bobur",
+    "last_name": "Toshmatov",
+    "patronymic": "Ilhomovich",
+    "phone": "+998951234504",
+    "telegram": "@bobur_tosh",
+    "telegram_id": "300000004",
+    "email": "bobur.toshmatov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Samarkand",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 77,
+    "estimated_salary_min": 14000000,
+    "estimated_salary_max": 20000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-04-02",
+    "profile": {
+      "title": "Middle Go Developer",
+      "about": "Backend-разработчик на Go с 4-летним опытом. Специализируюсь на проектировании микросервисов и работе с брокерами сообщений. Имею опыт работы с Kubernetes в продакшн-среде.",
+      "skills": ["Go", "PostgreSQL", "Redis", "Docker", "Kubernetes", "gRPC", "Kafka", "CI/CD", "Git", "MongoDB", "Prometheus", "Grafana"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B2"}
+      ],
+      "certifications": ["Kubernetes Administrator (CKA)"],
+      "achievements": "Мигрировал монолитное приложение на микросервисную архитектуру, сократив время деплоя с 2 часов до 15 минут.",
+      "experience": [
+        {
+          "id": "exp-be-004-a",
+          "company": "Click",
+          "position": "Middle Go Developer",
+          "start_date": "2023-01-10",
+          "end_date": "",
+          "projects": [{"project": "Notification Service", "items": ["Разработка сервиса уведомлений с поддержкой SMS, push и email", "Внедрение Kafka для асинхронной обработки сообщений"]}],
+          "web_site": "https://click.uz",
+          "description": "Проектирование и разработка микросервисов для платёжной экосистемы Click."
+        },
+        {
+          "id": "exp-be-004-b",
+          "company": "IT Park",
+          "position": "Go Developer",
+          "start_date": "2021-06-01",
+          "end_date": "2022-12-31",
+          "projects": [{"project": "Government Digital Services Platform", "items": ["Разработка API для портала госуслуг", "Интеграция с базами данных государственных органов"]}],
+          "web_site": "https://it-park.uz",
+          "description": "Разработка бэкенда для цифровых государственных сервисов."
+        },
+        {
+          "id": "exp-be-004-c",
+          "company": "Freelance",
+          "position": "Backend Developer",
+          "start_date": "2020-09-01",
+          "end_date": "2021-05-31",
+          "projects": [{"project": "E-commerce Backend", "items": ["Создание REST API для интернет-магазина", "Настройка CI/CD pipeline через GitHub Actions"]}],
+          "web_site": "",
+          "description": "Разработка бэкенд-решений для малого бизнеса на Go."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-be-004-a",
+          "institution": "Samarkand State University",
+          "degree": "bachelor",
+          "field_of_study": "Applied Mathematics and Informatics",
+          "start_date": "2016-09-01",
+          "end_date": "2020-06-30",
+          "location": "Samarkand, Uzbekistan",
+          "description": "Изучал прикладную математику и информатику с фокусом на алгоритмы и структуры данных."
+        }
+      ]
+    }
+  },
+  {
+    "first_name": "Nodir",
+    "last_name": "Yusupov",
+    "patronymic": "Anvarovich",
+    "phone": "+998971234505",
+    "telegram": "@nodir_yusupov",
+    "telegram_id": "300000005",
+    "email": "nodir.yusupov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 75,
+    "estimated_salary_min": 15000000,
+    "estimated_salary_max": 22000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-05-18",
+    "profile": {
+      "title": "Middle Go Developer",
+      "about": "Go-разработчик с 5-летним опытом в e-commerce и логистике. Работаю с высоконагруженными системами, имею глубокий опыт оптимизации SQL-запросов и кэширования. Участвовал в проектировании распределённых систем.",
+      "skills": ["Go", "PostgreSQL", "Redis", "Docker", "Kubernetes", "gRPC", "Kafka", "CI/CD", "Git", "Elasticsearch", "REST API", "RabbitMQ"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B2"}
+      ],
+      "certifications": ["HashiCorp Terraform Associate"],
+      "achievements": "Оптимизировал систему поиска товаров с использованием Elasticsearch, ускорив поиск в 5 раз при нагрузке в 50 000 запросов в минуту.",
+      "experience": [
+        {
+          "id": "exp-be-005-a",
+          "company": "Uzum",
+          "position": "Middle Go Developer",
+          "start_date": "2022-10-01",
+          "end_date": "",
+          "projects": [{"project": "Order Management System", "items": ["Разработка сервиса управления заказами", "Оптимизация поисковых запросов через Elasticsearch", "Внедрение event-driven архитектуры на Kafka"]}],
+          "web_site": "https://uzum.uz",
+          "description": "Разработка микросервисов для маркетплейса Uzum на Go."
+        },
+        {
+          "id": "exp-be-005-b",
+          "company": "Korzinka",
+          "position": "Go Developer",
+          "start_date": "2020-08-01",
+          "end_date": "2022-09-30",
+          "projects": [{"project": "Loyalty Program Backend", "items": ["Создание бэкенда программы лояльности", "Интеграция с кассовыми системами"]}],
+          "web_site": "https://korzinka.uz",
+          "description": "Разработка и поддержка бэкенд-систем для сети супермаркетов."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-be-005-a",
+          "institution": "TUIT",
+          "degree": "master",
+          "field_of_study": "Software Engineering",
+          "start_date": "2018-09-01",
+          "end_date": "2020-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Магистратура по программной инженерии с фокусом на распределённые системы."
+        }
+      ]
+    }
+  },
+  {
+    "first_name": "Jamshid",
+    "last_name": "Mirzaev",
+    "patronymic": "Kamoliddinovich",
+    "phone": "+998901234506",
+    "telegram": "@jamshid_mirzaev",
+    "telegram_id": "300000006",
+    "email": "jamshid.mirzaev@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 85,
+    "estimated_salary_min": 25000000,
+    "estimated_salary_max": 35000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-02-10",
+    "profile": {
+      "title": "Senior Go Developer",
+      "about": "Senior Go-разработчик с 7-летним опытом в финтехе и e-commerce. Проектирую высоконагруженные распределённые системы, управляю техническим долгом и менторю junior-разработчиков. Глубокие знания в области системного дизайна и DevOps.",
+      "skills": ["Go", "PostgreSQL", "Redis", "Docker", "Kubernetes", "gRPC", "Kafka", "CI/CD", "Prometheus", "Grafana", "MongoDB", "Elasticsearch", "Terraform", "AWS", "System Design", "Microservices"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "C1"}
+      ],
+      "certifications": ["AWS Solutions Architect Associate", "Kubernetes Administrator (CKA)", "Google Cloud Professional Cloud Developer"],
+      "achievements": "Спроектировал платёжный шлюз, обрабатывающий более 1 млн транзакций в сутки с uptime 99.99%. Провёл менторинг 5 junior-разработчиков.",
+      "experience": [
+        {
+          "id": "exp-be-006-a",
+          "company": "Payme",
+          "position": "Senior Go Developer",
+          "start_date": "2022-01-01",
+          "end_date": "",
+          "projects": [{"project": "Core Payment Engine", "items": ["Проектирование ядра платёжного движка", "Внедрение distributed tracing с Jaeger", "Оптимизация производительности до 50K RPS"]}],
+          "web_site": "https://payme.uz",
+          "description": "Проектирование и разработка ключевых сервисов платёжной платформы."
+        },
+        {
+          "id": "exp-be-006-b",
+          "company": "EPAM",
+          "position": "Go Developer",
+          "start_date": "2020-03-01",
+          "end_date": "2021-12-31",
+          "projects": [{"project": "International Banking Platform", "items": ["Разработка микросервисов для банковской платформы", "Code review и менторинг команды"]}],
+          "web_site": "https://epam.com",
+          "description": "Работал в международной команде над банковскими решениями на Go."
+        },
+        {
+          "id": "exp-be-006-c",
+          "company": "Humans",
+          "position": "Middle Go Developer",
+          "start_date": "2018-05-01",
+          "end_date": "2020-02-28",
+          "projects": [{"project": "SuperApp Backend", "items": ["Разработка бэкенда для суперприложения", "Настройка CI/CD и мониторинга"]}],
+          "web_site": "https://humans.uz",
+          "description": "Разработка бэкенд-сервисов для мультисервисной платформы Humans."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-be-006-a",
+          "institution": "Inha University in Tashkent",
+          "degree": "bachelor",
+          "field_of_study": "Computer Science and Engineering",
+          "start_date": "2014-09-01",
+          "end_date": "2018-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Окончил с отличием факультет компьютерных наук и инженерии."
+        }
+      ]
+    }
+  },
+  {
+    "first_name": "Malika",
+    "last_name": "Nazarova",
+    "patronymic": "Olimovna",
+    "phone": "+998931234507",
+    "telegram": "@malika_nazarova",
+    "telegram_id": "300000007",
+    "email": "malika.nazarova@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 87,
+    "estimated_salary_min": 28000000,
+    "estimated_salary_max": 40000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-01-22",
+    "profile": {
+      "title": "Senior Go Developer",
+      "about": "Senior Go-разработчик с 6-летним опытом. Специализируюсь на высоконагруженных финансовых системах и event-driven архитектуре. Имею опыт работы с командами до 10 человек и проектирования систем с нуля.",
+      "skills": ["Go", "PostgreSQL", "Redis", "Docker", "Kubernetes", "gRPC", "Kafka", "CI/CD", "Prometheus", "Grafana", "Elasticsearch", "NATS", "Terraform", "AWS", "System Design", "Microservices", "Event-Driven Architecture"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "C1"}
+      ],
+      "certifications": ["AWS Solutions Architect Professional", "Certified Kubernetes Application Developer (CKAD)"],
+      "achievements": "Спроектировала и внедрила event-driven систему обработки данных, обрабатывающую 500K событий в минуту. Выступала на конференции IT Park с докладом о Go в финтехе.",
+      "experience": [
+        {
+          "id": "exp-be-007-a",
+          "company": "Uzum",
+          "position": "Senior Go Developer",
+          "start_date": "2023-02-01",
+          "end_date": "",
+          "projects": [{"project": "Marketplace Core Services", "items": ["Проектирование ядра маркетплейса", "Внедрение event sourcing и CQRS", "Менторинг команды из 4 разработчиков"]}],
+          "web_site": "https://uzum.uz",
+          "description": "Проектирование и разработка core-сервисов маркетплейса Uzum."
+        },
+        {
+          "id": "exp-be-007-b",
+          "company": "Click",
+          "position": "Middle Go Developer",
+          "start_date": "2021-01-01",
+          "end_date": "2023-01-31",
+          "projects": [{"project": "Billing System Rewrite", "items": ["Перепроектирование биллинговой системы на микросервисы", "Миграция с монолита на Go"]}],
+          "web_site": "https://click.uz",
+          "description": "Переписывание биллинговой системы с монолитной архитектуры на микросервисы."
+        },
+        {
+          "id": "exp-be-007-c",
+          "company": "Kapitalbank",
+          "position": "Go Developer",
+          "start_date": "2019-04-01",
+          "end_date": "2020-12-31",
+          "projects": [{"project": "Mobile Banking API", "items": ["Разработка API для мобильного банкинга", "Обеспечение безопасности финансовых данных"]}],
+          "web_site": "https://kapitalbank.uz",
+          "description": "Разработка бэкенда мобильного банковского приложения."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-be-007-a",
+          "institution": "WIUT",
+          "degree": "bachelor",
+          "field_of_study": "Business Information Systems",
+          "start_date": "2015-09-01",
+          "end_date": "2019-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Изучала бизнес-информационные системы с углублённым изучением программирования."
+        }
+      ]
+    }
+  },
+  {
+    "first_name": "Rustam",
+    "last_name": "Abdullayev",
+    "patronymic": "Sherzodovich",
+    "phone": "+998941234508",
+    "telegram": "@rustam_abdullayev",
+    "telegram_id": "300000008",
+    "email": "rustam.abdullayev@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 92,
+    "estimated_salary_min": 40000000,
+    "estimated_salary_max": 55000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-01-05",
+    "profile": {
+      "title": "Lead Go Developer",
+      "about": "Lead Go-разработчик с 9-летним опытом в разработке и архитектуре распределённых систем. Управляю командами до 15 человек, выстраиваю процессы разработки и CI/CD. Имею опыт запуска продуктов с нуля до продакшна с миллионами пользователей.",
+      "skills": ["Go", "PostgreSQL", "Redis", "Docker", "Kubernetes", "gRPC", "Kafka", "CI/CD", "Prometheus", "Grafana", "MongoDB", "Elasticsearch", "Terraform", "AWS", "GCP", "System Design", "Microservices", "Event-Driven Architecture", "Team Leadership", "Technical Mentoring", "Agile/Scrum"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "C1"}
+      ],
+      "certifications": ["AWS Solutions Architect Professional", "Certified Kubernetes Administrator (CKA)", "Google Cloud Professional Cloud Architect", "HashiCorp Terraform Associate"],
+      "achievements": "Построил backend-платформу с нуля для одного из крупнейших маркетплейсов Узбекистана, обслуживающую 3 млн активных пользователей. Нанял и вырастил команду из 12 Go-разработчиков.",
+      "experience": [
+        {
+          "id": "exp-be-008-a",
+          "company": "Uzum",
+          "position": "Lead Go Developer",
+          "start_date": "2022-04-01",
+          "end_date": "",
+          "projects": [{"project": "Marketplace Platform Architecture", "items": ["Проектирование архитектуры всей backend-платформы", "Управление командой из 12 Go-разработчиков", "Внедрение стандартов кода и процессов код-ревью", "Оптимизация системы для обработки 100K RPS"]}],
+          "web_site": "https://uzum.uz",
+          "description": "Руководство backend-разработкой маркетплейса, проектирование архитектуры и управление командой."
+        },
+        {
+          "id": "exp-be-008-b",
+          "company": "EPAM",
+          "position": "Senior Go Developer",
+          "start_date": "2019-06-01",
+          "end_date": "2022-03-31",
+          "projects": [{"project": "FinTech Platform for European Client", "items": ["Разработка финтех-платформы для европейского клиента", "Проектирование event-driven архитектуры", "Техническое лидерство команды из 6 человек"]}],
+          "web_site": "https://epam.com",
+          "description": "Техническое лидерство и разработка финтех-решений для международных клиентов."
+        },
+        {
+          "id": "exp-be-008-c",
+          "company": "Payme",
+          "position": "Go Developer",
+          "start_date": "2017-03-01",
+          "end_date": "2019-05-31",
+          "projects": [{"project": "Payment Processing Engine", "items": ["Разработка движка обработки платежей", "Миграция с Python на Go для повышения производительности"]}],
+          "web_site": "https://payme.uz",
+          "description": "Разработка core-сервисов платёжной платформы и миграция на Go."
+        },
+        {
+          "id": "exp-be-008-d",
+          "company": "MyTaxi",
+          "position": "Backend Developer",
+          "start_date": "2015-09-01",
+          "end_date": "2017-02-28",
+          "projects": [{"project": "Ride-Hailing Backend", "items": ["Разработка бэкенда для сервиса такси", "Работа с геолокационными данными и маршрутизацией"]}],
+          "web_site": "https://mytaxi.uz",
+          "description": "Разработка бэкенд-сервисов для платформы вызова такси."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-be-008-a",
+          "institution": "TUIT",
+          "degree": "master",
+          "field_of_study": "Computer Science",
+          "start_date": "2013-09-01",
+          "end_date": "2015-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Магистратура по информатике с фокусом на распределённые вычисления и параллельное программирование."
+        },
+        {
+          "id": "edu-be-008-b",
+          "institution": "TUIT",
+          "degree": "bachelor",
+          "field_of_study": "Software Engineering",
+          "start_date": "2009-09-01",
+          "end_date": "2013-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавриат по программной инженерии."
+        }
+      ]
+    }
+  },
+  {
+    "first_name": "Sherzod",
+    "last_name": "Hasanov",
+    "patronymic": "Ulugbekovich",
+    "phone": "+998951234509",
+    "telegram": "@sherzod_hasanov",
+    "telegram_id": "300000009",
+    "email": "sherzod.hasanov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 78,
+    "estimated_salary_min": 18000000,
+    "estimated_salary_max": 25000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-07-01",
+    "profile": {
+      "title": "Senior Java Developer",
+      "about": "Java-разработчик с 6-летним опытом в enterprise-разработке. Работаю с Spring Boot, микросервисной архитектурой и облачными решениями. Имею опыт интеграции с банковскими системами.",
+      "skills": ["Java", "Spring Boot", "Spring Cloud", "PostgreSQL", "MySQL", "Redis", "Docker", "Kubernetes", "Kafka", "RabbitMQ", "Hibernate", "Maven", "Gradle", "CI/CD", "Git"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B2"}
+      ],
+      "certifications": ["Oracle Certified Professional Java SE 11", "Spring Professional Certification"],
+      "achievements": "Разработал модуль интеграции с международными платёжными системами Visa и Mastercard для Kapitalbank.",
+      "experience": [
+        {
+          "id": "exp-be-009-a",
+          "company": "Kapitalbank",
+          "position": "Senior Java Developer",
+          "start_date": "2022-06-01",
+          "end_date": "",
+          "projects": [{"project": "Core Banking System", "items": ["Разработка модулей ядра банковской системы", "Интеграция с платёжными системами Visa и Mastercard", "Оптимизация SQL-запросов и работы с БД"]}],
+          "web_site": "https://kapitalbank.uz",
+          "description": "Разработка и поддержка core banking системы на Java/Spring Boot."
+        },
+        {
+          "id": "exp-be-009-b",
+          "company": "EPAM",
+          "position": "Java Developer",
+          "start_date": "2019-09-01",
+          "end_date": "2022-05-31",
+          "projects": [{"project": "Insurance Platform", "items": ["Разработка микросервисов для страховой платформы", "Внедрение Spring Cloud для service discovery"]}],
+          "web_site": "https://epam.com",
+          "description": "Работа в международной команде над enterprise-решениями для страховых компаний."
+        },
+        {
+          "id": "exp-be-009-c",
+          "company": "Artel",
+          "position": "Junior Java Developer",
+          "start_date": "2018-03-01",
+          "end_date": "2019-08-31",
+          "projects": [{"project": "ERP System Module", "items": ["Разработка модулей ERP-системы", "Написание unit и integration тестов"]}],
+          "web_site": "https://artelelectronics.com",
+          "description": "Разработка внутренней ERP-системы предприятия."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-be-009-a",
+          "institution": "Inha University in Tashkent",
+          "degree": "bachelor",
+          "field_of_study": "Information Systems",
+          "start_date": "2014-09-01",
+          "end_date": "2018-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Изучал информационные системы с углублённым курсом по Java и базам данных."
+        }
+      ]
+    }
+  },
+  {
+    "first_name": "Otabek",
+    "last_name": "Solijonov",
+    "patronymic": "Farkhodovich",
+    "phone": "+998971234510",
+    "telegram": "@otabek_solijonov",
+    "telegram_id": "300000010",
+    "email": "otabek.solijonov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Bukhara",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 68,
+    "estimated_salary_min": 10000000,
+    "estimated_salary_max": 15000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-09-10",
+    "profile": {
+      "title": "Middle Java Developer",
+      "about": "Java-разработчик с 3-летним опытом. Работаю с Spring Boot и PostgreSQL, разрабатываю RESTful API для бизнес-приложений. Интересуюсь облачными технологиями и контейнеризацией.",
+      "skills": ["Java", "Spring Boot", "PostgreSQL", "MySQL", "Redis", "Docker", "Hibernate", "Maven", "Git", "REST API", "JUnit"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "B2"},
+        {"name": "English", "level": "B1"}
+      ],
+      "certifications": ["Oracle Certified Associate Java SE 8"],
+      "achievements": "Разработал систему автоматизации документооборота, сократившую время обработки заявок на 50%.",
+      "experience": [
+        {
+          "id": "exp-be-010-a",
+          "company": "Artel",
+          "position": "Middle Java Developer",
+          "start_date": "2023-04-01",
+          "end_date": "",
+          "projects": [{"project": "Supply Chain Management", "items": ["Разработка модуля управления цепочкой поставок", "Интеграция с внешними логистическими системами"]}],
+          "web_site": "https://artelelectronics.com",
+          "description": "Разработка модулей внутренней системы управления цепочками поставок."
+        },
+        {
+          "id": "exp-be-010-b",
+          "company": "Freelance",
+          "position": "Java Developer",
+          "start_date": "2022-01-01",
+          "end_date": "2023-03-31",
+          "projects": [{"project": "CRM System", "items": ["Создание CRM-системы для малого бизнеса", "Разработка REST API и админ-панели"]}],
+          "web_site": "",
+          "description": "Разработка CRM-систем и бэкенд-приложений для клиентов на фрилансе."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-be-010-a",
+          "institution": "Bukhara State University",
+          "degree": "bachelor",
+          "field_of_study": "Computer Science",
+          "start_date": "2017-09-01",
+          "end_date": "2021-06-30",
+          "location": "Bukhara, Uzbekistan",
+          "description": "Получил степень бакалавра по информатике с фокусом на программирование."
+        }
+      ]
+    }
+  },
+  {
+    "first_name": "Kamola",
+    "last_name": "Umarova",
+    "patronymic": "Bakhtiyorovna",
+    "phone": "+998901234511",
+    "telegram": "@kamola_umarova",
+    "telegram_id": "300000011",
+    "email": "kamola.umarova@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Fergana",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 63,
+    "estimated_salary_min": 8000000,
+    "estimated_salary_max": 12000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-10-05",
+    "profile": {
+      "title": "Junior Java Developer",
+      "about": "Начинающий Java-разработчик с годом опыта. Работаю с Spring Boot и MySQL, изучаю микросервисную архитектуру. Стремлюсь развиваться в сфере enterprise-разработки.",
+      "skills": ["Java", "Spring Boot", "MySQL", "PostgreSQL", "Docker", "Git", "REST API", "Maven", "JUnit"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "B2"},
+        {"name": "English", "level": "B1"}
+      ],
+      "certifications": [],
+      "achievements": "Создала RESTful API для внутренней системы учёта, которая используется 50+ сотрудниками ежедневно.",
+      "experience": [
+        {
+          "id": "exp-be-011-a",
+          "company": "Fido Biznes",
+          "position": "Junior Java Developer",
+          "start_date": "2024-06-01",
+          "end_date": "",
+          "projects": [{"project": "Internal Accounting System", "items": ["Разработка REST API для системы учёта", "Написание unit-тестов на JUnit"]}],
+          "web_site": "https://fidobiznes.uz",
+          "description": "Разработка и поддержка внутренних бизнес-приложений на Java."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-be-011-a",
+          "institution": "Fergana State University",
+          "degree": "bachelor",
+          "field_of_study": "Applied Informatics",
+          "start_date": "2019-09-01",
+          "end_date": "2023-06-30",
+          "location": "Fergana, Uzbekistan",
+          "description": "Изучала прикладную информатику и основы программирования."
+        }
+      ]
+    }
+  },
+  {
+    "first_name": "Bekzod",
+    "last_name": "Normatov",
+    "patronymic": "Dostonovich",
+    "phone": "+998931234512",
+    "telegram": "@bekzod_normatov",
+    "telegram_id": "300000012",
+    "email": "bekzod.normatov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 80,
+    "estimated_salary_min": 20000000,
+    "estimated_salary_max": 30000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-03-28",
+    "profile": {
+      "title": "Senior Python Developer",
+      "about": "Python-разработчик с 7-летним опытом в веб-разработке и Data Engineering. Работаю с Django, FastAPI и ETL-пайплайнами. Имею опыт проектирования ML-инфраструктуры и высоконагруженных API.",
+      "skills": ["Python", "Django", "FastAPI", "PostgreSQL", "Redis", "Docker", "Kubernetes", "Celery", "RabbitMQ", "Kafka", "Pandas", "Airflow", "AWS", "CI/CD", "Git"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B2"}
+      ],
+      "certifications": ["AWS Certified Data Analytics", "Python Institute PCAP"],
+      "achievements": "Построил ETL-пайплайн, обрабатывающий 10 ТБ данных в сутки для аналитической платформы Uzum.",
+      "experience": [
+        {
+          "id": "exp-be-012-a",
+          "company": "Uzum",
+          "position": "Senior Python Developer",
+          "start_date": "2022-08-01",
+          "end_date": "",
+          "projects": [{"project": "Data Platform", "items": ["Проектирование ETL-пайплайнов на Airflow", "Разработка API для аналитической платформы", "Оптимизация обработки больших объёмов данных"]}],
+          "web_site": "https://uzum.uz",
+          "description": "Разработка data-платформы и аналитических сервисов для маркетплейса."
+        },
+        {
+          "id": "exp-be-012-b",
+          "company": "Beeline UZ",
+          "position": "Python Developer",
+          "start_date": "2019-04-01",
+          "end_date": "2022-07-31",
+          "projects": [{"project": "Customer Analytics System", "items": ["Разработка системы аналитики клиентского поведения", "Создание REST API на Django REST Framework"]}],
+          "web_site": "https://beeline.uz",
+          "description": "Разработка аналитических систем и внутренних инструментов для телеком-оператора."
+        },
+        {
+          "id": "exp-be-012-c",
+          "company": "Freelance",
+          "position": "Python Developer",
+          "start_date": "2017-06-01",
+          "end_date": "2019-03-31",
+          "projects": [{"project": "Web Scraping & Automation", "items": ["Создание парсеров и скриптов автоматизации", "Разработка Django-приложений для малого бизнеса"]}],
+          "web_site": "",
+          "description": "Фриланс-разработка веб-приложений и автоматизация бизнес-процессов."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-be-012-a",
+          "institution": "TUIT",
+          "degree": "master",
+          "field_of_study": "Data Science",
+          "start_date": "2015-09-01",
+          "end_date": "2017-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Магистратура по анализу данных и машинному обучению."
+        }
+      ]
+    }
+  },
+  {
+    "first_name": "Doniyor",
+    "last_name": "Ergashev",
+    "patronymic": "Narzulloyevich",
+    "phone": "+998941234513",
+    "telegram": "@doniyor_ergashev",
+    "telegram_id": "300000013",
+    "email": "doniyor.ergashev@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Samarkand",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 70,
+    "estimated_salary_min": 12000000,
+    "estimated_salary_max": 18000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-06-30",
+    "profile": {
+      "title": "Middle Python Developer",
+      "about": "Python-разработчик с 4-летним опытом. Специализируюсь на Django и FastAPI, имею опыт работы с Celery и RabbitMQ для фоновой обработки задач. Работал над e-commerce и финтех-проектами.",
+      "skills": ["Python", "Django", "FastAPI", "PostgreSQL", "Redis", "Docker", "Celery", "RabbitMQ", "Git", "REST API", "SQLAlchemy"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B1"}
+      ],
+      "certifications": ["Python Institute PCEP"],
+      "achievements": "Разработал систему автоматической генерации отчётов для финансовой компании, обрабатывающую данные 100К+ клиентов.",
+      "experience": [
+        {
+          "id": "exp-be-013-a",
+          "company": "Billz",
+          "position": "Middle Python Developer",
+          "start_date": "2023-02-01",
+          "end_date": "",
+          "projects": [{"project": "Reporting Engine", "items": ["Разработка движка отчётности на Python", "Интеграция с Redis для кэширования отчётов"]}],
+          "web_site": "https://billz.io",
+          "description": "Разработка серверной части SaaS-платформы для автоматизации торговли."
+        },
+        {
+          "id": "exp-be-013-b",
+          "company": "Mediapark",
+          "position": "Junior Python Developer",
+          "start_date": "2021-05-01",
+          "end_date": "2023-01-31",
+          "projects": [{"project": "Content API", "items": ["Создание API для управления контентом на Django", "Написание асинхронных задач на Celery"]}],
+          "web_site": "https://mediapark.uz",
+          "description": "Разработка бэкенда контент-платформы на Python/Django."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-be-013-a",
+          "institution": "Samarkand State University",
+          "degree": "bachelor",
+          "field_of_study": "Computer Science",
+          "start_date": "2016-09-01",
+          "end_date": "2020-06-30",
+          "location": "Samarkand, Uzbekistan",
+          "description": "Изучал информатику и основы программирования."
+        }
+      ]
+    }
+  },
+  {
+    "first_name": "Nilufar",
+    "last_name": "Ismoilova",
+    "patronymic": "Abdulazizovna",
+    "phone": "+998951234514",
+    "telegram": "@nilufar_ismoilova",
+    "telegram_id": "300000014",
+    "email": "nilufar.ismoilova@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 60,
+    "estimated_salary_min": 7000000,
+    "estimated_salary_max": 10000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-11-12",
+    "profile": {
+      "title": "Junior Python Developer",
+      "about": "Начинающий Python-разработчик с полутора годами опыта. Работаю с Django и PostgreSQL, активно изучаю FastAPI и контейнеризацию. Имею опыт создания REST API и Telegram-ботов.",
+      "skills": ["Python", "Django", "PostgreSQL", "Redis", "Git", "REST API", "Docker", "Linux"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B2"}
+      ],
+      "certifications": ["Najot Ta'lim Python Backend Certificate"],
+      "achievements": "Разработала Telegram-бота для службы доставки, который используется 200+ курьерами ежедневно.",
+      "experience": [
+        {
+          "id": "exp-be-014-a",
+          "company": "Korzinka",
+          "position": "Junior Python Developer",
+          "start_date": "2024-04-01",
+          "end_date": "",
+          "projects": [{"project": "Delivery Service Bot", "items": ["Разработка Telegram-бота для курьерской службы", "Создание административной панели на Django"]}],
+          "web_site": "https://korzinka.uz",
+          "description": "Разработка внутренних инструментов и ботов для логистики сети супермаркетов."
+        },
+        {
+          "id": "exp-be-014-b",
+          "company": "Freelance",
+          "position": "Python Developer",
+          "start_date": "2023-09-01",
+          "end_date": "2024-03-31",
+          "projects": [{"project": "Various Django Projects", "items": ["Создание сайтов и API для малого бизнеса", "Разработка парсеров и скриптов автоматизации"]}],
+          "web_site": "",
+          "description": "Фриланс-разработка веб-приложений на Django для локальных клиентов."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-be-014-a",
+          "institution": "WIUT",
+          "degree": "bachelor",
+          "field_of_study": "Computer Science",
+          "start_date": "2019-09-01",
+          "end_date": "2023-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Изучала компьютерные науки с углублённым курсом по веб-разработке."
+        }
+      ]
+    }
+  },
+  {
+    "first_name": "Asilbek",
+    "last_name": "Jumayev",
+    "patronymic": "Odilovich",
+    "phone": "+998971234515",
+    "telegram": "@asilbek_jumayev",
+    "telegram_id": "300000015",
+    "email": "asilbek.jumayev@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 76,
+    "estimated_salary_min": 18000000,
+    "estimated_salary_max": 25000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-04-20",
+    "profile": {
+      "title": "Senior Node.js Developer",
+      "about": "Node.js-разработчик с 6-летним опытом в создании масштабируемых веб-приложений и real-time систем. Работаю с NestJS, TypeScript и MongoDB. Имею опыт проектирования WebSocket-решений для чатов и уведомлений.",
+      "skills": ["Node.js", "TypeScript", "NestJS", "Express.js", "PostgreSQL", "MongoDB", "Redis", "Docker", "WebSocket", "GraphQL", "Kafka", "CI/CD", "Git", "AWS"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B2"}
+      ],
+      "certifications": ["AWS Certified Developer Associate", "MongoDB Certified Developer"],
+      "achievements": "Спроектировал и реализовал real-time систему уведомлений, обслуживающую 500К одновременных WebSocket-соединений.",
+      "experience": [
+        {
+          "id": "exp-be-015-a",
+          "company": "Humans",
+          "position": "Senior Node.js Developer",
+          "start_date": "2022-05-01",
+          "end_date": "",
+          "projects": [{"project": "Real-Time Communication Platform", "items": ["Проектирование WebSocket-инфраструктуры для чата", "Разработка push-notification сервиса", "Оптимизация производительности для 500K соединений"]}],
+          "web_site": "https://humans.uz",
+          "description": "Разработка real-time сервисов для суперприложения Humans."
+        },
+        {
+          "id": "exp-be-015-b",
+          "company": "MyTaxi",
+          "position": "Node.js Developer",
+          "start_date": "2020-01-01",
+          "end_date": "2022-04-30",
+          "projects": [{"project": "Driver Tracking Service", "items": ["Разработка сервиса отслеживания водителей в реальном времени", "Интеграция с картографическими сервисами"]}],
+          "web_site": "https://mytaxi.uz",
+          "description": "Разработка бэкенд-сервисов для платформы такси на Node.js."
+        },
+        {
+          "id": "exp-be-015-c",
+          "company": "Freelance",
+          "position": "Full Stack Developer",
+          "start_date": "2018-06-01",
+          "end_date": "2019-12-31",
+          "projects": [{"project": "Various Web Applications", "items": ["Создание веб-приложений на Node.js и React", "Разработка REST API и интеграция с третьими сервисами"]}],
+          "web_site": "",
+          "description": "Фриланс-разработка веб-приложений на Node.js."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-be-015-a",
+          "institution": "TUIT",
+          "degree": "bachelor",
+          "field_of_study": "Software Engineering",
+          "start_date": "2014-09-01",
+          "end_date": "2018-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Изучал программную инженерию с фокусом на веб-технологии."
+        }
+      ]
+    }
+  },
+  {
+    "first_name": "Zafar",
+    "last_name": "Muhammadiyev",
+    "patronymic": "Sanjarovich",
+    "phone": "+998901234516",
+    "telegram": "@zafar_muhammadiyev",
+    "telegram_id": "300000016",
+    "email": "zafar.muhammadiyev@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Namangan",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 65,
+    "estimated_salary_min": 9000000,
+    "estimated_salary_max": 14000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-08-15",
+    "profile": {
+      "title": "Middle Node.js Developer",
+      "about": "Node.js-разработчик с 3-летним опытом. Работаю с Express.js, NestJS и PostgreSQL. Имею опыт разработки RESTful API и интеграции с внешними сервисами. Активно изучаю TypeScript и микросервисную архитектуру.",
+      "skills": ["Node.js", "JavaScript", "TypeScript", "Express.js", "NestJS", "PostgreSQL", "MongoDB", "Redis", "Docker", "Git", "REST API"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "B2"},
+        {"name": "English", "level": "B1"}
+      ],
+      "certifications": [],
+      "achievements": "Разработал API для мобильного приложения доставки еды, обслуживающего 10К+ пользователей в день.",
+      "experience": [
+        {
+          "id": "exp-be-016-a",
+          "company": "Mediapark",
+          "position": "Middle Node.js Developer",
+          "start_date": "2023-08-01",
+          "end_date": "",
+          "projects": [{"project": "Streaming Platform API", "items": ["Разработка API для стриминговой платформы", "Оптимизация работы с MongoDB для каталога контента"]}],
+          "web_site": "https://mediapark.uz",
+          "description": "Разработка бэкенд-сервисов для медиа-платформы на Node.js."
+        },
+        {
+          "id": "exp-be-016-b",
+          "company": "Freelance",
+          "position": "Node.js Developer",
+          "start_date": "2022-03-01",
+          "end_date": "2023-07-31",
+          "projects": [{"project": "Food Delivery API", "items": ["Создание API для приложения доставки еды", "Интеграция с платёжными системами Payme и Click"]}],
+          "web_site": "",
+          "description": "Фриланс-разработка бэкенда для стартапов и малого бизнеса."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-be-016-a",
+          "institution": "PDP Academy",
+          "degree": "bachelor",
+          "field_of_study": "Full Stack Development",
+          "start_date": "2020-09-01",
+          "end_date": "2022-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Прошёл курс Full Stack разработки с фокусом на Node.js и React."
+        }
+      ]
+    }
+  },
+  {
+    "first_name": "Ulugbek",
+    "last_name": "Rakhimov",
+    "patronymic": "Murodovich",
+    "phone": "+998931234517",
+    "telegram": "@ulugbek_rakhimov",
+    "telegram_id": "300000017",
+    "email": "ulugbek.rakhimov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 79,
+    "estimated_salary_min": 20000000,
+    "estimated_salary_max": 28000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-02-28",
+    "profile": {
+      "title": "Senior C#/.NET Developer",
+      "about": "C#/.NET разработчик с 6-летним опытом в enterprise-разработке. Специализируюсь на ASP.NET Core, микросервисах и Azure. Имею опыт работы с крупными банковскими и телекоммуникационными системами.",
+      "skills": ["C#", ".NET", "ASP.NET Core", "Entity Framework", "PostgreSQL", "SQL Server", "Redis", "Docker", "Azure", "RabbitMQ", "SignalR", "CI/CD", "Git", "Microservices"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B2"}
+      ],
+      "certifications": ["Microsoft Certified: Azure Developer Associate", "Microsoft Certified: .NET Developer"],
+      "achievements": "Разработал систему онлайн-банкинга для Kapitalbank, которой пользуются более 500К клиентов. Внедрил SignalR для real-time уведомлений.",
+      "experience": [
+        {
+          "id": "exp-be-017-a",
+          "company": "Kapitalbank",
+          "position": "Senior .NET Developer",
+          "start_date": "2021-09-01",
+          "end_date": "",
+          "projects": [{"project": "Online Banking Platform", "items": ["Разработка платформы онлайн-банкинга на ASP.NET Core", "Внедрение real-time уведомлений через SignalR", "Интеграция с процессинговым центром"]}],
+          "web_site": "https://kapitalbank.uz",
+          "description": "Разработка и поддержка платформы онлайн-банкинга на .NET."
+        },
+        {
+          "id": "exp-be-017-b",
+          "company": "Ucell",
+          "position": ".NET Developer",
+          "start_date": "2019-03-01",
+          "end_date": "2021-08-31",
+          "projects": [{"project": "CRM System", "items": ["Разработка CRM-системы для управления клиентской базой", "Интеграция с биллинговыми системами"]}],
+          "web_site": "https://ucell.uz",
+          "description": "Разработка корпоративных систем для телеком-оператора."
+        },
+        {
+          "id": "exp-be-017-c",
+          "company": "Artel",
+          "position": "Junior .NET Developer",
+          "start_date": "2018-01-01",
+          "end_date": "2019-02-28",
+          "projects": [{"project": "Warehouse Management", "items": ["Создание системы управления складом", "Разработка отчётов и аналитики"]}],
+          "web_site": "https://artelelectronics.com",
+          "description": "Разработка внутренних корпоративных систем на .NET."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-be-017-a",
+          "institution": "Inha University in Tashkent",
+          "degree": "bachelor",
+          "field_of_study": "Computer Science and Engineering",
+          "start_date": "2013-09-01",
+          "end_date": "2017-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Изучал компьютерные науки с углублённым курсом по .NET разработке."
+        }
+      ]
+    }
+  },
+  {
+    "first_name": "Madina",
+    "last_name": "Saidova",
+    "patronymic": "Timurovna",
+    "phone": "+998941234518",
+    "telegram": "@madina_saidova",
+    "telegram_id": "300000018",
+    "email": "madina.saidova@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Samarkand",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 67,
+    "estimated_salary_min": 10000000,
+    "estimated_salary_max": 16000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-07-22",
+    "profile": {
+      "title": "Middle C#/.NET Developer",
+      "about": "C#/.NET разработчик с 3-летним опытом. Работаю с ASP.NET Core и Entity Framework, разрабатываю RESTful API для корпоративных систем. Интересуюсь облачными технологиями и DevOps.",
+      "skills": ["C#", ".NET", "ASP.NET Core", "Entity Framework", "PostgreSQL", "SQL Server", "Redis", "Docker", "Git", "REST API", "Azure DevOps"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B1"}
+      ],
+      "certifications": ["Microsoft Certified: Azure Fundamentals"],
+      "achievements": "Разработала модуль автоматизации HR-процессов, который сократил время обработки заявок сотрудников на 60%.",
+      "experience": [
+        {
+          "id": "exp-be-018-a",
+          "company": "Beeline UZ",
+          "position": "Middle .NET Developer",
+          "start_date": "2023-05-01",
+          "end_date": "",
+          "projects": [{"project": "HR Automation System", "items": ["Разработка системы автоматизации HR-процессов", "Интеграция с Active Directory и корпоративными системами"]}],
+          "web_site": "https://beeline.uz",
+          "description": "Разработка внутренних корпоративных систем для телеком-оператора."
+        },
+        {
+          "id": "exp-be-018-b",
+          "company": "IT Park",
+          "position": "Junior .NET Developer",
+          "start_date": "2022-01-01",
+          "end_date": "2023-04-30",
+          "projects": [{"project": "Digital Government Portal", "items": ["Разработка модулей для портала электронного правительства", "Написание unit-тестов и документации"]}],
+          "web_site": "https://it-park.uz",
+          "description": "Разработка модулей для цифровых государственных сервисов на .NET."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-be-018-a",
+          "institution": "Samarkand State University",
+          "degree": "bachelor",
+          "field_of_study": "Information Technology",
+          "start_date": "2017-09-01",
+          "end_date": "2021-06-30",
+          "location": "Samarkand, Uzbekistan",
+          "description": "Изучала информационные технологии с фокусом на корпоративную разработку."
+        }
+      ]
+    }
+  },
+  {
+    "first_name": "Abdulaziz",
+    "last_name": "Tursunov",
+    "patronymic": "Komilovich",
+    "phone": "+998951234519",
+    "telegram": "@abdulaziz_tursunov",
+    "telegram_id": "300000019",
+    "email": "abdulaziz.tursunov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Bukhara",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 72,
+    "estimated_salary_min": 14000000,
+    "estimated_salary_max": 20000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-05-05",
+    "profile": {
+      "title": "Senior PHP Developer",
+      "about": "PHP-разработчик с 7-летним опытом в веб-разработке. Работаю с Laravel и Symfony, имею глубокий опыт создания e-commerce платформ и CMS. Также знаком с Docker и основами DevOps.",
+      "skills": ["PHP", "Laravel", "Symfony", "PostgreSQL", "MySQL", "Redis", "Docker", "Nginx", "Git", "REST API", "Composer", "PHPUnit", "Elasticsearch"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B1"}
+      ],
+      "certifications": ["Zend Certified PHP Engineer"],
+      "achievements": "Разработал e-commerce платформу для Korzinka с каталогом из 50К+ товаров и интеграцией с 1С.",
+      "experience": [
+        {
+          "id": "exp-be-019-a",
+          "company": "Korzinka",
+          "position": "Senior PHP Developer",
+          "start_date": "2021-06-01",
+          "end_date": "",
+          "projects": [{"project": "E-commerce Platform", "items": ["Разработка e-commerce платформы на Laravel", "Интеграция с 1С и складской системой", "Оптимизация работы с каталогом 50К+ товаров"]}],
+          "web_site": "https://korzinka.uz",
+          "description": "Разработка и поддержка e-commerce платформы сети супермаркетов."
+        },
+        {
+          "id": "exp-be-019-b",
+          "company": "Mediapark",
+          "position": "PHP Developer",
+          "start_date": "2019-02-01",
+          "end_date": "2021-05-31",
+          "projects": [{"project": "News Portal CMS", "items": ["Разработка CMS для новостного портала", "Создание админ-панели и модерации контента"]}],
+          "web_site": "https://mediapark.uz",
+          "description": "Разработка и поддержка контент-менеджмент систем для медиа-группы."
+        },
+        {
+          "id": "exp-be-019-c",
+          "company": "Freelance",
+          "position": "PHP Developer",
+          "start_date": "2017-08-01",
+          "end_date": "2019-01-31",
+          "projects": [{"project": "Various WordPress & Laravel Projects", "items": ["Разработка сайтов на WordPress и Laravel", "Создание интернет-магазинов для локальных клиентов"]}],
+          "web_site": "",
+          "description": "Фриланс-разработка сайтов и веб-приложений на PHP."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-be-019-a",
+          "institution": "Bukhara State University",
+          "degree": "bachelor",
+          "field_of_study": "Applied Mathematics and Informatics",
+          "start_date": "2013-09-01",
+          "end_date": "2017-06-30",
+          "location": "Bukhara, Uzbekistan",
+          "description": "Изучал прикладную математику и информатику с акцентом на веб-разработку."
+        }
+      ]
+    }
+  },
+  {
+    "first_name": "Temur",
+    "last_name": "Khamidov",
+    "patronymic": "Akmalovich",
+    "phone": "+998971234520",
+    "telegram": "@temur_khamidov",
+    "telegram_id": "300000020",
+    "email": "temur.khamidov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Fergana",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 82,
+    "estimated_salary_min": 22000000,
+    "estimated_salary_max": 32000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-03-10",
+    "profile": {
+      "title": "Middle Rust Developer",
+      "about": "Rust-разработчик с 4-летним опытом в системном программировании и высокопроизводительных сервисах. Ранее работал с C++ и Go, перешёл на Rust для разработки low-latency систем. Имею опыт работы с WebAssembly и embedded systems.",
+      "skills": ["Rust", "PostgreSQL", "Redis", "Docker", "gRPC", "Tokio", "Actix-web", "WebAssembly", "Linux", "Git", "CI/CD", "Prometheus", "C++"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B2"}
+      ],
+      "certifications": ["Linux Foundation Certified System Administrator"],
+      "achievements": "Переписал критический сервис обработки данных с Python на Rust, снизив latency с 200ms до 5ms и потребление памяти в 10 раз.",
+      "experience": [
+        {
+          "id": "exp-be-020-a",
+          "company": "EPAM",
+          "position": "Rust Developer",
+          "start_date": "2023-01-01",
+          "end_date": "",
+          "projects": [{"project": "High-Performance Data Processing", "items": ["Разработка высокопроизводительного сервиса обработки данных на Rust", "Оптимизация latency до sub-millisecond уровня", "Внедрение gRPC для межсервисного взаимодействия"]}],
+          "web_site": "https://epam.com",
+          "description": "Разработка высокопроизводительных backend-сервисов на Rust для международных клиентов."
+        },
+        {
+          "id": "exp-be-020-b",
+          "company": "Click",
+          "position": "Backend Developer (Go/Rust)",
+          "start_date": "2021-04-01",
+          "end_date": "2022-12-31",
+          "projects": [{"project": "Fraud Detection System", "items": ["Разработка системы обнаружения мошенничества", "Обработка транзакций в реальном времени на Rust"]}],
+          "web_site": "https://click.uz",
+          "description": "Разработка критических по производительности сервисов для платёжной системы."
+        },
+        {
+          "id": "exp-be-020-c",
+          "company": "Freelance",
+          "position": "Systems Programmer",
+          "start_date": "2020-01-01",
+          "end_date": "2021-03-31",
+          "projects": [{"project": "Embedded Systems & CLI Tools", "items": ["Разработка CLI-утилит на Rust", "Работа с embedded-системами и IoT"]}],
+          "web_site": "",
+          "description": "Фриланс-разработка системных утилит и embedded-решений."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-be-020-a",
+          "institution": "Fergana State University",
+          "degree": "master",
+          "field_of_study": "Computer Engineering",
+          "start_date": "2017-09-01",
+          "end_date": "2019-06-30",
+          "location": "Fergana, Uzbekistan",
+          "description": "Магистратура по вычислительной технике с фокусом на системное программирование."
+        }
+      ]
+    }
+  }
+]

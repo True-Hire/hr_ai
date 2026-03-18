@@ -41,6 +41,8 @@ type Services struct {
 	HRBot               *application.HRBotService
 	AccountDeletion     *application.AccountDeletionService
 	HRSavedUser         *application.HRSavedUserService
+	CandidateIndexing   *application.CandidateIndexingService
+	CandidateSearch     *application.CandidateSearchService
 	Storage          *application.StorageService
 	GeminiClient     *gemini.Client
 	CasbinEnforcer   *casbinlib.Enforcer
@@ -132,6 +134,23 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 	hrSavedUserRepo := repository.NewHRSavedUserRepository(pool)
 	hrSavedUserSvc := application.NewHRSavedUserService(hrSavedUserRepo)
 
+	// Candidate search & scoring
+	cspRepo := repository.NewCandidateSearchProfileRepository(pool)
+	companyRefRepo := repository.NewCompanyReferenceRepository(pool)
+	universityRefRepo := repository.NewUniversityReferenceRepository(pool)
+	searchSessionRepo := repository.NewSearchSessionRepository(pool)
+
+	candidateIndexingSvc := application.NewCandidateIndexingService(
+		cspRepo, companyRefRepo, universityRefRepo,
+		userSvc, pfSvc, pftSvc, expSvc, eduSvc, itSvc, skillSvc,
+	)
+	candidateSearchSvc := application.NewCandidateSearchService(
+		cspRepo, searchSessionRepo, userSvc, skillSvc, vacancySvc, expSvc,
+	)
+
+	// Hook indexing into profile parse
+	profileParseSvc.SetCandidateIndexingService(candidateIndexingSvc)
+
 	hrBotSvc := application.NewHRBotService(companyHRSvc, vacancySvc, vacancyAppSvc, botStateSvc, searchSvc, userSvc, geminiClient)
 
 	return &Services{
@@ -159,6 +178,8 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 		HRBot:              hrBotSvc,
 		AccountDeletion:    accountDeletionSvc,
 		HRSavedUser:        hrSavedUserSvc,
+		CandidateIndexing:  candidateIndexingSvc,
+		CandidateSearch:    candidateSearchSvc,
 		Storage:          storageSvc,
 		GeminiClient:     geminiClient,
 		CasbinEnforcer:   enforcer,
