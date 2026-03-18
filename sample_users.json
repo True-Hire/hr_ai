@@ -1,0 +1,3635 @@
+[
+  {
+    "id": "00000001-0000-0000-0000-000000000001",
+    "first_name": "Aziz",
+    "last_name": "Karimov",
+    "patronymic": "Rustamovich",
+    "phone": "+998901234501",
+    "telegram": "@aziz_karimov",
+    "telegram_id": "200000001",
+    "email": "aziz.karimov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 82,
+    "estimated_salary_min": 8000000,
+    "estimated_salary_max": 12000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-01-15T10:30:00Z",
+    "profile": {
+      "title": "Senior Backend Developer",
+      "about": "Опытный backend-разработчик с 6-летним стажем работы в финтех-секторе Узбекистана. Специализируюсь на Go и микросервисной архитектуре. Активно участвую в развитии IT-сообщества Ташкента.",
+      "skills": ["Go", "PostgreSQL", "Redis", "Docker", "Kubernetes", "gRPC", "REST API"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B2"}
+      ],
+      "certifications": ["AWS Solutions Architect Associate"],
+      "achievements": "Разработал платёжный шлюз, обрабатывающий более 100 000 транзакций в день. Выступал на конференции IT Park DevTalks 2024.",
+      "experience": [
+        {
+          "id": "exp-001-a",
+          "company": "Payme",
+          "position": "Senior Backend Developer",
+          "start_date": "2022-03-01",
+          "end_date": "",
+          "projects": [{"project": "Payment Gateway v3", "items": ["Миграция на микросервисы", "Интеграция с международными платёжными системами"]}],
+          "web_site": "https://payme.uz",
+          "description": "Разработка и поддержка высоконагруженных платёжных сервисов на Go. Оптимизация производительности и масштабируемости системы."
+        },
+        {
+          "id": "exp-001-b",
+          "company": "Click",
+          "position": "Middle Backend Developer",
+          "start_date": "2019-06-01",
+          "end_date": "2022-02-28",
+          "projects": [{"project": "Click Merchant API", "items": ["Разработка REST API для мерчантов", "Интеграция с банковскими системами"]}],
+          "web_site": "https://click.uz",
+          "description": "Участвовал в разработке API для мерчантов и внутренних сервисов компании."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-001-a",
+          "institution": "TUIT (Tashkent University of Information Technologies)",
+          "degree": "bachelor",
+          "field_of_study": "Computer Science",
+          "start_date": "2015-09-01",
+          "end_date": "2019-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Окончил факультет компьютерной инженерии с отличием."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000002-0000-0000-0000-000000000002",
+    "first_name": "Dildora",
+    "last_name": "Rakhimova",
+    "patronymic": "Bakhodirovna",
+    "phone": "+998937654302",
+    "telegram": "@dildora_rakhimova",
+    "telegram_id": "200000002",
+    "email": "dildora.rakhimova@mail.ru",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["frontend"],
+    "profile_score": 74,
+    "estimated_salary_min": 6000000,
+    "estimated_salary_max": 9000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-02-03T14:20:00Z",
+    "profile": {
+      "title": "Middle Frontend Developer",
+      "about": "Frontend-разработчик с 3-летним опытом работы с React и TypeScript. Увлекаюсь UX/UI и доступностью веб-приложений. Ищу интересный продуктовый проект.",
+      "skills": ["React", "TypeScript", "Next.js", "Tailwind CSS", "Redux", "Figma"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C2"},
+        {"name": "English", "level": "B1"}
+      ],
+      "certifications": ["Meta Frontend Developer Professional Certificate"],
+      "achievements": "Создала дизайн-систему для внутренних продуктов Uzum, что сократило время разработки UI на 30%.",
+      "experience": [
+        {
+          "id": "exp-002-a",
+          "company": "Uzum",
+          "position": "Middle Frontend Developer",
+          "start_date": "2023-01-15",
+          "end_date": "",
+          "projects": [{"project": "Uzum Market Web", "items": ["Разработка каталога товаров", "Оптимизация загрузки страниц"]}],
+          "web_site": "https://uzum.uz",
+          "description": "Разработка и поддержка веб-интерфейса маркетплейса Uzum Market."
+        },
+        {
+          "id": "exp-002-b",
+          "company": "Mediapark",
+          "position": "Junior Frontend Developer",
+          "start_date": "2021-09-01",
+          "end_date": "2022-12-31",
+          "projects": [{"project": "Корпоративный портал", "items": ["Вёрстка страниц", "Интеграция с REST API"]}],
+          "web_site": "https://mediapark.uz",
+          "description": "Начала карьеру в Mediapark, занимаясь вёрсткой и разработкой SPA-приложений."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-002-a",
+          "institution": "WIUT (Westminster International University in Tashkent)",
+          "degree": "bachelor",
+          "field_of_study": "Business Information Systems",
+          "start_date": "2017-09-01",
+          "end_date": "2021-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Получила степень бакалавра в области бизнес-информационных систем."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000003-0000-0000-0000-000000000003",
+    "first_name": "Sergey",
+    "last_name": "Petrov",
+    "patronymic": "Aleksandrovich",
+    "phone": "+998712345603",
+    "telegram": "@sergey_petrov_dev",
+    "telegram_id": "200000003",
+    "email": "sergey.petrov.dev@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Russian",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["devops"],
+    "profile_score": 88,
+    "estimated_salary_min": 10000000,
+    "estimated_salary_max": 15000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-01-08T09:15:00Z",
+    "profile": {
+      "title": "Lead DevOps Engineer",
+      "about": "DevOps-инженер с 8-летним стажем, специализируюсь на облачной инфраструктуре и CI/CD. Руковожу командой из 4 инженеров. Имею глубокий опыт работы с AWS и Kubernetes.",
+      "skills": ["Kubernetes", "Terraform", "AWS", "CI/CD", "Jenkins", "GitLab CI", "Ansible", "Prometheus", "Grafana"],
+      "languages": [
+        {"name": "Russian", "level": "native"},
+        {"name": "English", "level": "C1"},
+        {"name": "Uzbek", "level": "B1"}
+      ],
+      "certifications": ["AWS DevOps Engineer Professional", "CKA (Certified Kubernetes Administrator)"],
+      "achievements": "Построил cloud-native инфраструктуру для Humans.uz с нуля, обеспечив 99.95% uptime. Сократил время деплоя с 40 минут до 5.",
+      "experience": [
+        {
+          "id": "exp-003-a",
+          "company": "Humans",
+          "position": "Lead DevOps Engineer",
+          "start_date": "2021-04-01",
+          "end_date": "",
+          "projects": [{"project": "Cloud Infrastructure", "items": ["Миграция в AWS", "Настройка Kubernetes кластеров", "Внедрение GitOps"]}],
+          "web_site": "https://humans.uz",
+          "description": "Руковожу DevOps-командой, отвечаю за инфраструктуру и процессы непрерывной доставки."
+        },
+        {
+          "id": "exp-003-b",
+          "company": "Ucell",
+          "position": "Senior System Administrator",
+          "start_date": "2017-08-01",
+          "end_date": "2021-03-31",
+          "projects": [{"project": "Виртуализация серверов", "items": ["Миграция на VMware", "Автоматизация с Ansible"]}],
+          "web_site": "https://ucell.uz",
+          "description": "Администрировал серверную инфраструктуру телеком-оператора, обслуживая более 200 серверов."
+        },
+        {
+          "id": "exp-003-c",
+          "company": "IT Park",
+          "position": "System Administrator",
+          "start_date": "2015-03-01",
+          "end_date": "2017-07-31",
+          "projects": [{"project": "IT Infrastructure Setup", "items": ["Настройка сетевой инфраструктуры", "Внедрение мониторинга"]}],
+          "web_site": "https://it-park.uz",
+          "description": "Обеспечивал работу IT-инфраструктуры технопарка."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-003-a",
+          "institution": "TUIT (Tashkent University of Information Technologies)",
+          "degree": "master",
+          "field_of_study": "Information Security",
+          "start_date": "2013-09-01",
+          "end_date": "2015-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Магистратура по направлению информационной безопасности."
+        },
+        {
+          "id": "edu-003-b",
+          "institution": "TUIT (Tashkent University of Information Technologies)",
+          "degree": "bachelor",
+          "field_of_study": "Computer Engineering",
+          "start_date": "2009-09-01",
+          "end_date": "2013-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавриат по специальности вычислительная техника."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000004-0000-0000-0000-000000000004",
+    "first_name": "Malika",
+    "last_name": "Usmanova",
+    "patronymic": "Shavkatovna",
+    "phone": "+998946543204",
+    "telegram": "@malika_usm",
+    "telegram_id": "200000004",
+    "email": "malika.usmanova@yahoo.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Samarkand",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["data_science"],
+    "profile_score": 71,
+    "estimated_salary_min": 5000000,
+    "estimated_salary_max": 8000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-03-10T11:45:00Z",
+    "profile": {
+      "title": "Middle Data Scientist",
+      "about": "Data scientist с 3 годами опыта в анализе данных и машинном обучении. Работала с большими датасетами в e-commerce. Интересуюсь NLP и компьютерным зрением.",
+      "skills": ["Python", "Pandas", "Scikit-learn", "TensorFlow", "SQL", "Tableau", "Spark"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B2"}
+      ],
+      "certifications": ["Google Data Analytics Professional Certificate"],
+      "achievements": "Построила рекомендательную систему для Uzum, увеличившую конверсию на 15%.",
+      "experience": [
+        {
+          "id": "exp-004-a",
+          "company": "Uzum",
+          "position": "Data Scientist",
+          "start_date": "2023-06-01",
+          "end_date": "",
+          "projects": [{"project": "Recommendation Engine", "items": ["Разработка ML-моделей", "A/B тестирование"]}],
+          "web_site": "https://uzum.uz",
+          "description": "Разработка и внедрение моделей машинного обучения для персонализации пользовательского опыта."
+        },
+        {
+          "id": "exp-004-b",
+          "company": "IT Park",
+          "position": "Junior Data Analyst",
+          "start_date": "2022-01-15",
+          "end_date": "2023-05-31",
+          "projects": [{"project": "Аналитика стартапов", "items": ["Анализ метрик резидентов", "Визуализация данных"]}],
+          "web_site": "https://it-park.uz",
+          "description": "Анализ данных об экосистеме стартапов и резидентов IT Park."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-004-a",
+          "institution": "Samarkand State University",
+          "degree": "bachelor",
+          "field_of_study": "Applied Mathematics",
+          "start_date": "2018-09-01",
+          "end_date": "2022-06-30",
+          "location": "Samarkand, Uzbekistan",
+          "description": "Бакалавр прикладной математики с углублённым изучением статистики."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000005-0000-0000-0000-000000000005",
+    "first_name": "Jamshid",
+    "last_name": "Alimov",
+    "patronymic": "Farkhodovich",
+    "phone": "+998955678905",
+    "telegram": "@jamshid_alimov",
+    "telegram_id": "200000005",
+    "email": "jamshid.alimov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Fergana",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["mobile"],
+    "profile_score": 67,
+    "estimated_salary_min": 4000000,
+    "estimated_salary_max": 7000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-04-01T08:00:00Z",
+    "profile": {
+      "title": "Junior Android Developer",
+      "about": "Начинающий Android-разработчик с 1.5 годами опыта. Работаю с Kotlin и Jetpack Compose. Увлекаюсь мобильной разработкой и стремлюсь расти в этом направлении.",
+      "skills": ["Kotlin", "Android", "Jetpack Compose", "Room", "Retrofit", "Git"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "B2"},
+        {"name": "English", "level": "B1"}
+      ],
+      "certifications": [],
+      "achievements": "Разработал мобильное приложение для учёта расходов, набравшее 5000+ загрузок в Google Play.",
+      "experience": [
+        {
+          "id": "exp-005-a",
+          "company": "Billz",
+          "position": "Junior Android Developer",
+          "start_date": "2024-02-01",
+          "end_date": "",
+          "projects": [{"project": "Billz POS Mobile", "items": ["Разработка экранов кассы", "Интеграция с принтером чеков"]}],
+          "web_site": "https://billz.uz",
+          "description": "Разработка мобильного POS-приложения для малого бизнеса."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-005-a",
+          "institution": "Fergana State University",
+          "degree": "bachelor",
+          "field_of_study": "Software Engineering",
+          "start_date": "2019-09-01",
+          "end_date": "2023-06-30",
+          "location": "Fergana, Uzbekistan",
+          "description": "Окончил факультет программной инженерии."
+        },
+        {
+          "id": "edu-005-b",
+          "institution": "Najot Ta'lim",
+          "degree": "certificate",
+          "field_of_study": "Android Development",
+          "start_date": "2023-07-01",
+          "end_date": "2023-12-31",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Прошёл 6-месячный курс по Android-разработке."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000006-0000-0000-0000-000000000006",
+    "first_name": "Nargiza",
+    "last_name": "Khamidova",
+    "patronymic": "Olegovna",
+    "phone": "+998901122306",
+    "telegram": "@nargiza_kh",
+    "telegram_id": "200000006",
+    "email": "nargiza.khamidova@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "not_looking",
+    "activity_type": "full_time",
+    "specializations": ["project_management"],
+    "profile_score": 85,
+    "estimated_salary_min": 9000000,
+    "estimated_salary_max": 13000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-01-20T16:00:00Z",
+    "profile": {
+      "title": "Senior Project Manager",
+      "about": "Project Manager с 6-летним опытом управления IT-проектами. Сертифицированный Scrum Master. Умею выстраивать процессы с нуля и управлять распределёнными командами.",
+      "skills": ["Scrum", "Kanban", "Jira", "Confluence", "Risk Management", "Agile", "Stakeholder Management"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C2"},
+        {"name": "English", "level": "C1"}
+      ],
+      "certifications": ["PSM I (Professional Scrum Master)", "PMP"],
+      "achievements": "Успешно запустила 12 проектов в срок и в рамках бюджета в Payme. Внедрила Agile-методологию в отделе разработки.",
+      "experience": [
+        {
+          "id": "exp-006-a",
+          "company": "Payme",
+          "position": "Senior Project Manager",
+          "start_date": "2021-09-01",
+          "end_date": "",
+          "projects": [{"project": "Payme Business", "items": ["Управление командой из 15 человек", "Запуск B2B-продукта"]}],
+          "web_site": "https://payme.uz",
+          "description": "Управление ключевыми проектами компании, координация между командами разработки, дизайна и бизнеса."
+        },
+        {
+          "id": "exp-006-b",
+          "company": "Mediapark",
+          "position": "Project Manager",
+          "start_date": "2019-03-01",
+          "end_date": "2021-08-31",
+          "projects": [{"project": "E-gov проекты", "items": ["Управление государственными IT-проектами", "Координация с заказчиками"]}],
+          "web_site": "https://mediapark.uz",
+          "description": "Управляла проектами цифровизации государственных услуг."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-006-a",
+          "institution": "WIUT (Westminster International University in Tashkent)",
+          "degree": "master",
+          "field_of_study": "Business Administration",
+          "start_date": "2017-09-01",
+          "end_date": "2019-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Степень магистра делового администрирования с фокусом на IT-менеджмент."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000007-0000-0000-0000-000000000007",
+    "first_name": "Dmitriy",
+    "last_name": "Volkov",
+    "patronymic": "Igorevich",
+    "phone": "+998712233407",
+    "telegram": "@dmitriy_volkov",
+    "telegram_id": "200000007",
+    "email": "d.volkov.tashkent@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Russian",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "freelance",
+    "specializations": ["design"],
+    "profile_score": 76,
+    "estimated_salary_min": 5000000,
+    "estimated_salary_max": 9000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-02-14T12:30:00Z",
+    "profile": {
+      "title": "UI/UX Designer",
+      "about": "Дизайнер интерфейсов с 4-летним опытом. Специализируюсь на мобильных приложениях и дизайн-системах. Работаю как фрилансер с несколькими клиентами одновременно.",
+      "skills": ["Figma", "Adobe XD", "Sketch", "Prototyping", "User Research", "Design Systems", "Adobe Illustrator"],
+      "languages": [
+        {"name": "Russian", "level": "native"},
+        {"name": "English", "level": "B2"},
+        {"name": "Uzbek", "level": "A2"}
+      ],
+      "certifications": ["Google UX Design Certificate"],
+      "achievements": "Разработал дизайн-систему для MyTaxi, которая используется во всех продуктах компании.",
+      "experience": [
+        {
+          "id": "exp-007-a",
+          "company": "MyTaxi",
+          "position": "UI/UX Designer",
+          "start_date": "2022-05-01",
+          "end_date": "2024-12-31",
+          "projects": [{"project": "MyTaxi App Redesign", "items": ["Редизайн мобильного приложения", "Создание дизайн-системы"]}],
+          "web_site": "https://mytaxi.uz",
+          "description": "Отвечал за дизайн мобильных приложений для пассажиров и водителей."
+        },
+        {
+          "id": "exp-007-b",
+          "company": "Apelsin",
+          "position": "Junior Designer",
+          "start_date": "2021-01-01",
+          "end_date": "2022-04-30",
+          "projects": [{"project": "Apelsin Mobile App", "items": ["Дизайн экранов оплаты", "Иконки и иллюстрации"]}],
+          "web_site": "https://apelsin.uz",
+          "description": "Создавал визуальные элементы и экраны для мобильного приложения."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-007-a",
+          "institution": "Inha University in Tashkent",
+          "degree": "bachelor",
+          "field_of_study": "Computer Science",
+          "start_date": "2016-09-01",
+          "end_date": "2020-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Изучал информатику с дополнительным курсом по дизайну интерфейсов."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000008-0000-0000-0000-000000000008",
+    "first_name": "Gulnora",
+    "last_name": "Nazarova",
+    "patronymic": "Timurovna",
+    "phone": "+998933445508",
+    "telegram": "@gulnora_naz",
+    "telegram_id": "200000008",
+    "email": "gulnora.nazarova@mail.ru",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Bukhara",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["qa"],
+    "profile_score": 69,
+    "estimated_salary_min": 4000000,
+    "estimated_salary_max": 6000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-03-22T09:45:00Z",
+    "profile": {
+      "title": "Middle QA Engineer",
+      "about": "QA-инженер с 2.5 годами опыта ручного и автоматизированного тестирования. Специализируюсь на тестировании мобильных приложений. Стремлюсь развиваться в автоматизации.",
+      "skills": ["Selenium", "Appium", "Postman", "Jira", "TestRail", "Python", "SQL"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B1"}
+      ],
+      "certifications": ["ISTQB Foundation Level"],
+      "achievements": "Обнаружила критический баг в платёжной системе, предотвратив потенциальные финансовые потери.",
+      "experience": [
+        {
+          "id": "exp-008-a",
+          "company": "Click",
+          "position": "QA Engineer",
+          "start_date": "2023-04-01",
+          "end_date": "",
+          "projects": [{"project": "Click App Testing", "items": ["Тестирование мобильного приложения", "Написание автотестов на Appium"]}],
+          "web_site": "https://click.uz",
+          "description": "Тестирование мобильного приложения Click, написание тест-кейсов и автоматизация регрессионного тестирования."
+        },
+        {
+          "id": "exp-008-b",
+          "company": "Billz",
+          "position": "Junior QA Engineer",
+          "start_date": "2022-06-01",
+          "end_date": "2023-03-31",
+          "projects": [{"project": "Billz POS", "items": ["Ручное тестирование POS-системы", "Документирование багов"]}],
+          "web_site": "https://billz.uz",
+          "description": "Ручное тестирование POS-системы и составление тестовой документации."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-008-a",
+          "institution": "Bukhara State University",
+          "degree": "bachelor",
+          "field_of_study": "Information Technology",
+          "start_date": "2018-09-01",
+          "end_date": "2022-06-30",
+          "location": "Bukhara, Uzbekistan",
+          "description": "Окончила факультет информационных технологий."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000009-0000-0000-0000-000000000009",
+    "first_name": "Otabek",
+    "last_name": "Tursunov",
+    "patronymic": "Anvarovich",
+    "phone": "+998977889909",
+    "telegram": "@otabek_tursunov",
+    "telegram_id": "200000009",
+    "email": "otabek.tursunov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Namangan",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 63,
+    "estimated_salary_min": 3500000,
+    "estimated_salary_max": 5500000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-04-12T13:00:00Z",
+    "profile": {
+      "title": "Junior Backend Developer",
+      "about": "Начинающий backend-разработчик на Python/Django. Окончил PDP Academy и активно ищу первый серьёзный коммерческий проект. Быстро учусь и мотивирован на развитие.",
+      "skills": ["Python", "Django", "PostgreSQL", "REST API", "Git", "Linux"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "B2"},
+        {"name": "English", "level": "A2"}
+      ],
+      "certifications": [],
+      "achievements": "Разработал Telegram-бота для записи к врачу в местной поликлинике Намангана, обслуживающего 500+ пациентов.",
+      "experience": [
+        {
+          "id": "exp-009-a",
+          "company": "Korzinka",
+          "position": "Junior Backend Developer",
+          "start_date": "2024-09-01",
+          "end_date": "",
+          "projects": [{"project": "Korzinka Online", "items": ["Разработка API для онлайн-магазина", "Интеграция со складской системой"]}],
+          "web_site": "https://korzinka.uz",
+          "description": "Разработка backend-части онлайн-магазина сети супермаркетов Korzinka."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-009-a",
+          "institution": "PDP Academy",
+          "degree": "certificate",
+          "field_of_study": "Python Backend Development",
+          "start_date": "2024-01-15",
+          "end_date": "2024-07-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Прошёл интенсивный курс по Python и Django разработке."
+        },
+        {
+          "id": "edu-009-b",
+          "institution": "Namangan Engineering-Construction Institute",
+          "degree": "bachelor",
+          "field_of_study": "Electrical Engineering",
+          "start_date": "2019-09-01",
+          "end_date": "2023-06-30",
+          "location": "Namangan, Uzbekistan",
+          "description": "Бакалавр электротехники, сменил направление на IT после окончания."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000010-0000-0000-0000-000000000010",
+    "first_name": "Anastasiya",
+    "last_name": "Kuznetsova",
+    "patronymic": "Vladimirovna",
+    "phone": "+998901567810",
+    "telegram": "@anastasiya_kuz",
+    "telegram_id": "200000010",
+    "email": "a.kuznetsova@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Russian",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "not_looking",
+    "activity_type": "full_time",
+    "specializations": ["hr"],
+    "profile_score": 80,
+    "estimated_salary_min": 7000000,
+    "estimated_salary_max": 10000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-01-05T10:00:00Z",
+    "profile": {
+      "title": "HR Business Partner",
+      "about": "HR-специалист с 5-летним опытом в IT-компаниях. Специализируюсь на подборе технических специалистов и построении HR-процессов. Имею опыт работы с командами до 200 человек.",
+      "skills": ["Recruiting", "HR Analytics", "1C:ZUP", "Employer Branding", "Performance Management", "Onboarding"],
+      "languages": [
+        {"name": "Russian", "level": "native"},
+        {"name": "English", "level": "B2"},
+        {"name": "Uzbek", "level": "B1"}
+      ],
+      "certifications": ["SHRM-CP"],
+      "achievements": "Построила процесс найма в Uzum с нуля, наняв 80+ специалистов за год. Снизила текучесть кадров на 25%.",
+      "experience": [
+        {
+          "id": "exp-010-a",
+          "company": "Uzum",
+          "position": "HR Business Partner",
+          "start_date": "2022-08-01",
+          "end_date": "",
+          "projects": [{"project": "Talent Acquisition", "items": ["Построение воронки найма", "Внедрение ATS системы"]}],
+          "web_site": "https://uzum.uz",
+          "description": "Отвечаю за HR-процессы в продуктовых командах, подбор и адаптацию сотрудников."
+        },
+        {
+          "id": "exp-010-b",
+          "company": "Beeline Uzbekistan",
+          "position": "HR Specialist",
+          "start_date": "2020-02-01",
+          "end_date": "2022-07-31",
+          "projects": [{"project": "Employee Engagement", "items": ["Проведение опросов вовлечённости", "Организация корпоративных мероприятий"]}],
+          "web_site": "https://beeline.uz",
+          "description": "Управление процессами подбора и адаптации персонала в телеком-компании."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-010-a",
+          "institution": "WIUT (Westminster International University in Tashkent)",
+          "degree": "bachelor",
+          "field_of_study": "Business Administration",
+          "start_date": "2015-09-01",
+          "end_date": "2019-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавр делового администрирования с фокусом на управление персоналом."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000011-0000-0000-0000-000000000011",
+    "first_name": "Bekzod",
+    "last_name": "Rahmatullaev",
+    "patronymic": "Ilkhomovich",
+    "phone": "+998945551111",
+    "telegram": "@bekzod_dev",
+    "telegram_id": "200000011",
+    "email": "bekzod.rahmatullaev@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Andijan",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["mobile"],
+    "profile_score": 72,
+    "estimated_salary_min": 6000000,
+    "estimated_salary_max": 9000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-02-28T15:30:00Z",
+    "profile": {
+      "title": "Middle iOS Developer",
+      "about": "iOS-разработчик с 3 годами опыта. Работаю со Swift и SwiftUI. Имею опыт публикации приложений в App Store и интеграции с платёжными системами.",
+      "skills": ["Swift", "SwiftUI", "UIKit", "CoreData", "Combine", "Firebase", "REST API"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B2"}
+      ],
+      "certifications": [],
+      "achievements": "Разработал iOS-приложение OsonTaxi для водителей, которым ежедневно пользуются 10 000+ водителей.",
+      "experience": [
+        {
+          "id": "exp-011-a",
+          "company": "OsonTaxi",
+          "position": "Middle iOS Developer",
+          "start_date": "2023-02-01",
+          "end_date": "",
+          "projects": [{"project": "OsonTaxi Driver App", "items": ["Разработка приложения для водителей", "Интеграция с картами и навигацией"]}],
+          "web_site": "https://osontaxi.uz",
+          "description": "Разработка и поддержка iOS-приложения для водителей сервиса такси."
+        },
+        {
+          "id": "exp-011-b",
+          "company": "Apelsin",
+          "position": "Junior iOS Developer",
+          "start_date": "2022-01-01",
+          "end_date": "2023-01-31",
+          "projects": [{"project": "Apelsin Wallet", "items": ["Реализация экрана баланса", "Интеграция Push-уведомлений"]}],
+          "web_site": "https://apelsin.uz",
+          "description": "Участие в разработке мобильного кошелька Apelsin."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-011-a",
+          "institution": "Andijan Machine-Building Institute",
+          "degree": "bachelor",
+          "field_of_study": "Information Technology",
+          "start_date": "2017-09-01",
+          "end_date": "2021-06-30",
+          "location": "Andijan, Uzbekistan",
+          "description": "Бакалавр информационных технологий."
+        },
+        {
+          "id": "edu-011-b",
+          "institution": "Najot Ta'lim",
+          "degree": "certificate",
+          "field_of_study": "iOS Development",
+          "start_date": "2021-08-01",
+          "end_date": "2022-01-31",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Интенсивный курс по iOS-разработке на Swift."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000012-0000-0000-0000-000000000012",
+    "first_name": "Kamola",
+    "last_name": "Mirzaeva",
+    "patronymic": "Akbarovna",
+    "phone": "+998936667712",
+    "telegram": "@kamola_mirz",
+    "telegram_id": "200000012",
+    "email": "kamola.mirzaeva@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["marketing"],
+    "profile_score": 79,
+    "estimated_salary_min": 7000000,
+    "estimated_salary_max": 11000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-01-30T11:20:00Z",
+    "profile": {
+      "title": "Digital Marketing Manager",
+      "about": "Маркетолог с 5-летним опытом в digital-маркетинге. Специализируюсь на performance-маркетинге и аналитике. Управляю рекламными бюджетами от $10K до $50K в месяц.",
+      "skills": ["Google Ads", "Facebook Ads", "SEO", "Google Analytics", "Яндекс.Метрика", "Content Marketing", "CRM"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C2"},
+        {"name": "English", "level": "B2"}
+      ],
+      "certifications": ["Google Ads Search Certification", "HubSpot Inbound Marketing"],
+      "achievements": "Увеличила органический трафик Korzinka.uz на 200% за 8 месяцев. Снизила стоимость привлечения клиента на 40%.",
+      "experience": [
+        {
+          "id": "exp-012-a",
+          "company": "Korzinka",
+          "position": "Digital Marketing Manager",
+          "start_date": "2022-11-01",
+          "end_date": "",
+          "projects": [{"project": "Korzinka Online Marketing", "items": ["Управление digital-каналами", "SEO-оптимизация", "Performance-кампании"]}],
+          "web_site": "https://korzinka.uz",
+          "description": "Управление digital-маркетингом крупнейшей сети супермаркетов Узбекистана."
+        },
+        {
+          "id": "exp-012-b",
+          "company": "Humans",
+          "position": "Marketing Specialist",
+          "start_date": "2020-06-01",
+          "end_date": "2022-10-31",
+          "projects": [{"project": "Humans App Launch", "items": ["Маркетинговая стратегия запуска", "SMM и контент"]}],
+          "web_site": "https://humans.uz",
+          "description": "Разрабатывала и реализовывала маркетинговые кампании для суперприложения."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-012-a",
+          "institution": "MDIST (Management Development Institute of Singapore in Tashkent)",
+          "degree": "bachelor",
+          "field_of_study": "Marketing Management",
+          "start_date": "2015-09-01",
+          "end_date": "2019-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавр маркетинг-менеджмента с дипломом международного образца."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000013-0000-0000-0000-000000000013",
+    "first_name": "Rustam",
+    "last_name": "Saidov",
+    "patronymic": "Murodovich",
+    "phone": "+998909988713",
+    "telegram": "@rustam_saidov",
+    "telegram_id": "200000013",
+    "email": "rustam.saidov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Navoi",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["system_administration"],
+    "profile_score": 65,
+    "estimated_salary_min": 4000000,
+    "estimated_salary_max": 6500000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-05-02T10:15:00Z",
+    "profile": {
+      "title": "System Administrator",
+      "about": "Системный администратор с 3-летним опытом работы. Управляю Linux и Windows серверами, настраиваю сетевую инфраструктуру. Хочу развиваться в направлении DevOps.",
+      "skills": ["Linux", "Windows Server", "Active Directory", "Cisco", "VMware", "Bash", "Zabbix"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "A2"}
+      ],
+      "certifications": ["Cisco CCNA"],
+      "achievements": "Спроектировал и развернул сетевую инфраструктуру для Навоийского горно-металлургического комбината на 500+ рабочих мест.",
+      "experience": [
+        {
+          "id": "exp-013-a",
+          "company": "Navoi Mining and Metallurgical Complex",
+          "position": "System Administrator",
+          "start_date": "2022-03-01",
+          "end_date": "",
+          "projects": [{"project": "Network Infrastructure", "items": ["Настройка сетевого оборудования", "Администрирование серверов"]}],
+          "web_site": "https://ngmk.uz",
+          "description": "Администрирование IT-инфраструктуры одного из крупнейших предприятий региона."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-013-a",
+          "institution": "TUIT (Tashkent University of Information Technologies) - Navoi Branch",
+          "degree": "bachelor",
+          "field_of_study": "Computer Networks",
+          "start_date": "2017-09-01",
+          "end_date": "2021-06-30",
+          "location": "Navoi, Uzbekistan",
+          "description": "Бакалавр по направлению компьютерных сетей и телекоммуникаций."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000014-0000-0000-0000-000000000014",
+    "first_name": "Nodira",
+    "last_name": "Abdullaeva",
+    "patronymic": "Kamoliddinovna",
+    "phone": "+998917776614",
+    "telegram": "@nodira_abd",
+    "telegram_id": "200000014",
+    "email": "nodira.abdullaeva@mail.ru",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["product_management"],
+    "profile_score": 84,
+    "estimated_salary_min": 10000000,
+    "estimated_salary_max": 14000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-01-12T09:00:00Z",
+    "profile": {
+      "title": "Senior Product Manager",
+      "about": "Product Manager с 7-летним опытом в IT-продуктах. Запускала продукты с нуля до миллионной аудитории. Глубоко понимаю метрики продукта и пользовательский опыт.",
+      "skills": ["Product Strategy", "A/B Testing", "SQL", "Amplitude", "Jira", "Figma", "Data-Driven Decision Making"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C2"},
+        {"name": "English", "level": "C1"}
+      ],
+      "certifications": ["Certified Scrum Product Owner (CSPO)"],
+      "achievements": "Запустила Humans Pay с нуля, достигнув 500 000 активных пользователей за первый год. Увеличила retention на 35%.",
+      "experience": [
+        {
+          "id": "exp-014-a",
+          "company": "Humans",
+          "position": "Senior Product Manager",
+          "start_date": "2021-01-01",
+          "end_date": "",
+          "projects": [{"project": "Humans Super App", "items": ["Запуск платёжного модуля", "Оптимизация воронки конверсии", "Управление продуктовой командой"]}],
+          "web_site": "https://humans.uz",
+          "description": "Управление продуктовой стратегией суперприложения, координация кросс-функциональных команд."
+        },
+        {
+          "id": "exp-014-b",
+          "company": "Payme",
+          "position": "Product Manager",
+          "start_date": "2018-06-01",
+          "end_date": "2020-12-31",
+          "projects": [{"project": "Payme App", "items": ["Развитие мобильного приложения", "Внедрение новых платёжных сценариев"]}],
+          "web_site": "https://payme.uz",
+          "description": "Управление развитием мобильного приложения Payme."
+        },
+        {
+          "id": "exp-014-c",
+          "company": "UzAuto Motors",
+          "position": "Business Analyst",
+          "start_date": "2016-09-01",
+          "end_date": "2018-05-31",
+          "projects": [{"project": "Цифровизация продаж", "items": ["Анализ бизнес-процессов", "Разработка ТЗ для CRM"]}],
+          "web_site": "https://uzautomotors.com",
+          "description": "Анализ бизнес-процессов и участие в цифровизации отдела продаж."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-014-a",
+          "institution": "WIUT (Westminster International University in Tashkent)",
+          "degree": "master",
+          "field_of_study": "Business Administration",
+          "start_date": "2014-09-01",
+          "end_date": "2016-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Магистр бизнес-администрирования с фокусом на цифровую трансформацию."
+        },
+        {
+          "id": "edu-014-b",
+          "institution": "Tashkent State University of Economics",
+          "degree": "bachelor",
+          "field_of_study": "Economics",
+          "start_date": "2010-09-01",
+          "end_date": "2014-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавр экономики с отличием."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000015-0000-0000-0000-000000000015",
+    "first_name": "Timur",
+    "last_name": "Yuldashev",
+    "patronymic": "Botirovich",
+    "phone": "+998943322115",
+    "telegram": "@timur_yuldashev",
+    "telegram_id": "200000015",
+    "email": "timur.yuldashev@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["cybersecurity"],
+    "profile_score": 87,
+    "estimated_salary_min": 10000000,
+    "estimated_salary_max": 15000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-01-25T14:45:00Z",
+    "profile": {
+      "title": "Lead Security Engineer",
+      "about": "Специалист по информационной безопасности с 8-летним стажем. Провожу пентесты, аудиты безопасности и выстраиваю SOC-процессы. Сертифицированный этичный хакер.",
+      "skills": ["Penetration Testing", "SIEM", "Burp Suite", "Nessus", "Python", "Network Security", "ISO 27001", "Incident Response"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C2"},
+        {"name": "English", "level": "C1"}
+      ],
+      "certifications": ["CEH (Certified Ethical Hacker)", "OSCP", "ISO 27001 Lead Auditor"],
+      "achievements": "Обнаружил и устранил критические уязвимости в банковских системах 5 коммерческих банков Узбекистана. Построил SOC-центр в Ucell.",
+      "experience": [
+        {
+          "id": "exp-015-a",
+          "company": "Ucell",
+          "position": "Lead Security Engineer",
+          "start_date": "2020-07-01",
+          "end_date": "",
+          "projects": [{"project": "SOC Center", "items": ["Построение центра мониторинга безопасности", "Внедрение SIEM", "Проведение пентестов"]}],
+          "web_site": "https://ucell.uz",
+          "description": "Руковожу командой информационной безопасности, отвечаю за защиту инфраструктуры телеком-оператора."
+        },
+        {
+          "id": "exp-015-b",
+          "company": "IT Park",
+          "position": "Security Consultant",
+          "start_date": "2017-03-01",
+          "end_date": "2020-06-30",
+          "projects": [{"project": "Security Audit", "items": ["Аудит безопасности стартапов", "Консультирование по ISO 27001"]}],
+          "web_site": "https://it-park.uz",
+          "description": "Проводил аудиты безопасности для резидентов IT Park и государственных организаций."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-015-a",
+          "institution": "TUIT (Tashkent University of Information Technologies)",
+          "degree": "master",
+          "field_of_study": "Information Security",
+          "start_date": "2015-09-01",
+          "end_date": "2017-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Магистр информационной безопасности."
+        },
+        {
+          "id": "edu-015-b",
+          "institution": "TUIT (Tashkent University of Information Technologies)",
+          "degree": "bachelor",
+          "field_of_study": "Computer Science",
+          "start_date": "2011-09-01",
+          "end_date": "2015-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавр информатики с углублённым изучением криптографии."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000016-0000-0000-0000-000000000016",
+    "first_name": "Zulfiya",
+    "last_name": "Sharipova",
+    "patronymic": "Nosirovna",
+    "phone": "+998955544316",
+    "telegram": "@zulfiya_sh",
+    "telegram_id": "200000016",
+    "email": "zulfiya.sharipova@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Karshi",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "part_time",
+    "specializations": ["technical_writing"],
+    "profile_score": 62,
+    "estimated_salary_min": 3000000,
+    "estimated_salary_max": 5000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-04-20T08:30:00Z",
+    "profile": {
+      "title": "Technical Writer",
+      "about": "Технический писатель с 2-летним опытом. Пишу документацию для API, пользовательские руководства и базы знаний. Ищу удалённую работу на частичную занятость.",
+      "skills": ["Technical Documentation", "API Documentation", "Swagger/OpenAPI", "Markdown", "Confluence", "Git"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C2"},
+        {"name": "English", "level": "B2"}
+      ],
+      "certifications": [],
+      "achievements": "Создала полную документацию API для платформы Billz, покрывающую 150+ эндпоинтов.",
+      "experience": [
+        {
+          "id": "exp-016-a",
+          "company": "Billz",
+          "position": "Technical Writer",
+          "start_date": "2023-08-01",
+          "end_date": "",
+          "projects": [{"project": "Billz API Documentation", "items": ["Документация REST API", "Руководства для интеграции"]}],
+          "web_site": "https://billz.uz",
+          "description": "Создание и поддержка технической документации для API и внутренних продуктов."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-016-a",
+          "institution": "Karshi State University",
+          "degree": "bachelor",
+          "field_of_study": "Linguistics (English)",
+          "start_date": "2018-09-01",
+          "end_date": "2022-06-30",
+          "location": "Karshi, Uzbekistan",
+          "description": "Бакалавр лингвистики со специализацией на английском языке."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000017-0000-0000-0000-000000000017",
+    "first_name": "Firdavs",
+    "last_name": "Ismoilov",
+    "patronymic": "Dilshodovich",
+    "phone": "+998908877617",
+    "telegram": "@firdavs_ism",
+    "telegram_id": "200000017",
+    "email": "firdavs.ismoilov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["frontend"],
+    "profile_score": 78,
+    "estimated_salary_min": 7000000,
+    "estimated_salary_max": 10000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-02-10T16:00:00Z",
+    "profile": {
+      "title": "Senior Frontend Developer",
+      "about": "Frontend-разработчик с 5-летним стажем. Глубоко знаю React-экосистему и оптимизацию производительности. Активный контрибьютор в open-source проекты.",
+      "skills": ["React", "TypeScript", "Vue.js", "Webpack", "Vite", "GraphQL", "Testing Library", "Storybook"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B2"}
+      ],
+      "certifications": [],
+      "achievements": "Оптимизировал загрузку главной страницы Click.uz, сократив LCP с 4.5с до 1.2с. Написал npm-пакет для валидации узбекских номеров, 2000+ загрузок.",
+      "experience": [
+        {
+          "id": "exp-017-a",
+          "company": "Click",
+          "position": "Senior Frontend Developer",
+          "start_date": "2022-09-01",
+          "end_date": "",
+          "projects": [{"project": "Click Web Platform", "items": ["Редизайн личного кабинета", "Оптимизация производительности"]}],
+          "web_site": "https://click.uz",
+          "description": "Разработка веб-платформы Click, оптимизация производительности и UX."
+        },
+        {
+          "id": "exp-017-b",
+          "company": "Mediapark",
+          "position": "Middle Frontend Developer",
+          "start_date": "2020-04-01",
+          "end_date": "2022-08-31",
+          "projects": [{"project": "Gov.uz Projects", "items": ["Разработка государственных порталов", "Адаптивная вёрстка"]}],
+          "web_site": "https://mediapark.uz",
+          "description": "Разработка фронтенда для государственных порталов и корпоративных систем."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-017-a",
+          "institution": "Inha University in Tashkent",
+          "degree": "bachelor",
+          "field_of_study": "Computer Science and Engineering",
+          "start_date": "2016-09-01",
+          "end_date": "2020-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавр компьютерных наук и инженерии с красным дипломом."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000018-0000-0000-0000-000000000018",
+    "first_name": "Olga",
+    "last_name": "Smirnova",
+    "patronymic": "Dmitrievna",
+    "phone": "+998712244818",
+    "telegram": "@olga_smirnova_ba",
+    "telegram_id": "200000018",
+    "email": "olga.smirnova.ba@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Russian",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["business_analysis"],
+    "profile_score": 75,
+    "estimated_salary_min": 6000000,
+    "estimated_salary_max": 9000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-03-05T13:15:00Z",
+    "profile": {
+      "title": "Senior Business Analyst",
+      "about": "Бизнес-аналитик с 5-летним опытом в финтех и e-commerce. Умею переводить бизнес-требования в технические спецификации. Работаю с BPMN, UML и Agile.",
+      "skills": ["BPMN", "UML", "SQL", "Jira", "Confluence", "Miro", "Data Analysis", "Requirements Engineering"],
+      "languages": [
+        {"name": "Russian", "level": "native"},
+        {"name": "English", "level": "C1"},
+        {"name": "Uzbek", "level": "B1"}
+      ],
+      "certifications": ["CBAP (Certified Business Analysis Professional)"],
+      "achievements": "Описала бизнес-процессы для запуска Uzum Nasiya (BNPL-сервис), сократив время разработки на 20%.",
+      "experience": [
+        {
+          "id": "exp-018-a",
+          "company": "Uzum",
+          "position": "Senior Business Analyst",
+          "start_date": "2022-03-01",
+          "end_date": "",
+          "projects": [{"project": "Uzum Nasiya (BNPL)", "items": ["Описание бизнес-процессов", "Разработка user stories", "Моделирование процессов в BPMN"]}],
+          "web_site": "https://uzum.uz",
+          "description": "Анализ бизнес-требований для финтех-продуктов экосистемы Uzum."
+        },
+        {
+          "id": "exp-018-b",
+          "company": "Payme",
+          "position": "Business Analyst",
+          "start_date": "2020-01-01",
+          "end_date": "2022-02-28",
+          "projects": [{"project": "Payme Merchant Portal", "items": ["Анализ требований", "Написание спецификаций"]}],
+          "web_site": "https://payme.uz",
+          "description": "Анализ и документирование требований для мерчант-портала Payme."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-018-a",
+          "institution": "Tashkent State University of Economics",
+          "degree": "master",
+          "field_of_study": "Business Informatics",
+          "start_date": "2017-09-01",
+          "end_date": "2019-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Магистр бизнес-информатики с фокусом на анализ данных."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000019-0000-0000-0000-000000000019",
+    "first_name": "Abdullo",
+    "last_name": "Kholmatov",
+    "patronymic": "Sultonovich",
+    "phone": "+998935566719",
+    "telegram": "@abdullo_kh",
+    "telegram_id": "200000019",
+    "email": "abdullo.kholmatov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Urgench",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "freelance",
+    "specializations": ["game_dev"],
+    "profile_score": 60,
+    "estimated_salary_min": 3500000,
+    "estimated_salary_max": 6000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-05-10T10:00:00Z",
+    "profile": {
+      "title": "Junior Game Developer",
+      "about": "Начинающий разработчик игр на Unity. Создал несколько мобильных игр и участвовал в геймджемах. Мечтаю работать в игровой индустрии профессионально.",
+      "skills": ["Unity", "C#", "3D Modeling (Blender)", "Game Design", "Git", "Photoshop"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "B2"},
+        {"name": "English", "level": "B1"}
+      ],
+      "certifications": [],
+      "achievements": "Мобильная игра 'Silk Road Runner' набрала 15 000 загрузок в Google Play. Победитель GameJam Uzbekistan 2024.",
+      "experience": [
+        {
+          "id": "exp-019-a",
+          "company": "Freelance",
+          "position": "Game Developer",
+          "start_date": "2024-01-01",
+          "end_date": "",
+          "projects": [{"project": "Silk Road Runner", "items": ["Разработка геймплея", "3D-моделирование", "Публикация в Google Play"]}],
+          "web_site": "",
+          "description": "Разработка и публикация мобильных игр на фрилансе."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-019-a",
+          "institution": "Urgench State University",
+          "degree": "bachelor",
+          "field_of_study": "Computer Science",
+          "start_date": "2020-09-01",
+          "end_date": "2024-06-30",
+          "location": "Urgench, Uzbekistan",
+          "description": "Бакалавр информатики с дополнительными курсами по разработке игр."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000020-0000-0000-0000-000000000020",
+    "first_name": "Shahlo",
+    "last_name": "Toshmatova",
+    "patronymic": "Erkinovna",
+    "phone": "+998977711120",
+    "telegram": "@shahlo_tosh",
+    "telegram_id": "200000020",
+    "email": "shahlo.toshmatova@mail.ru",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Jizzakh",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["frontend"],
+    "profile_score": 58,
+    "estimated_salary_min": 3000000,
+    "estimated_salary_max": 5000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-06-01T09:00:00Z",
+    "profile": {
+      "title": "Junior Frontend Developer",
+      "about": "Начинающий frontend-разработчик после курсов Najot Ta'lim. Владею HTML, CSS, JavaScript и основами React. Ищу первую работу в IT-компании.",
+      "skills": ["HTML", "CSS", "JavaScript", "React", "Git", "Responsive Design"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "B1"},
+        {"name": "English", "level": "A2"}
+      ],
+      "certifications": [],
+      "achievements": "Создала адаптивный лендинг для местного бизнеса, увеличивший онлайн-заказы на 50%.",
+      "experience": [
+        {
+          "id": "exp-020-a",
+          "company": "Freelance",
+          "position": "Junior Frontend Developer",
+          "start_date": "2025-01-01",
+          "end_date": "",
+          "projects": [{"project": "Лендинги для бизнеса", "items": ["Вёрстка адаптивных страниц", "Базовая интерактивность на JavaScript"]}],
+          "web_site": "",
+          "description": "Выполнение фриланс-заказов на вёрстку и разработку лендингов."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-020-a",
+          "institution": "Najot Ta'lim",
+          "degree": "certificate",
+          "field_of_study": "Frontend Development",
+          "start_date": "2024-06-01",
+          "end_date": "2024-12-31",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Прошла 6-месячный интенсивный курс по фронтенд-разработке."
+        },
+        {
+          "id": "edu-020-b",
+          "institution": "Jizzakh State Pedagogical University",
+          "degree": "bachelor",
+          "field_of_study": "Mathematics",
+          "start_date": "2019-09-01",
+          "end_date": "2023-06-30",
+          "location": "Jizzakh, Uzbekistan",
+          "description": "Бакалавр математики, решила перейти в IT-сферу."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000021-0000-0000-0000-000000000021",
+    "first_name": "Viktor",
+    "last_name": "Tsoy",
+    "patronymic": "Sergeevich",
+    "phone": "+998901234521",
+    "telegram": "@viktor_tsoy_dev",
+    "telegram_id": "200000021",
+    "email": "viktor.tsoy@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Korean",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "not_looking",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 91,
+    "estimated_salary_min": 12000000,
+    "estimated_salary_max": 15000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-01-03T08:00:00Z",
+    "profile": {
+      "title": "Tech Lead / Backend Architect",
+      "about": "Backend-архитектор с 10-летним опытом. Проектирую высоконагруженные распределённые системы. Руковожу командой из 8 разработчиков. Менторю junior-разработчиков.",
+      "skills": ["Java", "Spring Boot", "Kafka", "PostgreSQL", "MongoDB", "Microservices", "System Design", "Team Leadership"],
+      "languages": [
+        {"name": "Russian", "level": "native"},
+        {"name": "English", "level": "C1"},
+        {"name": "Uzbek", "level": "B2"}
+      ],
+      "certifications": ["AWS Solutions Architect Professional", "Oracle Certified Professional Java SE"],
+      "achievements": "Спроектировал архитектуру платформы Uzum Market, обрабатывающей 1M+ заказов в месяц. Руковожу техническим сообществом Java-разработчиков Ташкента.",
+      "experience": [
+        {
+          "id": "exp-021-a",
+          "company": "Uzum",
+          "position": "Tech Lead",
+          "start_date": "2021-06-01",
+          "end_date": "",
+          "projects": [{"project": "Uzum Market Platform", "items": ["Архитектура микросервисов", "Руководство командой", "Code review и менторинг"]}],
+          "web_site": "https://uzum.uz",
+          "description": "Руковожу backend-командой маркетплейса, отвечаю за архитектурные решения и качество кода."
+        },
+        {
+          "id": "exp-021-b",
+          "company": "Beeline Uzbekistan",
+          "position": "Senior Java Developer",
+          "start_date": "2017-03-01",
+          "end_date": "2021-05-31",
+          "projects": [{"project": "Billing System", "items": ["Разработка биллинговой системы", "Миграция с монолита на микросервисы"]}],
+          "web_site": "https://beeline.uz",
+          "description": "Разработка биллинговых и OSS/BSS систем для телеком-оператора."
+        },
+        {
+          "id": "exp-021-c",
+          "company": "Ucell",
+          "position": "Java Developer",
+          "start_date": "2014-09-01",
+          "end_date": "2017-02-28",
+          "projects": [{"project": "CRM System", "items": ["Разработка CRM модулей", "Интеграция с внешними системами"]}],
+          "web_site": "https://ucell.uz",
+          "description": "Разработка внутренних IT-систем оператора мобильной связи."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-021-a",
+          "institution": "Inha University in Tashkent",
+          "degree": "master",
+          "field_of_study": "Computer Science",
+          "start_date": "2012-09-01",
+          "end_date": "2014-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Магистр компьютерных наук с исследованием в области распределённых систем."
+        },
+        {
+          "id": "edu-021-b",
+          "institution": "Inha University in Tashkent",
+          "degree": "bachelor",
+          "field_of_study": "Information Systems",
+          "start_date": "2008-09-01",
+          "end_date": "2012-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавр информационных систем."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000022-0000-0000-0000-000000000022",
+    "first_name": "Sarvinoz",
+    "last_name": "Qodirova",
+    "patronymic": "Ziyodullaevna",
+    "phone": "+998946655422",
+    "telegram": "@sarvinoz_qod",
+    "telegram_id": "200000022",
+    "email": "sarvinoz.qodirova@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["data_science"],
+    "profile_score": 66,
+    "estimated_salary_min": 4000000,
+    "estimated_salary_max": 6500000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-04-15T11:30:00Z",
+    "profile": {
+      "title": "Junior Data Analyst",
+      "about": "Начинающий аналитик данных с опытом работы с Python и SQL. Окончила курс по Data Science и ищу возможность применить знания в реальных проектах.",
+      "skills": ["Python", "SQL", "Pandas", "Power BI", "Excel", "Statistics"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B1"}
+      ],
+      "certifications": ["IBM Data Science Professional Certificate"],
+      "achievements": "Провела анализ данных о студентах для TUIT, выявив паттерны успеваемости и оттока.",
+      "experience": [
+        {
+          "id": "exp-022-a",
+          "company": "IT Park",
+          "position": "Data Analyst Intern",
+          "start_date": "2024-09-01",
+          "end_date": "2025-02-28",
+          "projects": [{"project": "Startup Ecosystem Analytics", "items": ["Сбор и обработка данных", "Создание дашбордов в Power BI"]}],
+          "web_site": "https://it-park.uz",
+          "description": "Стажировка в отделе аналитики IT Park, работа с данными об экосистеме стартапов."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-022-a",
+          "institution": "TUIT (Tashkent University of Information Technologies)",
+          "degree": "bachelor",
+          "field_of_study": "Applied Mathematics and Informatics",
+          "start_date": "2020-09-01",
+          "end_date": "2024-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавр прикладной математики и информатики."
+        },
+        {
+          "id": "edu-022-b",
+          "institution": "PDP Academy",
+          "degree": "certificate",
+          "field_of_study": "Data Science",
+          "start_date": "2024-07-01",
+          "end_date": "2024-12-31",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Курс по Data Science с изучением Python, ML и визуализации данных."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000023-0000-0000-0000-000000000023",
+    "first_name": "Ilkhom",
+    "last_name": "Mirzoev",
+    "patronymic": "Bakhromovich",
+    "phone": "+998937788923",
+    "telegram": "@ilkhom_mirzoev",
+    "telegram_id": "200000023",
+    "email": "ilkhom.mirzoev@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Tajik",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["backend", "devops"],
+    "profile_score": 83,
+    "estimated_salary_min": 9000000,
+    "estimated_salary_max": 13000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-02-01T07:45:00Z",
+    "profile": {
+      "title": "Senior Go Developer",
+      "about": "Go-разработчик с 6-летним опытом, специализируюсь на финтех и платёжных системах. Имею опыт работы с высоконагруженными системами и настройки CI/CD.",
+      "skills": ["Go", "PostgreSQL", "Redis", "Kafka", "Docker", "Kubernetes", "gRPC", "CI/CD"],
+      "languages": [
+        {"name": "Tajik", "level": "native"},
+        {"name": "Russian", "level": "C2"},
+        {"name": "English", "level": "B2"},
+        {"name": "Uzbek", "level": "C1"}
+      ],
+      "certifications": ["Kubernetes Application Developer (CKAD)"],
+      "achievements": "Разработал систему обработки транзакций для Payme, выдерживающую 50K RPS. Ментор на курсах Go в PDP Academy.",
+      "experience": [
+        {
+          "id": "exp-023-a",
+          "company": "Payme",
+          "position": "Senior Go Developer",
+          "start_date": "2021-10-01",
+          "end_date": "",
+          "projects": [{"project": "Transaction Processing System", "items": ["Разработка высоконагруженного сервиса", "Оптимизация обработки транзакций"]}],
+          "web_site": "https://payme.uz",
+          "description": "Разработка ядра платёжной системы на Go с фокусом на производительность и надёжность."
+        },
+        {
+          "id": "exp-023-b",
+          "company": "Click",
+          "position": "Middle Go Developer",
+          "start_date": "2019-04-01",
+          "end_date": "2021-09-30",
+          "projects": [{"project": "Click API Gateway", "items": ["Разработка API-шлюза", "Миграция с Python на Go"]}],
+          "web_site": "https://click.uz",
+          "description": "Разработка микросервисов на Go для платёжной платформы Click."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-023-a",
+          "institution": "TUIT (Tashkent University of Information Technologies)",
+          "degree": "bachelor",
+          "field_of_study": "Software Engineering",
+          "start_date": "2015-09-01",
+          "end_date": "2019-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавр программной инженерии с дипломом отличия."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000024-0000-0000-0000-000000000024",
+    "first_name": "Madina",
+    "last_name": "Ergasheva",
+    "patronymic": "Ulugbekovna",
+    "phone": "+998901199024",
+    "telegram": "@madina_erg",
+    "telegram_id": "200000024",
+    "email": "madina.ergasheva@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["design"],
+    "profile_score": 73,
+    "estimated_salary_min": 5000000,
+    "estimated_salary_max": 8000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-03-18T14:00:00Z",
+    "profile": {
+      "title": "Middle UI/UX Designer",
+      "about": "Дизайнер с 3-летним опытом в e-commerce и финтех-продуктах. Провожу пользовательские исследования и создаю прототипы. Владею Figma на продвинутом уровне.",
+      "skills": ["Figma", "User Research", "Prototyping", "Wireframing", "Design Systems", "Usability Testing", "Adobe Photoshop"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B2"}
+      ],
+      "certifications": ["Google UX Design Certificate"],
+      "achievements": "Провела редизайн мобильного приложения Korzinka Go, увеличив конверсию оформления заказа на 25%.",
+      "experience": [
+        {
+          "id": "exp-024-a",
+          "company": "Korzinka",
+          "position": "UI/UX Designer",
+          "start_date": "2023-05-01",
+          "end_date": "",
+          "projects": [{"project": "Korzinka Go App", "items": ["Редизайн мобильного приложения", "Проведение юзабилити-тестов"]}],
+          "web_site": "https://korzinka.uz",
+          "description": "Дизайн мобильного приложения для доставки продуктов Korzinka Go."
+        },
+        {
+          "id": "exp-024-b",
+          "company": "Artel",
+          "position": "Junior UI Designer",
+          "start_date": "2022-01-01",
+          "end_date": "2023-04-30",
+          "projects": [{"project": "Artel Online Store", "items": ["Дизайн интернет-магазина", "Баннеры и промо-материалы"]}],
+          "web_site": "https://artelelectronics.com",
+          "description": "Дизайн для онлайн-магазина электроники и бытовой техники Artel."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-024-a",
+          "institution": "MDIST (Management Development Institute of Singapore in Tashkent)",
+          "degree": "bachelor",
+          "field_of_study": "Information Technology",
+          "start_date": "2018-09-01",
+          "end_date": "2022-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавр информационных технологий с дополнительным курсом по дизайну."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000025-0000-0000-0000-000000000025",
+    "first_name": "Alisher",
+    "last_name": "Normatov",
+    "patronymic": "Khusniddinovich",
+    "phone": "+998955544325",
+    "telegram": "@alisher_norm",
+    "telegram_id": "200000025",
+    "email": "alisher.normatov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Termez",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["embedded"],
+    "profile_score": 64,
+    "estimated_salary_min": 4000000,
+    "estimated_salary_max": 7000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-05-15T10:30:00Z",
+    "profile": {
+      "title": "Embedded Systems Developer",
+      "about": "Разработчик встраиваемых систем с 2-летним опытом работы с микроконтроллерами STM32 и ESP32. Работаю на стыке hardware и software. Интересуюсь IoT.",
+      "skills": ["C", "C++", "STM32", "ESP32", "RTOS", "UART/SPI/I2C", "PCB Design", "Python"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "B2"},
+        {"name": "English", "level": "B1"}
+      ],
+      "certifications": [],
+      "achievements": "Разработал IoT-систему мониторинга теплиц для агрохолдинга в Сурхандарьинской области, обслуживающую 50 теплиц.",
+      "experience": [
+        {
+          "id": "exp-025-a",
+          "company": "Artel",
+          "position": "Embedded Developer",
+          "start_date": "2023-08-01",
+          "end_date": "",
+          "projects": [{"project": "Smart Home Devices", "items": ["Программирование микроконтроллеров", "Разработка прошивок для IoT-устройств"]}],
+          "web_site": "https://artelelectronics.com",
+          "description": "Разработка прошивок для умных бытовых устройств Artel."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-025-a",
+          "institution": "TUIT (Tashkent University of Information Technologies) - Termez Branch",
+          "degree": "bachelor",
+          "field_of_study": "Computer Engineering",
+          "start_date": "2019-09-01",
+          "end_date": "2023-06-30",
+          "location": "Termez, Uzbekistan",
+          "description": "Бакалавр вычислительной техники с акцентом на встраиваемые системы."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000026-0000-0000-0000-000000000026",
+    "first_name": "Elena",
+    "last_name": "Pak",
+    "patronymic": "Viktorovna",
+    "phone": "+998712233626",
+    "telegram": "@elena_pak_qa",
+    "telegram_id": "200000026",
+    "email": "elena.pak.qa@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Korean",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "not_looking",
+    "activity_type": "full_time",
+    "specializations": ["qa"],
+    "profile_score": 81,
+    "estimated_salary_min": 8000000,
+    "estimated_salary_max": 12000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-01-18T15:00:00Z",
+    "profile": {
+      "title": "QA Lead / Automation Engineer",
+      "about": "QA-лид с 7-летним опытом. Специализируюсь на автоматизации тестирования и построении QA-процессов. Руковожу командой из 5 тестировщиков.",
+      "skills": ["Selenium", "Playwright", "Java", "TestNG", "Allure", "CI/CD", "Performance Testing", "JMeter"],
+      "languages": [
+        {"name": "Russian", "level": "native"},
+        {"name": "English", "level": "C1"},
+        {"name": "Uzbek", "level": "B1"}
+      ],
+      "certifications": ["ISTQB Advanced Level - Test Automation Engineer"],
+      "achievements": "Построила фреймворк автотестирования в Click, покрывающий 80% критических сценариев. Сократила время регрессии с 3 дней до 4 часов.",
+      "experience": [
+        {
+          "id": "exp-026-a",
+          "company": "Click",
+          "position": "QA Lead",
+          "start_date": "2021-02-01",
+          "end_date": "",
+          "projects": [{"project": "Test Automation Framework", "items": ["Разработка фреймворка на Java + Selenium", "Интеграция с CI/CD", "Менторинг команды"]}],
+          "web_site": "https://click.uz",
+          "description": "Руковожу QA-командой, отвечаю за стратегию тестирования и автоматизацию."
+        },
+        {
+          "id": "exp-026-b",
+          "company": "Payme",
+          "position": "Senior QA Engineer",
+          "start_date": "2018-06-01",
+          "end_date": "2021-01-31",
+          "projects": [{"project": "Payme Testing", "items": ["Автоматизация API-тестов", "Нагрузочное тестирование"]}],
+          "web_site": "https://payme.uz",
+          "description": "Автоматизация тестирования платёжных сервисов и мобильных приложений."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-026-a",
+          "institution": "Inha University in Tashkent",
+          "degree": "bachelor",
+          "field_of_study": "Computer Science and Engineering",
+          "start_date": "2013-09-01",
+          "end_date": "2017-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавр компьютерных наук и инженерии."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000027-0000-0000-0000-000000000027",
+    "first_name": "Sardor",
+    "last_name": "Xoliqov",
+    "patronymic": "Javlonovich",
+    "phone": "+998933344527",
+    "telegram": "@sardor_kh",
+    "telegram_id": "200000027",
+    "email": "sardor.xoliqov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Fergana",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "part_time",
+    "specializations": ["backend"],
+    "profile_score": 61,
+    "estimated_salary_min": 3500000,
+    "estimated_salary_max": 5500000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-05-20T12:00:00Z",
+    "profile": {
+      "title": "Junior Node.js Developer",
+      "about": "Backend-разработчик на Node.js с 1 годом опыта. Работаю с Express и NestJS. Параллельно учу Go для расширения навыков.",
+      "skills": ["Node.js", "Express", "NestJS", "TypeScript", "MongoDB", "Git", "REST API"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "B2"},
+        {"name": "English", "level": "B1"}
+      ],
+      "certifications": [],
+      "achievements": "Разработал backend для Telegram-бота по бронированию столиков в ресторанах Ферганы, 200+ активных пользователей.",
+      "experience": [
+        {
+          "id": "exp-027-a",
+          "company": "Freelance",
+          "position": "Node.js Developer",
+          "start_date": "2024-06-01",
+          "end_date": "",
+          "projects": [{"project": "Telegram Bots", "items": ["Backend для Telegram-ботов", "Интеграция с API ресторанов"]}],
+          "web_site": "",
+          "description": "Разработка backend-решений для Telegram-ботов на фрилансе."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-027-a",
+          "institution": "Fergana State University",
+          "degree": "bachelor",
+          "field_of_study": "Computer Science",
+          "start_date": "2020-09-01",
+          "end_date": "2024-06-30",
+          "location": "Fergana, Uzbekistan",
+          "description": "Бакалавр информатики."
+        },
+        {
+          "id": "edu-027-b",
+          "institution": "PDP Academy",
+          "degree": "certificate",
+          "field_of_study": "Node.js Backend Development",
+          "start_date": "2024-01-01",
+          "end_date": "2024-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Интенсивный курс по backend-разработке на Node.js."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000028-0000-0000-0000-000000000028",
+    "first_name": "Nigora",
+    "last_name": "Komilov",
+    "patronymic": "Abdurashidovna",
+    "phone": "+998901122828",
+    "telegram": "@nigora_kom",
+    "telegram_id": "200000028",
+    "email": "nigora.komilov@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Samarkand",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["mobile"],
+    "profile_score": 70,
+    "estimated_salary_min": 5000000,
+    "estimated_salary_max": 8000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-03-25T10:45:00Z",
+    "profile": {
+      "title": "Middle Flutter Developer",
+      "about": "Flutter-разработчик с 2.5 годами опыта. Разрабатываю кроссплатформенные мобильные приложения. Люблю чистый код и хорошую архитектуру.",
+      "skills": ["Flutter", "Dart", "Firebase", "REST API", "BLoC", "Provider", "Git"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B2"}
+      ],
+      "certifications": [],
+      "achievements": "Разработала кроссплатформенное приложение для сети аптек Samarkand, обслуживающее 10 000+ клиентов.",
+      "experience": [
+        {
+          "id": "exp-028-a",
+          "company": "MyTaxi",
+          "position": "Flutter Developer",
+          "start_date": "2023-09-01",
+          "end_date": "",
+          "projects": [{"project": "MyTaxi Passenger App", "items": ["Разработка нового функционала", "Оптимизация производительности"]}],
+          "web_site": "https://mytaxi.uz",
+          "description": "Разработка и поддержка кроссплатформенного приложения для пассажиров."
+        },
+        {
+          "id": "exp-028-b",
+          "company": "Freelance",
+          "position": "Junior Flutter Developer",
+          "start_date": "2022-06-01",
+          "end_date": "2023-08-31",
+          "projects": [{"project": "Pharmacy App", "items": ["Приложение для сети аптек", "Каталог лекарств с поиском"]}],
+          "web_site": "",
+          "description": "Фриланс-разработка мобильных приложений на Flutter."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-028-a",
+          "institution": "Samarkand State University",
+          "degree": "bachelor",
+          "field_of_study": "Software Engineering",
+          "start_date": "2018-09-01",
+          "end_date": "2022-06-30",
+          "location": "Samarkand, Uzbekistan",
+          "description": "Бакалавр программной инженерии с дипломным проектом по мобильной разработке."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000029-0000-0000-0000-000000000029",
+    "first_name": "Maksim",
+    "last_name": "Loginov",
+    "patronymic": "Andreevich",
+    "phone": "+998712345629",
+    "telegram": "@maksim_loginov",
+    "telegram_id": "200000029",
+    "email": "maksim.loginov@mail.ru",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Russian",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["database_administration"],
+    "profile_score": 77,
+    "estimated_salary_min": 8000000,
+    "estimated_salary_max": 12000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-02-20T09:30:00Z",
+    "profile": {
+      "title": "Senior Database Administrator",
+      "about": "DBA с 6-летним опытом управления PostgreSQL и Oracle базами данных. Специализируюсь на оптимизации производительности и обеспечении отказоустойчивости.",
+      "skills": ["PostgreSQL", "Oracle", "MySQL", "Replication", "Backup/Recovery", "Performance Tuning", "PL/pgSQL", "Linux"],
+      "languages": [
+        {"name": "Russian", "level": "native"},
+        {"name": "English", "level": "B2"},
+        {"name": "Uzbek", "level": "A2"}
+      ],
+      "certifications": ["Oracle Database Administrator Certified Professional"],
+      "achievements": "Оптимизировал базу данных Beeline Uzbekistan, сократив время критических запросов на 70%. Обеспечил zero downtime при миграции с Oracle на PostgreSQL.",
+      "experience": [
+        {
+          "id": "exp-029-a",
+          "company": "Beeline Uzbekistan",
+          "position": "Senior DBA",
+          "start_date": "2021-05-01",
+          "end_date": "",
+          "projects": [{"project": "Database Migration", "items": ["Миграция с Oracle на PostgreSQL", "Настройка репликации", "Оптимизация запросов"]}],
+          "web_site": "https://beeline.uz",
+          "description": "Управление базами данных телеком-оператора, обеспечение производительности и доступности."
+        },
+        {
+          "id": "exp-029-b",
+          "company": "National Bank of Uzbekistan",
+          "position": "Database Administrator",
+          "start_date": "2018-09-01",
+          "end_date": "2021-04-30",
+          "projects": [{"project": "Banking DB Administration", "items": ["Администрирование Oracle RAC", "Бэкапы и восстановление"]}],
+          "web_site": "https://nbu.uz",
+          "description": "Администрирование критически важных баз данных банковской системы."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-029-a",
+          "institution": "TUIT (Tashkent University of Information Technologies)",
+          "degree": "bachelor",
+          "field_of_study": "Information Systems",
+          "start_date": "2014-09-01",
+          "end_date": "2018-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавр информационных систем с фокусом на базы данных."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000030-0000-0000-0000-000000000030",
+    "first_name": "Farangiz",
+    "last_name": "Ibragimova",
+    "patronymic": "Otabekovna",
+    "phone": "+998946677830",
+    "telegram": "@farangiz_ibr",
+    "telegram_id": "200000030",
+    "email": "farangiz.ibragimova@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Nukus",
+    "nationality": "Karakalpak",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["frontend"],
+    "profile_score": 59,
+    "estimated_salary_min": 3000000,
+    "estimated_salary_max": 5000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-06-05T11:00:00Z",
+    "profile": {
+      "title": "Junior Frontend Developer",
+      "about": "Начинающий фронтенд-разработчик из Нукуса. Освоила Vue.js и ищу удалённую работу. Мотивирована развиваться в IT-сфере.",
+      "skills": ["Vue.js", "JavaScript", "HTML", "CSS", "Vuetify", "Git"],
+      "languages": [
+        {"name": "Karakalpak", "level": "native"},
+        {"name": "Uzbek", "level": "C1"},
+        {"name": "Russian", "level": "B2"},
+        {"name": "English", "level": "A2"}
+      ],
+      "certifications": [],
+      "achievements": "Создала веб-портал для краеведческого музея Нукуса с виртуальной галереей экспонатов.",
+      "experience": [
+        {
+          "id": "exp-030-a",
+          "company": "Freelance",
+          "position": "Frontend Developer",
+          "start_date": "2025-01-01",
+          "end_date": "",
+          "projects": [{"project": "Museum Virtual Gallery", "items": ["Разработка виртуальной галереи", "Адаптивная вёрстка"]}],
+          "web_site": "",
+          "description": "Разработка веб-проектов для местных организаций на фрилансе."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-030-a",
+          "institution": "Karakalpak State University",
+          "degree": "bachelor",
+          "field_of_study": "Information Technology",
+          "start_date": "2020-09-01",
+          "end_date": "2024-06-30",
+          "location": "Nukus, Uzbekistan",
+          "description": "Бакалавр информационных технологий."
+        },
+        {
+          "id": "edu-030-b",
+          "institution": "Najot Ta'lim",
+          "degree": "certificate",
+          "field_of_study": "Vue.js Frontend Development",
+          "start_date": "2024-08-01",
+          "end_date": "2025-01-31",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Онлайн-курс по Vue.js разработке."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000031-0000-0000-0000-000000000031",
+    "first_name": "Javohir",
+    "last_name": "Toshpulatov",
+    "patronymic": "Azimjonovich",
+    "phone": "+998909876531",
+    "telegram": "@javohir_tosh",
+    "telegram_id": "200000031",
+    "email": "javohir.toshpulatov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["backend", "data_science"],
+    "profile_score": 86,
+    "estimated_salary_min": 10000000,
+    "estimated_salary_max": 14000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-01-10T07:30:00Z",
+    "profile": {
+      "title": "Senior Python Developer / ML Engineer",
+      "about": "Python-разработчик и ML-инженер с 7-летним опытом. Создаю ML-пайплайны и data-driven продукты. Имею публикации на конференциях по NLP для узбекского языка.",
+      "skills": ["Python", "PyTorch", "FastAPI", "Celery", "PostgreSQL", "Docker", "MLflow", "NLP", "Computer Vision"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "C1"}
+      ],
+      "certifications": ["Deep Learning Specialization (Coursera)", "AWS Machine Learning Specialty"],
+      "achievements": "Создал NLP-модель для анализа тональности текстов на узбекском языке с точностью 92%. Выступал на PyCon Uzbekistan 2024.",
+      "experience": [
+        {
+          "id": "exp-031-a",
+          "company": "Humans",
+          "position": "Senior ML Engineer",
+          "start_date": "2022-01-01",
+          "end_date": "",
+          "projects": [{"project": "AI-powered Features", "items": ["NLP для чат-бота", "Fraud Detection система", "Рекомендательная система"]}],
+          "web_site": "https://humans.uz",
+          "description": "Разработка и внедрение ML-моделей для суперприложения Humans."
+        },
+        {
+          "id": "exp-031-b",
+          "company": "IT Park",
+          "position": "Python Developer",
+          "start_date": "2019-06-01",
+          "end_date": "2021-12-31",
+          "projects": [{"project": "AI Lab Projects", "items": ["Исследования в области NLP", "Разработка прототипов AI-решений"]}],
+          "web_site": "https://it-park.uz",
+          "description": "Работа в AI-лаборатории IT Park над прикладными исследованиями."
+        },
+        {
+          "id": "exp-031-c",
+          "company": "Mediapark",
+          "position": "Junior Python Developer",
+          "start_date": "2017-09-01",
+          "end_date": "2019-05-31",
+          "projects": [{"project": "Data Processing", "items": ["ETL-процессы", "Автоматизация отчётности"]}],
+          "web_site": "https://mediapark.uz",
+          "description": "Разработка скриптов для обработки данных и автоматизации."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-031-a",
+          "institution": "TUIT (Tashkent University of Information Technologies)",
+          "degree": "master",
+          "field_of_study": "Artificial Intelligence",
+          "start_date": "2015-09-01",
+          "end_date": "2017-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Магистр в области искусственного интеллекта с диссертацией по NLP."
+        },
+        {
+          "id": "edu-031-b",
+          "institution": "TUIT (Tashkent University of Information Technologies)",
+          "degree": "bachelor",
+          "field_of_study": "Computer Science",
+          "start_date": "2011-09-01",
+          "end_date": "2015-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавр информатики."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000032-0000-0000-0000-000000000032",
+    "first_name": "Dilorom",
+    "last_name": "Yusupova",
+    "patronymic": "Baxtiyorovna",
+    "phone": "+998937722132",
+    "telegram": "@dilorom_yus",
+    "telegram_id": "200000032",
+    "email": "dilorom.yusupova@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Bukhara",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "open_to_offers",
+    "activity_type": "freelance",
+    "specializations": ["design"],
+    "profile_score": 68,
+    "estimated_salary_min": 4000000,
+    "estimated_salary_max": 7000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-04-08T14:30:00Z",
+    "profile": {
+      "title": "Graphic Designer / Brand Designer",
+      "about": "Графический дизайнер с 3-летним опытом в брендинге и визуальных коммуникациях. Создаю логотипы, фирменные стили и печатную продукцию. Работаю удалённо.",
+      "skills": ["Adobe Illustrator", "Adobe Photoshop", "Figma", "Branding", "Logo Design", "Typography", "Print Design"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B1"}
+      ],
+      "certifications": [],
+      "achievements": "Разработала фирменный стиль для сети отелей в Бухаре. Создала более 50 логотипов для стартапов Узбекистана.",
+      "experience": [
+        {
+          "id": "exp-032-a",
+          "company": "Freelance",
+          "position": "Graphic Designer",
+          "start_date": "2023-01-01",
+          "end_date": "",
+          "projects": [{"project": "Branding Projects", "items": ["Логотипы и фирменные стили", "Дизайн упаковки", "Рекламные материалы"]}],
+          "web_site": "",
+          "description": "Фриланс-дизайнер, работаю с клиентами из Узбекистана и стран СНГ."
+        },
+        {
+          "id": "exp-032-b",
+          "company": "Artel",
+          "position": "Junior Graphic Designer",
+          "start_date": "2021-06-01",
+          "end_date": "2022-12-31",
+          "projects": [{"project": "Product Packaging", "items": ["Дизайн упаковки бытовой техники", "Рекламные баннеры"]}],
+          "web_site": "https://artelelectronics.com",
+          "description": "Дизайн упаковки и рекламных материалов для продукции Artel."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-032-a",
+          "institution": "Bukhara State University",
+          "degree": "bachelor",
+          "field_of_study": "Fine Arts and Design",
+          "start_date": "2017-09-01",
+          "end_date": "2021-06-30",
+          "location": "Bukhara, Uzbekistan",
+          "description": "Бакалавр изобразительного искусства и дизайна."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000033-0000-0000-0000-000000000033",
+    "first_name": "Nodir",
+    "last_name": "Sharafutdinov",
+    "patronymic": "Ravshanovich",
+    "phone": "+998955511133",
+    "telegram": "@nodir_sharaf",
+    "telegram_id": "200000033",
+    "email": "nodir.sharafutdinov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["devops"],
+    "profile_score": 71,
+    "estimated_salary_min": 6000000,
+    "estimated_salary_max": 9000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-03-12T08:15:00Z",
+    "profile": {
+      "title": "Middle DevOps Engineer",
+      "about": "DevOps-инженер с 3-летним опытом. Настраиваю CI/CD, управляю Docker и Kubernetes кластерами. Имею опыт работы с облачными провайдерами AWS и GCP.",
+      "skills": ["Docker", "Kubernetes", "GitLab CI", "Terraform", "AWS", "Prometheus", "Linux", "Bash"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B2"}
+      ],
+      "certifications": ["AWS Cloud Practitioner"],
+      "achievements": "Настроил CI/CD pipeline в OsonTaxi, сократив время деплоя с 30 минут до 8 минут.",
+      "experience": [
+        {
+          "id": "exp-033-a",
+          "company": "OsonTaxi",
+          "position": "DevOps Engineer",
+          "start_date": "2023-03-01",
+          "end_date": "",
+          "projects": [{"project": "Infrastructure Automation", "items": ["Настройка CI/CD", "Управление Kubernetes кластером"]}],
+          "web_site": "https://osontaxi.uz",
+          "description": "Управление инфраструктурой и автоматизация процессов деплоя."
+        },
+        {
+          "id": "exp-033-b",
+          "company": "IT Park",
+          "position": "Junior System Administrator",
+          "start_date": "2021-09-01",
+          "end_date": "2023-02-28",
+          "projects": [{"project": "Cloud Migration", "items": ["Миграция серверов в облако", "Настройка мониторинга"]}],
+          "web_site": "https://it-park.uz",
+          "description": "Администрирование серверов и помощь резидентам IT Park с инфраструктурой."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-033-a",
+          "institution": "TUIT (Tashkent University of Information Technologies)",
+          "degree": "bachelor",
+          "field_of_study": "Information Security",
+          "start_date": "2017-09-01",
+          "end_date": "2021-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавр информационной безопасности."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000034-0000-0000-0000-000000000034",
+    "first_name": "Irina",
+    "last_name": "Fedorova",
+    "patronymic": "Pavlovna",
+    "phone": "+998712211434",
+    "telegram": "@irina_fed_pm",
+    "telegram_id": "200000034",
+    "email": "irina.fedorova@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Russian",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "not_looking",
+    "activity_type": "full_time",
+    "specializations": ["project_management"],
+    "profile_score": 82,
+    "estimated_salary_min": 8000000,
+    "estimated_salary_max": 12000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-01-22T11:00:00Z",
+    "profile": {
+      "title": "Delivery Manager",
+      "about": "Delivery Manager с 6-летним опытом управления IT-проектами. Работала с распределёнными командами и аутсорсинг-проектами. Сертифицированный Scrum Master и SAFe Agilist.",
+      "skills": ["SAFe", "Scrum", "Kanban", "Jira", "Confluence", "Risk Management", "Budgeting", "Team Building"],
+      "languages": [
+        {"name": "Russian", "level": "native"},
+        {"name": "English", "level": "C1"},
+        {"name": "Uzbek", "level": "B1"}
+      ],
+      "certifications": ["SAFe 5 Agilist", "PSM II"],
+      "achievements": "Успешно доставила 20+ проектов общей стоимостью $2M+. Внедрила SAFe-фреймворк в Mediapark.",
+      "experience": [
+        {
+          "id": "exp-034-a",
+          "company": "Mediapark",
+          "position": "Delivery Manager",
+          "start_date": "2021-06-01",
+          "end_date": "",
+          "projects": [{"project": "E-Government Projects", "items": ["Управление портфелем проектов", "Координация 5 команд", "Внедрение SAFe"]}],
+          "web_site": "https://mediapark.uz",
+          "description": "Управление доставкой государственных IT-проектов, координация нескольких Scrum-команд."
+        },
+        {
+          "id": "exp-034-b",
+          "company": "EPAM Systems",
+          "position": "Project Manager",
+          "start_date": "2019-01-01",
+          "end_date": "2021-05-31",
+          "projects": [{"project": "Outsourcing Projects", "items": ["Управление клиентскими проектами", "Взаимодействие с зарубежными заказчиками"]}],
+          "web_site": "https://epam.com",
+          "description": "Управление аутсорсинг-проектами для международных клиентов."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-034-a",
+          "institution": "WIUT (Westminster International University in Tashkent)",
+          "degree": "master",
+          "field_of_study": "Business Information Systems",
+          "start_date": "2016-09-01",
+          "end_date": "2018-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Магистр бизнес-информационных систем."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000035-0000-0000-0000-000000000035",
+    "first_name": "Bobur",
+    "last_name": "Abdurakhmonov",
+    "patronymic": "Mansurovich",
+    "phone": "+998908833535",
+    "telegram": "@bobur_abd",
+    "telegram_id": "200000035",
+    "email": "bobur.abdurakhmonov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Andijan",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 74,
+    "estimated_salary_min": 6000000,
+    "estimated_salary_max": 9000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-02-18T13:45:00Z",
+    "profile": {
+      "title": "Middle .NET Developer",
+      "about": ".NET-разработчик с 4-летним опытом. Работаю с C#, ASP.NET Core и микросервисной архитектурой. Имею опыт интеграции с государственными системами.",
+      "skills": ["C#", "ASP.NET Core", "Entity Framework", "SQL Server", "RabbitMQ", "Docker", "Azure"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B1"}
+      ],
+      "certifications": ["Microsoft Certified: Azure Developer Associate"],
+      "achievements": "Разработал модуль электронной очереди для Единого портала госуслуг, обслуживающий 100 000+ обращений в месяц.",
+      "experience": [
+        {
+          "id": "exp-035-a",
+          "company": "Mediapark",
+          "position": "Middle .NET Developer",
+          "start_date": "2022-09-01",
+          "end_date": "",
+          "projects": [{"project": "E-Government Portal", "items": ["Разработка микросервисов на .NET", "Интеграция с госсистемами"]}],
+          "web_site": "https://mediapark.uz",
+          "description": "Разработка backend-части государственных порталов на ASP.NET Core."
+        },
+        {
+          "id": "exp-035-b",
+          "company": "UzAuto Motors",
+          "position": "Junior .NET Developer",
+          "start_date": "2021-02-01",
+          "end_date": "2022-08-31",
+          "projects": [{"project": "Dealer Management System", "items": ["Разработка системы управления дилерами", "Отчётность и аналитика"]}],
+          "web_site": "https://uzautomotors.com",
+          "description": "Разработка внутренних информационных систем автопроизводителя."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-035-a",
+          "institution": "Andijan Machine-Building Institute",
+          "degree": "bachelor",
+          "field_of_study": "Software Engineering",
+          "start_date": "2016-09-01",
+          "end_date": "2020-06-30",
+          "location": "Andijan, Uzbekistan",
+          "description": "Бакалавр программной инженерии."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000036-0000-0000-0000-000000000036",
+    "first_name": "Mohira",
+    "last_name": "Sobirov",
+    "patronymic": "Sherzodovna",
+    "phone": "+998935544636",
+    "telegram": "@mohira_sob",
+    "telegram_id": "200000036",
+    "email": "mohira.sobirov@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["marketing"],
+    "profile_score": 67,
+    "estimated_salary_min": 4000000,
+    "estimated_salary_max": 7000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-03-30T10:00:00Z",
+    "profile": {
+      "title": "SMM Manager / Content Creator",
+      "about": "SMM-менеджер с 2-летним опытом ведения социальных сетей для IT-компаний и стартапов. Создаю контент-стратегии и управляю сообществами в Telegram и Instagram.",
+      "skills": ["SMM", "Content Strategy", "Copywriting", "Canva", "Instagram", "Telegram", "Analytics"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C2"},
+        {"name": "English", "level": "B1"}
+      ],
+      "certifications": ["Meta Social Media Marketing Certificate"],
+      "achievements": "Увеличила подписчиков Telegram-канала Billz с 2 000 до 15 000 за 6 месяцев.",
+      "experience": [
+        {
+          "id": "exp-036-a",
+          "company": "Billz",
+          "position": "SMM Manager",
+          "start_date": "2024-01-01",
+          "end_date": "",
+          "projects": [{"project": "Social Media Marketing", "items": ["Ведение Telegram и Instagram", "Создание контент-плана", "Аналитика вовлечённости"]}],
+          "web_site": "https://billz.uz",
+          "description": "Управление социальными сетями и создание контента для IT-стартапа."
+        },
+        {
+          "id": "exp-036-b",
+          "company": "IT Park",
+          "position": "Content Manager Intern",
+          "start_date": "2023-06-01",
+          "end_date": "2023-12-31",
+          "projects": [{"project": "IT Park Media", "items": ["Написание статей", "Освещение мероприятий"]}],
+          "web_site": "https://it-park.uz",
+          "description": "Создание контента для медиа-каналов IT Park."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-036-a",
+          "institution": "University of World Economy and Diplomacy",
+          "degree": "bachelor",
+          "field_of_study": "Journalism",
+          "start_date": "2019-09-01",
+          "end_date": "2023-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавр журналистики с фокусом на digital-медиа."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000037-0000-0000-0000-000000000037",
+    "first_name": "Ulugbek",
+    "last_name": "Mamatov",
+    "patronymic": "Abdullayevich",
+    "phone": "+998977766537",
+    "telegram": "@ulugbek_mam",
+    "telegram_id": "200000037",
+    "email": "ulugbek.mamatov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "not_looking",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 89,
+    "estimated_salary_min": 11000000,
+    "estimated_salary_max": 15000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-01-07T08:30:00Z",
+    "profile": {
+      "title": "Principal Engineer / Backend Architect",
+      "about": "Архитектор и principal engineer с 9-летним опытом. Проектирую системы для миллионов пользователей. Активно делюсь опытом через менторинг и выступления на конференциях.",
+      "skills": ["Go", "Python", "System Design", "Distributed Systems", "Kafka", "PostgreSQL", "Redis", "Kubernetes", "Event Sourcing"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C2"},
+        {"name": "English", "level": "C1"}
+      ],
+      "certifications": ["AWS Solutions Architect Professional", "Google Cloud Professional Cloud Architect"],
+      "achievements": "Спроектировал архитектуру платформы Click, обрабатывающую 200M+ транзакций в месяц. Автор технического блога с 5000+ подписчиками.",
+      "experience": [
+        {
+          "id": "exp-037-a",
+          "company": "Click",
+          "position": "Principal Engineer",
+          "start_date": "2021-01-01",
+          "end_date": "",
+          "projects": [{"project": "Click Platform Architecture", "items": ["Архитектура платформы", "Техническая стратегия", "Менторинг senior-инженеров"]}],
+          "web_site": "https://click.uz",
+          "description": "Определяю техническую стратегию и архитектуру платформы Click."
+        },
+        {
+          "id": "exp-037-b",
+          "company": "Payme",
+          "position": "Senior Backend Developer",
+          "start_date": "2018-03-01",
+          "end_date": "2020-12-31",
+          "projects": [{"project": "Payme Core", "items": ["Разработка ядра платёжной системы", "Масштабирование инфраструктуры"]}],
+          "web_site": "https://payme.uz",
+          "description": "Разработка высоконагруженных компонентов платёжной системы."
+        },
+        {
+          "id": "exp-037-c",
+          "company": "Ucell",
+          "position": "Backend Developer",
+          "start_date": "2016-06-01",
+          "end_date": "2018-02-28",
+          "projects": [{"project": "Billing Modernization", "items": ["Модернизация биллинговой системы", "API-интеграции"]}],
+          "web_site": "https://ucell.uz",
+          "description": "Разработка backend-сервисов для телеком-оператора."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-037-a",
+          "institution": "TUIT (Tashkent University of Information Technologies)",
+          "degree": "master",
+          "field_of_study": "Software Engineering",
+          "start_date": "2014-09-01",
+          "end_date": "2016-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Магистр программной инженерии с исследованием в области распределённых систем."
+        },
+        {
+          "id": "edu-037-b",
+          "institution": "TUIT (Tashkent University of Information Technologies)",
+          "degree": "bachelor",
+          "field_of_study": "Computer Science",
+          "start_date": "2010-09-01",
+          "end_date": "2014-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавр информатики с красным дипломом."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000038-0000-0000-0000-000000000038",
+    "first_name": "Laylo",
+    "last_name": "Ruzmetova",
+    "patronymic": "Furkatovna",
+    "phone": "+998901234538",
+    "telegram": "@laylo_ruz",
+    "telegram_id": "200000038",
+    "email": "laylo.ruzmetova@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Navoi",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["qa"],
+    "profile_score": 57,
+    "estimated_salary_min": 3000000,
+    "estimated_salary_max": 4500000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-05-25T09:00:00Z",
+    "profile": {
+      "title": "Junior QA Engineer",
+      "about": "Начинающий QA-инженер с 6-месячным опытом стажировки. Владею основами ручного тестирования и пишу тест-кейсы. Быстро учусь и хочу развиваться в автоматизации.",
+      "skills": ["Manual Testing", "Postman", "Jira", "TestRail", "SQL basics", "Chrome DevTools"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "B2"},
+        {"name": "English", "level": "A2"}
+      ],
+      "certifications": [],
+      "achievements": "Обнаружила 30+ багов во время стажировки, включая критический баг в обработке платежей.",
+      "experience": [
+        {
+          "id": "exp-038-a",
+          "company": "Apelsin",
+          "position": "QA Intern",
+          "start_date": "2025-01-15",
+          "end_date": "2025-06-15",
+          "projects": [{"project": "Apelsin App Testing", "items": ["Ручное тестирование мобильного приложения", "Написание тест-кейсов"]}],
+          "web_site": "https://apelsin.uz",
+          "description": "Стажировка в QA-отделе, ручное тестирование мобильного приложения."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-038-a",
+          "institution": "Navoi State Mining Institute",
+          "degree": "bachelor",
+          "field_of_study": "Information Technology",
+          "start_date": "2020-09-01",
+          "end_date": "2024-06-30",
+          "location": "Navoi, Uzbekistan",
+          "description": "Бакалавр информационных технологий."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000039-0000-0000-0000-000000000039",
+    "first_name": "Alexander",
+    "last_name": "Kim",
+    "patronymic": "Vitalyevich",
+    "phone": "+998946655439",
+    "telegram": "@alex_kim_dev",
+    "telegram_id": "200000039",
+    "email": "alex.kim.dev@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Korean",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["frontend", "mobile"],
+    "profile_score": 80,
+    "estimated_salary_min": 8000000,
+    "estimated_salary_max": 12000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-02-05T10:00:00Z",
+    "profile": {
+      "title": "Senior React Native Developer",
+      "about": "Fullstack-разработчик с 6-летним опытом, специализируюсь на React и React Native. Создаю мобильные и веб-приложения одновременно. Активный участник React-сообщества.",
+      "skills": ["React", "React Native", "TypeScript", "Node.js", "Redux", "GraphQL", "Jest", "Detox"],
+      "languages": [
+        {"name": "Russian", "level": "native"},
+        {"name": "English", "level": "C1"},
+        {"name": "Uzbek", "level": "B2"},
+        {"name": "Korean", "level": "A2"}
+      ],
+      "certifications": [],
+      "achievements": "Разработал мобильное приложение Humans с нуля на React Native, достигнув 1M+ загрузок. Ведёт Telegram-канал о React Native с 3000 подписчиками.",
+      "experience": [
+        {
+          "id": "exp-039-a",
+          "company": "Humans",
+          "position": "Senior React Native Developer",
+          "start_date": "2021-03-01",
+          "end_date": "",
+          "projects": [{"project": "Humans Super App", "items": ["Разработка мобильного приложения", "Архитектура React Native модулей", "Менторинг команды"]}],
+          "web_site": "https://humans.uz",
+          "description": "Разработка и архитектура мобильного суперприложения на React Native."
+        },
+        {
+          "id": "exp-039-b",
+          "company": "MyTaxi",
+          "position": "Middle Frontend Developer",
+          "start_date": "2019-05-01",
+          "end_date": "2021-02-28",
+          "projects": [{"project": "MyTaxi Web", "items": ["Разработка веб-версии", "Admin панель"]}],
+          "web_site": "https://mytaxi.uz",
+          "description": "Разработка веб-приложений для сервиса такси."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-039-a",
+          "institution": "Inha University in Tashkent",
+          "degree": "bachelor",
+          "field_of_study": "Computer Science and Engineering",
+          "start_date": "2014-09-01",
+          "end_date": "2018-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавр компьютерных наук и инженерии."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000040-0000-0000-0000-000000000040",
+    "first_name": "Zilola",
+    "last_name": "Hasanova",
+    "patronymic": "Rustamovna",
+    "phone": "+998937788940",
+    "telegram": "@zilola_has",
+    "telegram_id": "200000040",
+    "email": "zilola.hasanova@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "open_to_offers",
+    "activity_type": "part_time",
+    "specializations": ["data_science"],
+    "profile_score": 76,
+    "estimated_salary_min": 7000000,
+    "estimated_salary_max": 10000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-02-25T15:30:00Z",
+    "profile": {
+      "title": "Middle Data Engineer",
+      "about": "Data-инженер с 3-летним опытом построения ETL-пайплайнов и data warehouses. Работаю с Spark, Airflow и облачными хранилищами. Ищу частичную занятость для баланса с учёбой.",
+      "skills": ["Python", "Apache Spark", "Airflow", "SQL", "dbt", "AWS S3", "Redshift", "Docker"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B2"}
+      ],
+      "certifications": ["AWS Data Analytics Specialty"],
+      "achievements": "Построила data warehouse для Uzum, обрабатывающий 50GB данных ежедневно. Сократила время формирования отчётов с 4 часов до 15 минут.",
+      "experience": [
+        {
+          "id": "exp-040-a",
+          "company": "Uzum",
+          "position": "Data Engineer",
+          "start_date": "2022-10-01",
+          "end_date": "",
+          "projects": [{"project": "Data Warehouse", "items": ["Проектирование DWH", "ETL-пайплайны на Airflow", "Оптимизация запросов"]}],
+          "web_site": "https://uzum.uz",
+          "description": "Построение и поддержка data warehouse для аналитики маркетплейса."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-040-a",
+          "institution": "TUIT (Tashkent University of Information Technologies)",
+          "degree": "master",
+          "field_of_study": "Data Science",
+          "start_date": "2024-09-01",
+          "end_date": "2026-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Магистрант по направлению Data Science (обучение в процессе)."
+        },
+        {
+          "id": "edu-040-b",
+          "institution": "TUIT (Tashkent University of Information Technologies)",
+          "degree": "bachelor",
+          "field_of_study": "Computer Science",
+          "start_date": "2018-09-01",
+          "end_date": "2022-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавр информатики."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000041-0000-0000-0000-000000000041",
+    "first_name": "Murod",
+    "last_name": "Kalandarov",
+    "patronymic": "Odilovich",
+    "phone": "+998901555541",
+    "telegram": "@murod_kal",
+    "telegram_id": "200000041",
+    "email": "murod.kalandarov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Samarkand",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["mobile"],
+    "profile_score": 64,
+    "estimated_salary_min": 4000000,
+    "estimated_salary_max": 6500000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-04-05T12:00:00Z",
+    "profile": {
+      "title": "Junior Flutter Developer",
+      "about": "Flutter-разработчик с 1 годом опыта. Разрабатываю мобильные приложения и Telegram Mini Apps. Ищу работу в продуктовой компании.",
+      "skills": ["Flutter", "Dart", "Firebase", "REST API", "Git", "Figma basics"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "B2"},
+        {"name": "English", "level": "B1"}
+      ],
+      "certifications": [],
+      "achievements": "Разработал приложение для бронирования экскурсий по Самарканду, 3000+ загрузок в Google Play.",
+      "experience": [
+        {
+          "id": "exp-041-a",
+          "company": "Freelance",
+          "position": "Flutter Developer",
+          "start_date": "2024-06-01",
+          "end_date": "",
+          "projects": [{"project": "Samarkand Tours App", "items": ["Разработка мобильного приложения", "Интеграция с Google Maps"]}],
+          "web_site": "",
+          "description": "Разработка мобильных приложений для туристического сектора Самарканда."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-041-a",
+          "institution": "Samarkand State University",
+          "degree": "bachelor",
+          "field_of_study": "Computer Science",
+          "start_date": "2020-09-01",
+          "end_date": "2024-06-30",
+          "location": "Samarkand, Uzbekistan",
+          "description": "Бакалавр информатики."
+        },
+        {
+          "id": "edu-041-b",
+          "institution": "Najot Ta'lim",
+          "degree": "certificate",
+          "field_of_study": "Flutter Mobile Development",
+          "start_date": "2024-01-01",
+          "end_date": "2024-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Онлайн-курс по мобильной разработке на Flutter."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000042-0000-0000-0000-000000000042",
+    "first_name": "Natalia",
+    "last_name": "Sokolova",
+    "patronymic": "Olegovna",
+    "phone": "+998712200042",
+    "telegram": "@natalia_sok",
+    "telegram_id": "200000042",
+    "email": "natalia.sokolova@mail.ru",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Russian",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["cybersecurity"],
+    "profile_score": 79,
+    "estimated_salary_min": 8000000,
+    "estimated_salary_max": 12000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-01-28T11:30:00Z",
+    "profile": {
+      "title": "Senior Security Analyst",
+      "about": "Специалист по кибербезопасности с 5-летним опытом. Провожу анализ уязвимостей, расследую инциденты безопасности и внедряю политики ИБ. Опыт работы в банковском секторе.",
+      "skills": ["SIEM", "Incident Response", "Vulnerability Assessment", "Splunk", "Python", "ISO 27001", "OWASP", "Forensics"],
+      "languages": [
+        {"name": "Russian", "level": "native"},
+        {"name": "English", "level": "C1"},
+        {"name": "Uzbek", "level": "B1"}
+      ],
+      "certifications": ["CISSP", "CEH"],
+      "achievements": "Построила систему мониторинга безопасности в Капиталбанке, предотвратив мошеннические операции на сумму более $500K.",
+      "experience": [
+        {
+          "id": "exp-042-a",
+          "company": "Kapitalbank",
+          "position": "Senior Security Analyst",
+          "start_date": "2022-04-01",
+          "end_date": "",
+          "projects": [{"project": "Security Operations Center", "items": ["Мониторинг угроз", "Расследование инцидентов", "Внедрение SIEM"]}],
+          "web_site": "https://kapitalbank.uz",
+          "description": "Обеспечение информационной безопасности банка, управление SOC."
+        },
+        {
+          "id": "exp-042-b",
+          "company": "Beeline Uzbekistan",
+          "position": "Security Analyst",
+          "start_date": "2020-01-01",
+          "end_date": "2022-03-31",
+          "projects": [{"project": "Telecom Security", "items": ["Мониторинг безопасности сети", "Аудит уязвимостей"]}],
+          "web_site": "https://beeline.uz",
+          "description": "Анализ и обеспечение безопасности телекоммуникационной инфраструктуры."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-042-a",
+          "institution": "TUIT (Tashkent University of Information Technologies)",
+          "degree": "master",
+          "field_of_study": "Information Security",
+          "start_date": "2017-09-01",
+          "end_date": "2019-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Магистр информационной безопасности."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000043-0000-0000-0000-000000000043",
+    "first_name": "Sanjar",
+    "last_name": "Ochilov",
+    "patronymic": "Nematovich",
+    "phone": "+998908844343",
+    "telegram": "@sanjar_och",
+    "telegram_id": "200000043",
+    "email": "sanjar.ochilov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["game_dev"],
+    "profile_score": 72,
+    "estimated_salary_min": 6000000,
+    "estimated_salary_max": 9000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-03-15T13:00:00Z",
+    "profile": {
+      "title": "Middle Unity Developer",
+      "about": "Разработчик игр на Unity с 3-летним опытом. Специализируюсь на мобильных играх и гиперказуальных проектах. Имею опыт работы с серверной частью для онлайн-игр.",
+      "skills": ["Unity", "C#", "Photon", "Firebase", "3D Math", "Shader Programming", "Git", "Blender"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B2"}
+      ],
+      "certifications": ["Unity Certified Developer"],
+      "achievements": "Мобильная игра набрала 100 000+ загрузок и вошла в топ-50 казуальных игр в Play Store СНГ.",
+      "experience": [
+        {
+          "id": "exp-043-a",
+          "company": "Freelance",
+          "position": "Unity Developer",
+          "start_date": "2023-06-01",
+          "end_date": "",
+          "projects": [{"project": "Hyper-casual Games", "items": ["Разработка мобильных игр", "Интеграция рекламных SDK", "Оптимизация производительности"]}],
+          "web_site": "",
+          "description": "Разработка гиперказуальных мобильных игр на фрилансе."
+        },
+        {
+          "id": "exp-043-b",
+          "company": "IT Park",
+          "position": "Junior Game Developer",
+          "start_date": "2022-03-01",
+          "end_date": "2023-05-31",
+          "projects": [{"project": "Educational Games", "items": ["Разработка обучающих игр", "2D и 3D графика"]}],
+          "web_site": "https://it-park.uz",
+          "description": "Разработка образовательных игровых приложений для детей."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-043-a",
+          "institution": "Inha University in Tashkent",
+          "degree": "bachelor",
+          "field_of_study": "Computer Science and Engineering",
+          "start_date": "2018-09-01",
+          "end_date": "2022-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавр компьютерных наук с дипломным проектом по разработке игр."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000044-0000-0000-0000-000000000044",
+    "first_name": "Dilnoza",
+    "last_name": "Jumaeva",
+    "patronymic": "Alimjonovna",
+    "phone": "+998935577744",
+    "telegram": "@dilnoza_jum",
+    "telegram_id": "200000044",
+    "email": "dilnoza.jumaeva@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Namangan",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["backend"],
+    "profile_score": 63,
+    "estimated_salary_min": 3500000,
+    "estimated_salary_max": 5500000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-05-08T10:15:00Z",
+    "profile": {
+      "title": "Junior Python Developer",
+      "about": "Python-разработчик с 1 годом опыта. Работаю с Django и Flask. Хочу расти в backend-разработке и изучаю FastAPI. Ищу первую полноценную работу.",
+      "skills": ["Python", "Django", "Flask", "PostgreSQL", "REST API", "Git", "HTML/CSS basics"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B1"}
+      ],
+      "certifications": [],
+      "achievements": "Разработала веб-приложение для учёта урожая для фермеров Наманганской области.",
+      "experience": [
+        {
+          "id": "exp-044-a",
+          "company": "Freelance",
+          "position": "Python Developer",
+          "start_date": "2024-09-01",
+          "end_date": "",
+          "projects": [{"project": "Farm Management App", "items": ["Backend на Django", "Интеграция с Telegram-ботом"]}],
+          "web_site": "",
+          "description": "Разработка веб-приложений для сельскохозяйственного сектора."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-044-a",
+          "institution": "Namangan State University",
+          "degree": "bachelor",
+          "field_of_study": "Applied Mathematics",
+          "start_date": "2020-09-01",
+          "end_date": "2024-06-30",
+          "location": "Namangan, Uzbekistan",
+          "description": "Бакалавр прикладной математики."
+        },
+        {
+          "id": "edu-044-b",
+          "institution": "PDP Academy",
+          "degree": "certificate",
+          "field_of_study": "Python Web Development",
+          "start_date": "2024-02-01",
+          "end_date": "2024-08-31",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Курс по веб-разработке на Python и Django."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000045-0000-0000-0000-000000000045",
+    "first_name": "Denis",
+    "last_name": "Ivanov",
+    "patronymic": "Alekseevich",
+    "phone": "+998712233445",
+    "telegram": "@denis_ivanov_fe",
+    "telegram_id": "200000045",
+    "email": "denis.ivanov.fe@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Russian",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["frontend"],
+    "profile_score": 75,
+    "estimated_salary_min": 7000000,
+    "estimated_salary_max": 10000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-02-12T14:00:00Z",
+    "profile": {
+      "title": "Middle Frontend Developer",
+      "about": "Frontend-разработчик с 4-летним опытом работы с Angular и React. Специализируюсь на enterprise-приложениях и сложных формах. Люблю чистую архитектуру.",
+      "skills": ["Angular", "React", "TypeScript", "RxJS", "NgRx", "SCSS", "Jest", "Cypress"],
+      "languages": [
+        {"name": "Russian", "level": "native"},
+        {"name": "English", "level": "B2"},
+        {"name": "Uzbek", "level": "A2"}
+      ],
+      "certifications": [],
+      "achievements": "Разработал систему электронного документооборота для Национального банка Узбекистана с интерфейсом на Angular.",
+      "experience": [
+        {
+          "id": "exp-045-a",
+          "company": "Mediapark",
+          "position": "Middle Frontend Developer",
+          "start_date": "2023-01-01",
+          "end_date": "",
+          "projects": [{"project": "E-Document System", "items": ["Разработка SPA на Angular", "Интеграция с ЭЦП"]}],
+          "web_site": "https://mediapark.uz",
+          "description": "Разработка фронтенда для систем электронного документооборота."
+        },
+        {
+          "id": "exp-045-b",
+          "company": "EPAM Systems",
+          "position": "Junior Frontend Developer",
+          "start_date": "2021-06-01",
+          "end_date": "2022-12-31",
+          "projects": [{"project": "Banking Dashboard", "items": ["Разработка дашбордов", "Визуализация данных"]}],
+          "web_site": "https://epam.com",
+          "description": "Разработка frontend-части для международных банковских проектов."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-045-a",
+          "institution": "TUIT (Tashkent University of Information Technologies)",
+          "degree": "bachelor",
+          "field_of_study": "Software Engineering",
+          "start_date": "2017-09-01",
+          "end_date": "2021-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавр программной инженерии."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000046-0000-0000-0000-000000000046",
+    "first_name": "Ozoda",
+    "last_name": "Raximova",
+    "patronymic": "Komiljonovna",
+    "phone": "+998901888846",
+    "telegram": "@ozoda_rax",
+    "telegram_id": "200000046",
+    "email": "ozoda.raximova@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Fergana",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "full_time",
+    "specializations": ["hr"],
+    "profile_score": 66,
+    "estimated_salary_min": 4000000,
+    "estimated_salary_max": 6000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-04-25T09:30:00Z",
+    "profile": {
+      "title": "IT Recruiter",
+      "about": "IT-рекрутер с 2-летним опытом подбора технических специалистов. Понимаю IT-стек и умею оценивать кандидатов. Ищу работу в технологической компании.",
+      "skills": ["IT Recruiting", "Boolean Search", "LinkedIn", "HeadHunter", "Sourcing", "Screening", "ATS"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "B1"}
+      ],
+      "certifications": [],
+      "achievements": "Закрыла 40+ IT-вакансий за год, включая сложные позиции Senior DevOps и Tech Lead.",
+      "experience": [
+        {
+          "id": "exp-046-a",
+          "company": "Korzinka",
+          "position": "IT Recruiter",
+          "start_date": "2023-09-01",
+          "end_date": "",
+          "projects": [{"project": "Tech Team Hiring", "items": ["Подбор разработчиков", "Проведение скрининг-интервью", "Ведение воронки в ATS"]}],
+          "web_site": "https://korzinka.uz",
+          "description": "Подбор IT-специалистов для технологического отдела ритейл-компании."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-046-a",
+          "institution": "Fergana State University",
+          "degree": "bachelor",
+          "field_of_study": "Psychology",
+          "start_date": "2018-09-01",
+          "end_date": "2022-06-30",
+          "location": "Fergana, Uzbekistan",
+          "description": "Бакалавр психологии с дополнительным курсом по HR-менеджменту."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000047-0000-0000-0000-000000000047",
+    "first_name": "Shakhboz",
+    "last_name": "Umarov",
+    "patronymic": "Talgatovich",
+    "phone": "+998946644747",
+    "telegram": "@shakhboz_umarov",
+    "telegram_id": "200000047",
+    "email": "shakhboz.umarov@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["backend", "system_administration"],
+    "profile_score": 84,
+    "estimated_salary_min": 9000000,
+    "estimated_salary_max": 13000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-01-15T10:00:00Z",
+    "profile": {
+      "title": "Senior SRE / Platform Engineer",
+      "about": "SRE-инженер с 6-летним опытом. Обеспечиваю надёжность и масштабируемость продакшн-систем. Автоматизирую всё, что можно автоматизировать. Строю observability стек.",
+      "skills": ["Kubernetes", "Terraform", "Go", "Python", "Prometheus", "Grafana", "ELK Stack", "AWS", "Chaos Engineering"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C1"},
+        {"name": "English", "level": "C1"}
+      ],
+      "certifications": ["CKA (Certified Kubernetes Administrator)", "AWS DevOps Engineer Professional"],
+      "achievements": "Достиг 99.99% uptime для платформы Click. Построил систему observability, покрывающую 300+ микросервисов.",
+      "experience": [
+        {
+          "id": "exp-047-a",
+          "company": "Click",
+          "position": "Senior SRE",
+          "start_date": "2022-01-01",
+          "end_date": "",
+          "projects": [{"project": "Platform Reliability", "items": ["Построение observability стека", "Автоматизация инцидент-менеджмента", "Capacity planning"]}],
+          "web_site": "https://click.uz",
+          "description": "Обеспечение надёжности и масштабируемости платёжной платформы."
+        },
+        {
+          "id": "exp-047-b",
+          "company": "Payme",
+          "position": "DevOps Engineer",
+          "start_date": "2019-08-01",
+          "end_date": "2021-12-31",
+          "projects": [{"project": "Infrastructure Automation", "items": ["Миграция в Kubernetes", "Настройка CI/CD пайплайнов"]}],
+          "web_site": "https://payme.uz",
+          "description": "Автоматизация инфраструктуры и внедрение Kubernetes."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-047-a",
+          "institution": "TUIT (Tashkent University of Information Technologies)",
+          "degree": "master",
+          "field_of_study": "Computer Networks",
+          "start_date": "2017-09-01",
+          "end_date": "2019-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Магистр компьютерных сетей и телекоммуникаций."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000048-0000-0000-0000-000000000048",
+    "first_name": "Feruza",
+    "last_name": "Akhmedova",
+    "patronymic": "Ilkhamovna",
+    "phone": "+998937799948",
+    "telegram": "@feruza_akh",
+    "telegram_id": "200000048",
+    "email": "feruza.akhmedova@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "open_to_offers",
+    "activity_type": "full_time",
+    "specializations": ["business_analysis", "product_management"],
+    "profile_score": 71,
+    "estimated_salary_min": 5000000,
+    "estimated_salary_max": 8000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-03-08T15:45:00Z",
+    "profile": {
+      "title": "Middle Product Analyst",
+      "about": "Продуктовый аналитик с 3-летним опытом. Работаю с метриками продукта, строю дашборды и провожу A/B тесты. Помогаю продуктовым командам принимать data-driven решения.",
+      "skills": ["SQL", "Python", "Amplitude", "Mixpanel", "A/B Testing", "Tableau", "Product Metrics", "Cohort Analysis"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C2"},
+        {"name": "English", "level": "B2"}
+      ],
+      "certifications": ["Google Analytics Certification"],
+      "achievements": "Построила систему продуктовой аналитики в MyTaxi, что позволило увеличить конверсию в первый заказ на 20%.",
+      "experience": [
+        {
+          "id": "exp-048-a",
+          "company": "MyTaxi",
+          "position": "Product Analyst",
+          "start_date": "2023-03-01",
+          "end_date": "",
+          "projects": [{"project": "Product Analytics Platform", "items": ["Построение дашбордов", "A/B тестирование", "Когортный анализ"]}],
+          "web_site": "https://mytaxi.uz",
+          "description": "Продуктовая аналитика для мобильного приложения такси."
+        },
+        {
+          "id": "exp-048-b",
+          "company": "Humans",
+          "position": "Junior Data Analyst",
+          "start_date": "2022-01-01",
+          "end_date": "2023-02-28",
+          "projects": [{"project": "User Analytics", "items": ["Анализ пользовательского поведения", "Отчётность для менеджмента"]}],
+          "web_site": "https://humans.uz",
+          "description": "Анализ данных о пользователях и формирование аналитических отчётов."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-048-a",
+          "institution": "WIUT (Westminster International University in Tashkent)",
+          "degree": "bachelor",
+          "field_of_study": "Business Information Systems",
+          "start_date": "2017-09-01",
+          "end_date": "2021-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавр бизнес-информационных систем."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000049-0000-0000-0000-000000000049",
+    "first_name": "Khusan",
+    "last_name": "Babaev",
+    "patronymic": "Zafarovich",
+    "phone": "+998955533349",
+    "telegram": "@khusan_bab",
+    "telegram_id": "200000049",
+    "email": "khusan.babaev@gmail.com",
+    "gender": "male",
+    "country": "Uzbekistan",
+    "region": "Karshi",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "free",
+    "job_status": "actively_looking",
+    "activity_type": "freelance",
+    "specializations": ["backend"],
+    "profile_score": 60,
+    "estimated_salary_min": 3500000,
+    "estimated_salary_max": 5500000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-05-30T08:00:00Z",
+    "profile": {
+      "title": "Junior PHP Developer",
+      "about": "PHP-разработчик с 1.5 годами опыта работы с Laravel. Создаю веб-приложения и CRM-системы для малого бизнеса. Готов к переезду в Ташкент.",
+      "skills": ["PHP", "Laravel", "MySQL", "JavaScript", "Vue.js basics", "Git", "REST API"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "B2"},
+        {"name": "English", "level": "A2"}
+      ],
+      "certifications": [],
+      "achievements": "Разработал CRM-систему для текстильной компании в Кашкадарье, автоматизировав учёт заказов и клиентов.",
+      "experience": [
+        {
+          "id": "exp-049-a",
+          "company": "Freelance",
+          "position": "PHP Developer",
+          "start_date": "2024-03-01",
+          "end_date": "",
+          "projects": [{"project": "CRM for Textile Company", "items": ["Разработка CRM на Laravel", "Интеграция с Telegram-ботом для уведомлений"]}],
+          "web_site": "",
+          "description": "Разработка веб-приложений для местного бизнеса на фрилансе."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-049-a",
+          "institution": "Karshi Engineering-Economics Institute",
+          "degree": "bachelor",
+          "field_of_study": "Information Technology",
+          "start_date": "2019-09-01",
+          "end_date": "2023-06-30",
+          "location": "Karshi, Uzbekistan",
+          "description": "Бакалавр информационных технологий."
+        },
+        {
+          "id": "edu-049-b",
+          "institution": "PDP Academy",
+          "degree": "certificate",
+          "field_of_study": "PHP/Laravel Development",
+          "start_date": "2023-09-01",
+          "end_date": "2024-03-31",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Онлайн-курс по PHP и Laravel разработке."
+        }
+      ]
+    }
+  },
+  {
+    "id": "00000050-0000-0000-0000-000000000050",
+    "first_name": "Umida",
+    "last_name": "Turgunova",
+    "patronymic": "Abduvakhidovna",
+    "phone": "+998901777750",
+    "telegram": "@umida_turg",
+    "telegram_id": "200000050",
+    "email": "umida.turgunova@gmail.com",
+    "gender": "female",
+    "country": "Uzbekistan",
+    "region": "Tashkent",
+    "nationality": "Uzbek",
+    "profile_pic_url": "",
+    "status": "active",
+    "tariff_type": "premium",
+    "job_status": "not_looking",
+    "activity_type": "full_time",
+    "specializations": ["product_management", "project_management"],
+    "profile_score": 90,
+    "estimated_salary_min": 12000000,
+    "estimated_salary_max": 15000000,
+    "estimated_salary_currency": "UZS",
+    "created_at": "2025-01-02T09:00:00Z",
+    "profile": {
+      "title": "Head of Product",
+      "about": "Руководитель продуктового направления с 9-летним опытом в IT. Управляю портфелем продуктов и командой из 20+ человек. Имею опыт запуска продуктов от 0 до 1 и масштабирования.",
+      "skills": ["Product Strategy", "Team Management", "OKR", "Product Discovery", "Roadmap Planning", "Stakeholder Management", "Data Analysis", "Agile"],
+      "languages": [
+        {"name": "Uzbek", "level": "native"},
+        {"name": "Russian", "level": "C2"},
+        {"name": "English", "level": "C1"}
+      ],
+      "certifications": ["Certified Scrum Product Owner (CSPO)", "Pragmatic Marketing Certified"],
+      "achievements": "Запустила 5 продуктов в Payme, включая Payme Business и Payme Checkout. Увеличила выручку продуктового направления на 300% за 2 года.",
+      "experience": [
+        {
+          "id": "exp-050-a",
+          "company": "Payme",
+          "position": "Head of Product",
+          "start_date": "2021-06-01",
+          "end_date": "",
+          "projects": [{"project": "Product Portfolio", "items": ["Управление портфелем из 5 продуктов", "Формирование продуктовой стратегии", "Найм и развитие команды"]}],
+          "web_site": "https://payme.uz",
+          "description": "Руковожу продуктовым направлением, определяю стратегию и приоритеты для портфеля продуктов."
+        },
+        {
+          "id": "exp-050-b",
+          "company": "Click",
+          "position": "Senior Product Manager",
+          "start_date": "2018-09-01",
+          "end_date": "2021-05-31",
+          "projects": [{"project": "Click App", "items": ["Управление развитием мобильного приложения", "Запуск Click Pass"]}],
+          "web_site": "https://click.uz",
+          "description": "Управление продуктом мобильного приложения Click."
+        },
+        {
+          "id": "exp-050-c",
+          "company": "Beeline Uzbekistan",
+          "position": "Product Manager",
+          "start_date": "2016-03-01",
+          "end_date": "2018-08-31",
+          "projects": [{"project": "Digital Services", "items": ["Запуск цифровых сервисов", "Анализ конкурентов"]}],
+          "web_site": "https://beeline.uz",
+          "description": "Управление digital-продуктами телеком-оператора."
+        }
+      ],
+      "education": [
+        {
+          "id": "edu-050-a",
+          "institution": "WIUT (Westminster International University in Tashkent)",
+          "degree": "master",
+          "field_of_study": "Business Administration",
+          "start_date": "2014-09-01",
+          "end_date": "2016-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "MBA с фокусом на технологический менеджмент."
+        },
+        {
+          "id": "edu-050-b",
+          "institution": "TUIT (Tashkent University of Information Technologies)",
+          "degree": "bachelor",
+          "field_of_study": "Information Systems",
+          "start_date": "2010-09-01",
+          "end_date": "2014-06-30",
+          "location": "Tashkent, Uzbekistan",
+          "description": "Бакалавр информационных систем."
+        }
+      ]
+    }
+  }
+]
