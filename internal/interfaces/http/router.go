@@ -63,6 +63,7 @@ func NewRouter(svc *app.Services) *gin.Engine {
 		svc.ExperienceItem, svc.EducationItem, svc.ItemText, svc.Skill)
 	hrVacancyAppHandler := NewHRVacancyApplicationsHandler(svc.VacancyApplication, svc.Vacancy, svc.User, svc.Skill)
 	hrSavedUsersHandler := NewHRSavedUsersHandler(svc.HRSavedUser, svc.User, svc.Skill)
+	candidateSearchHandler := NewCandidateSearchHandler(svc.CandidateSearch, userHandler)
 	hrCombinedAuth := HRCombinedAuthMiddleware(svc.JWTSecret, svc.TelegramHRBotToken, svc.CompanyHR)
 
 	// Serve Mini App HTML
@@ -207,6 +208,15 @@ func NewRouter(svc *app.Services) *gin.Engine {
 			hrMiniapp.GET("/vacancies/:id/applications/stats", hrVacancyAppHandler.GetStats)
 			hrMiniapp.PUT("/vacancies/:id/applications/:app_id/status", hrVacancyAppHandler.UpdateStatus)
 			hrMiniapp.PUT("/vacancies/:id/applications/:app_id/seen", hrVacancyAppHandler.MarkSeen)
+		}
+
+		// Candidate search — combined auth: works with both TG miniapp and JWT
+		candidateSearch := v1.Group("/candidate-search")
+		candidateSearch.Use(hrCombinedAuth)
+		{
+			candidateSearch.POST("", candidateSearchHandler.Search)
+			candidateSearch.POST("/by-vacancy/:vacancy_id", candidateSearchHandler.SearchByVacancy)
+			candidateSearch.GET("/:search_id", candidateSearchHandler.GetPage)
 		}
 
 		// HR saved users — combined auth: works with both TG miniapp and JWT
