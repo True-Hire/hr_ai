@@ -44,7 +44,7 @@ func NewRouter(svc *app.Services) *gin.Engine {
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	userHandler := NewUserHandler(svc.User, svc.ProfileField, svc.ProfileFieldText, svc.ExperienceItem, svc.EducationItem, svc.ItemText, svc.Skill, svc.Auth, svc.Search)
+	userHandler := NewUserHandler(svc.User, svc.ProfileField, svc.ProfileFieldText, svc.ExperienceItem, svc.EducationItem, svc.ItemText, svc.Skill, svc.Auth, svc.Search, svc.CandidateSearch)
 	profileFieldHandler := NewProfileFieldHandler(svc.ProfileField)
 	profileFieldTextHandler := NewProfileFieldTextHandler(svc.ProfileFieldText)
 	profileParseHandler := NewProfileParseHandler(svc.ProfileParse)
