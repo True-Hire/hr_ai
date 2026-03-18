@@ -13,15 +13,16 @@ import (
 )
 
 type ProfileParseService struct {
-	geminiClient    *gemini.Client
-	profileFieldSvc *ProfileFieldService
-	profileTextSvc  *ProfileFieldTextService
-	experienceSvc   *ExperienceItemService
-	educationSvc    *EducationItemService
-	itemTextSvc     *ItemTextService
-	skillSvc        *SkillService
-	userSvc         *UserService
-	vectorIndexSvc  *VectorIndexService
+	geminiClient         *gemini.Client
+	profileFieldSvc      *ProfileFieldService
+	profileTextSvc       *ProfileFieldTextService
+	experienceSvc        *ExperienceItemService
+	educationSvc         *EducationItemService
+	itemTextSvc          *ItemTextService
+	skillSvc             *SkillService
+	userSvc              *UserService
+	vectorIndexSvc       *VectorIndexService
+	candidateIndexingSvc *CandidateIndexingService
 }
 
 func NewProfileParseService(
@@ -108,6 +109,10 @@ func (s *ProfileParseService) ParseFromFile(ctx context.Context, userID uuid.UUI
 	return result, nil
 }
 
+func (s *ProfileParseService) SetCandidateIndexingService(svc *CandidateIndexingService) {
+	s.candidateIndexingSvc = svc
+}
+
 func (s *ProfileParseService) asyncIndex(userID uuid.UUID) {
 	if s.vectorIndexSvc == nil {
 		return
@@ -117,6 +122,13 @@ func (s *ProfileParseService) asyncIndex(userID uuid.UUID) {
 			log.Printf("async vector index for user %s: %v", userID, err)
 		}
 	}()
+	if s.candidateIndexingSvc != nil {
+		go func() {
+			if err := s.candidateIndexingSvc.IndexCandidate(context.Background(), userID); err != nil {
+				log.Printf("async candidate index for user %s: %v", userID, err)
+			}
+		}()
+	}
 }
 
 func (s *ProfileParseService) storeResults(ctx context.Context, userID uuid.UUID, parsed *gemini.ParsedProfile) (*ParseResult, error) {
