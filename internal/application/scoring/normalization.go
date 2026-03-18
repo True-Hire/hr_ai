@@ -68,6 +68,7 @@ func DetermineSeniority(totalMonths int, hasLeadership bool) string {
 }
 
 var roleNormalization = map[string]string{
+	"golang":                  "backend developer",
 	"backend engineer":        "backend developer",
 	"backend разработчик":     "backend developer",
 	"бэкенд разработчик":     "backend developer",
