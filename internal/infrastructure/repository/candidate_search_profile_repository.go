@@ -216,8 +216,10 @@ func (r *CandidateSearchProfileRepository) SearchPool(
 	var args []interface{}
 	argIdx := 1
 
-	conditions = append(conditions, fmt.Sprintf("search_tsv @@ websearch_to_tsquery('english', $%d)", argIdx))
-	args = append(args, query)
+	// Use OR-based tsquery for broader matching (each word is optional)
+	conditions = append(conditions, fmt.Sprintf("search_tsv @@ to_tsquery('english', $%d)", argIdx))
+	orQuery := buildOrTsQuery(query)
+	args = append(args, orQuery)
 	argIdx++
 
 	if roleFamily != "" {
@@ -258,7 +260,7 @@ func (r *CandidateSearchProfileRepository) SearchPool(
 			search_text, scoring_factors, parsed_entities, updated_at
 		FROM candidate_search_profiles
 		WHERE %s
-		ORDER BY ts_rank(search_tsv, websearch_to_tsquery('english', $1)) DESC
+		ORDER BY ts_rank(search_tsv, to_tsquery('english', $1)) DESC
 		LIMIT $%d
 	`, strings.Join(conditions, " AND "), argIdx)
 	args = append(args, poolSize)
@@ -479,4 +481,24 @@ func collectCandidateSearchProfiles(rows pgx.Rows) ([]domain.CandidateSearchProf
 		return nil, fmt.Errorf("iterate candidate search profiles: %w", err)
 	}
 	return profiles, nil
+}
+
+// buildOrTsQuery converts a space-separated query string into OR-based tsquery.
+// "backend developer go postgresql" → "backend | developer | go | postgresql"
+func buildOrTsQuery(query string) string {
+	words := strings.Fields(strings.ToLower(query))
+	var clean []string
+	for _, w := range words {
+		// Remove non-alphanumeric chars that break tsquery syntax
+		w = strings.TrimFunc(w, func(r rune) bool {
+			return !((r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || r == '_')
+		})
+		if w != "" {
+			clean = append(clean, w)
+		}
+	}
+	if len(clean) == 0 {
+		return ""
+	}
+	return strings.Join(clean, " | ")
 }
