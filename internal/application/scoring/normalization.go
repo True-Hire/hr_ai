@@ -2,10 +2,28 @@ package scoring
 
 import "strings"
 
-// NormalizeRole maps various role titles to standard roles
+// Normalizer is set at startup by the NormalizationService.
+// When set, all normalization functions delegate to it (DB-backed + cached).
+// When nil, fallback to hardcoded maps for backwards compatibility.
+var Normalizer NormalizerInterface
+
+// NormalizerInterface defines the contract for normalization lookups.
+type NormalizerInterface interface {
+	NormalizeRole(title string) string
+	RoleFamily(role string) string
+	NormalizeSkill(skill string) string
+	NormalizeCompany(name string) string
+	ExtractDomains(texts ...string) []string
+	DetermineSeniority(totalMonths int, hasLeadership bool) string
+}
+
+// NormalizeRole maps various role titles to standard roles.
 func NormalizeRole(title string) string {
+	if Normalizer != nil {
+		return Normalizer.NormalizeRole(title)
+	}
 	lower := strings.ToLower(strings.TrimSpace(title))
-	for pattern, normalized := range roleNormalization {
+	for pattern, normalized := range fallbackRoleNormalization {
 		if strings.Contains(lower, pattern) {
 			return normalized
 		}
@@ -13,9 +31,12 @@ func NormalizeRole(title string) string {
 	return lower
 }
 
-// RoleFamily returns the role family for a given normalized role
+// RoleFamily returns the role family for a given normalized role.
 func RoleFamily(role string) string {
-	for family, roles := range roleFamilies {
+	if Normalizer != nil {
+		return Normalizer.RoleFamily(role)
+	}
+	for family, roles := range fallbackRoleFamilies {
 		for _, r := range roles {
 			if strings.Contains(role, r) {
 				return family
@@ -25,19 +46,25 @@ func RoleFamily(role string) string {
 	return "other"
 }
 
-// NormalizeSkill maps skill synonyms to standard names
+// NormalizeSkill maps skill synonyms to standard names.
 func NormalizeSkill(skill string) string {
+	if Normalizer != nil {
+		return Normalizer.NormalizeSkill(skill)
+	}
 	lower := strings.ToLower(strings.TrimSpace(skill))
-	if normalized, ok := skillNormalization[lower]; ok {
+	if normalized, ok := fallbackSkillNormalization[lower]; ok {
 		return normalized
 	}
 	return lower
 }
 
-// NormalizeCompany maps company name variants to standard names
+// NormalizeCompany maps company name variants to standard names.
 func NormalizeCompany(name string) string {
+	if Normalizer != nil {
+		return Normalizer.NormalizeCompany(name)
+	}
 	lower := strings.ToLower(strings.TrimSpace(name))
-	for pattern, normalized := range companyNormalization {
+	for pattern, normalized := range fallbackCompanyNormalization {
 		if strings.Contains(lower, pattern) {
 			return normalized
 		}
@@ -45,8 +72,31 @@ func NormalizeCompany(name string) string {
 	return lower
 }
 
-// DetermineSeniority based on total experience months and evidence
+// ExtractDomains finds matching domains from text.
+func ExtractDomains(texts ...string) []string {
+	if Normalizer != nil {
+		return Normalizer.ExtractDomains(texts...)
+	}
+	combined := strings.ToLower(strings.Join(texts, " "))
+	var domains []string
+	seen := make(map[string]bool)
+	for domain, keywords := range fallbackDomainKeywords {
+		for _, kw := range keywords {
+			if strings.Contains(combined, kw) && !seen[domain] {
+				domains = append(domains, domain)
+				seen[domain] = true
+				break
+			}
+		}
+	}
+	return domains
+}
+
+// DetermineSeniority based on total experience months and evidence.
 func DetermineSeniority(totalMonths int, hasLeadership bool) string {
+	if Normalizer != nil {
+		return Normalizer.DetermineSeniority(totalMonths, hasLeadership)
+	}
 	switch {
 	case totalMonths < 12:
 		return "intern"
@@ -54,11 +104,6 @@ func DetermineSeniority(totalMonths int, hasLeadership bool) string {
 		return "junior"
 	case totalMonths < 60:
 		return "middle"
-	case totalMonths < 96:
-		if hasLeadership {
-			return "lead"
-		}
-		return "senior"
 	default:
 		if hasLeadership {
 			return "lead"
@@ -67,7 +112,10 @@ func DetermineSeniority(totalMonths int, hasLeadership bool) string {
 	}
 }
 
-var roleNormalization = map[string]string{
+// ---- Fallback hardcoded maps (used only when Normalizer is nil) ----
+
+var fallbackRoleNormalization = map[string]string{
+	"golang":                  "backend developer",
 	"backend engineer":        "backend developer",
 	"backend разработчик":     "backend developer",
 	"бэкенд разработчик":     "backend developer",
@@ -143,7 +191,7 @@ var roleNormalization = map[string]string{
 	"рекрутер":                "recruiter",
 }
 
-var roleFamilies = map[string][]string{
+var fallbackRoleFamilies = map[string][]string{
 	"backend":  {"backend", "golang", "java developer", "python developer", "node.js", "php", "c#", ".net", "software engineer", "fullstack"},
 	"frontend": {"frontend", "react developer", "vue", "angular", "ui developer", "fullstack"},
 	"mobile":   {"mobile", "ios", "android", "flutter", "react native"},
@@ -156,123 +204,52 @@ var roleFamilies = map[string][]string{
 	"other":    {"technical writer", "business analyst", "marketing", "hr", "recruiter", "game developer", "embedded"},
 }
 
-var skillNormalization = map[string]string{
-	"postgres":      "postgresql",
-	"postgresql":    "postgresql",
-	"mongo":         "mongodb",
-	"mongodb":       "mongodb",
-	"k8s":           "kubernetes",
-	"kubernetes":    "kubernetes",
-	"ci/cd":         "ci_cd",
-	"cicd":          "ci_cd",
-	"ci cd":         "ci_cd",
-	"grpc":          "grpc",
-	"rest api":      "rest_api",
-	"restful":       "rest_api",
-	"rest":          "rest_api",
-	"docker":        "docker",
-	"react":         "react",
-	"reactjs":       "react",
-	"react.js":      "react",
-	"vue":           "vuejs",
-	"vue.js":        "vuejs",
-	"vuejs":         "vuejs",
-	"angular":       "angular",
-	"typescript":    "typescript",
-	"ts":            "typescript",
-	"javascript":    "javascript",
-	"js":            "javascript",
-	"python":        "python",
-	"golang":        "go",
-	"go":            "go",
-	"java":          "java",
-	"c#":            "csharp",
-	"c sharp":       "csharp",
-	".net":          "dotnet",
-	"dotnet":        "dotnet",
-	"asp.net":       "dotnet",
-	"node":          "nodejs",
-	"node.js":       "nodejs",
-	"nodejs":        "nodejs",
-	"express":       "expressjs",
-	"express.js":    "expressjs",
-	"flutter":       "flutter",
-	"dart":          "dart",
-	"kotlin":        "kotlin",
-	"swift":         "swift",
-	"redis":         "redis",
-	"kafka":         "kafka",
-	"rabbitmq":      "rabbitmq",
-	"aws":           "aws",
-	"gcp":           "gcp",
-	"azure":         "azure",
-	"terraform":     "terraform",
-	"nginx":         "nginx",
-	"linux":         "linux",
-	"git":           "git",
-	"mysql":         "mysql",
-	"sqlite":        "sqlite",
-	"elasticsearch": "elasticsearch",
-	"graphql":       "graphql",
-	"next.js":       "nextjs",
-	"nextjs":        "nextjs",
-	"tailwind":      "tailwind",
-	"tailwind css":  "tailwind",
-	"figma":         "figma",
-	"storybook":     "storybook",
-	"firebase":      "firebase",
-	"bloc":          "bloc",
-	"riverpod":      "riverpod",
-	"pandas":        "pandas",
-	"numpy":         "numpy",
-	"scikit-learn":  "scikit_learn",
-	"sklearn":       "scikit_learn",
-	"tableau":       "tableau",
-	"power bi":      "powerbi",
-	"powerbi":       "powerbi",
-	"jupyter":       "jupyter",
+var fallbackSkillNormalization = map[string]string{
+	"postgres": "postgresql", "postgresql": "postgresql",
+	"mongo": "mongodb", "mongodb": "mongodb",
+	"k8s": "kubernetes", "kubernetes": "kubernetes",
+	"ci/cd": "ci_cd", "cicd": "ci_cd", "ci cd": "ci_cd",
+	"grpc": "grpc", "rest api": "rest_api", "restful": "rest_api", "rest": "rest_api",
+	"docker": "docker", "react": "react", "reactjs": "react", "react.js": "react",
+	"vue": "vuejs", "vue.js": "vuejs", "vuejs": "vuejs",
+	"angular": "angular", "typescript": "typescript", "ts": "typescript",
+	"javascript": "javascript", "js": "javascript",
+	"python": "python", "golang": "go", "go": "go",
+	"java": "java", "c#": "csharp", "c sharp": "csharp",
+	".net": "dotnet", "dotnet": "dotnet", "asp.net": "dotnet",
+	"node": "nodejs", "node.js": "nodejs", "nodejs": "nodejs",
+	"express": "expressjs", "express.js": "expressjs",
+	"flutter": "flutter", "dart": "dart", "kotlin": "kotlin", "swift": "swift",
+	"redis": "redis", "kafka": "kafka", "rabbitmq": "rabbitmq",
+	"aws": "aws", "gcp": "gcp", "azure": "azure",
+	"terraform": "terraform", "nginx": "nginx", "linux": "linux", "git": "git",
+	"mysql": "mysql", "sqlite": "sqlite", "elasticsearch": "elasticsearch",
+	"graphql": "graphql", "next.js": "nextjs", "nextjs": "nextjs",
+	"tailwind": "tailwind", "tailwind css": "tailwind",
+	"figma": "figma", "storybook": "storybook", "firebase": "firebase",
+	"bloc": "bloc", "riverpod": "riverpod",
+	"pandas": "pandas", "numpy": "numpy",
+	"scikit-learn": "scikit_learn", "sklearn": "scikit_learn",
+	"tableau": "tableau", "power bi": "powerbi", "powerbi": "powerbi", "jupyter": "jupyter",
 }
 
-var companyNormalization = map[string]string{
-	"yandex":      "yandex",
-	"яндекс":      "yandex",
-	"google":      "google",
-	"meta":        "meta",
-	"facebook":    "meta",
-	"apple":       "apple",
-	"amazon":      "amazon",
-	"microsoft":   "microsoft",
-	"epam":        "epam",
-	"kaspersky":   "kaspersky",
-	"jetbrains":   "jetbrains",
-	"tinkoff":     "tinkoff",
-	"t-bank":      "tinkoff",
-	"vk":          "vk",
-	"revolut":     "revolut",
-	"stripe":      "stripe",
-	"payme":       "payme",
-	"click":       "click",
-	"uzum":        "uzum",
-	"mytaxi":      "mytaxi",
-	"yandex go":   "mytaxi",
-	"billz":       "billz",
-	"humans":      "humans",
-	"apelsin":     "apelsin",
-	"osontaxi":    "osontaxi",
-	"korzinka":    "korzinka",
-	"artel":       "artel",
-	"uzauto":      "uzauto",
-	"ucell":       "ucell",
-	"beeline":     "beeline_uz",
-	"it park":     "it_park",
-	"mediapark":   "mediapark",
-	"kapitalbank": "kapitalbank",
-	"fido biznes": "fido_biznes",
-	"fido":        "fido_biznes",
+var fallbackCompanyNormalization = map[string]string{
+	"yandex": "yandex", "яндекс": "yandex",
+	"google": "google", "meta": "meta", "facebook": "meta",
+	"apple": "apple", "amazon": "amazon", "microsoft": "microsoft",
+	"epam": "epam", "kaspersky": "kaspersky", "jetbrains": "jetbrains",
+	"tinkoff": "tinkoff", "t-bank": "tinkoff", "vk": "vk",
+	"revolut": "revolut", "stripe": "stripe",
+	"payme": "payme", "click": "click", "uzum": "uzum",
+	"mytaxi": "mytaxi", "yandex go": "mytaxi",
+	"billz": "billz", "humans": "humans", "apelsin": "apelsin",
+	"osontaxi": "osontaxi", "korzinka": "korzinka",
+	"artel": "artel", "uzauto": "uzauto", "ucell": "ucell",
+	"beeline": "beeline_uz", "it park": "it_park", "mediapark": "mediapark",
+	"kapitalbank": "kapitalbank", "fido biznes": "fido_biznes", "fido": "fido_biznes",
 }
 
-// Domain normalization
-var domainKeywords = map[string][]string{
+var fallbackDomainKeywords = map[string][]string{
 	"ecommerce":  {"ecommerce", "e-commerce", "online store", "marketplace", "магазин", "маркетплейс", "shop", "retail"},
 	"payments":   {"payment", "billing", "checkout", "acquiring", "платёж", "оплата", "transaction"},
 	"fintech":    {"fintech", "banking", "bank", "lending", "финтех", "банк", "кредит", "financial"},
@@ -285,21 +262,4 @@ var domainKeywords = map[string][]string{
 	"telecom":    {"telecom", "телеком", "mobile operator", "связь"},
 	"media":      {"media", "news", "content", "медиа", "контент", "новост"},
 	"taxi":       {"taxi", "ride", "такси"},
-}
-
-// ExtractDomains finds matching domains from text
-func ExtractDomains(texts ...string) []string {
-	combined := strings.ToLower(strings.Join(texts, " "))
-	var domains []string
-	seen := make(map[string]bool)
-	for domain, keywords := range domainKeywords {
-		for _, kw := range keywords {
-			if strings.Contains(combined, kw) && !seen[domain] {
-				domains = append(domains, domain)
-				seen[domain] = true
-				break
-			}
-		}
-	}
-	return domains
 }
