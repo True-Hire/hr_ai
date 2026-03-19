@@ -2,6 +2,12 @@
 *.out
 /tmp
 hr-ai
+seed
 
 project_overview.txt
 .env
+api_curls.txt
+candidate_search_scoring_spec.txt
+vector_db_prompt.txt
+sample_test_autodiscovery.json
+cmd/testsearch/
