@@ -68,18 +68,22 @@ type ScoredCandidate struct {
 
 // Search performs candidate search using parsed query and filters, returning paginated results.
 func (s *CandidateSearchService) Search(ctx context.Context, hrID uuid.UUID, parsedQuery scoring.ParsedQuery, filters SearchFilters, pageSize int) (*SearchSessionPage, error) {
-	// Build query text from parsedQuery
+	// Build query text from parsedQuery using normalized terms.
+	// Keep concise to avoid overwhelming websearch_to_tsquery.
 	var queryParts []string
 	if parsedQuery.PrimaryRole != "" {
-		queryParts = append(queryParts, parsedQuery.PrimaryRole)
+		normalized := scoring.NormalizeRole(parsedQuery.PrimaryRole)
+		queryParts = append(queryParts, normalized)
 	}
-	for _, sk := range parsedQuery.Skills {
-		queryParts = append(queryParts, sk)
+	// Add up to 5 top skills (most relevant for tsvector matching)
+	skillLimit := 5
+	if len(parsedQuery.Skills) < skillLimit {
+		skillLimit = len(parsedQuery.Skills)
+	}
+	for _, sk := range parsedQuery.Skills[:skillLimit] {
+		queryParts = append(queryParts, scoring.NormalizeSkill(sk))
 	}
 	for _, d := range parsedQuery.MustDomains {
-		queryParts = append(queryParts, d)
-	}
-	for _, d := range parsedQuery.PreferredDomains {
 		queryParts = append(queryParts, d)
 	}
 	queryText := strings.Join(queryParts, " ")
@@ -104,6 +108,7 @@ func (s *CandidateSearchService) Search(ctx context.Context, hrID uuid.UUID, par
 	// Retrieve candidate pool
 	var pool []domain.CandidateSearchProfile
 	var err error
+
 
 	if queryText != "" {
 		pool, err = s.searchProfileRepo.SearchPool(ctx, queryText, roleFamily, seniority, locationCity, filters.LocationCountry, poolSize)
@@ -477,18 +482,18 @@ func buildParsedQueryFromVacancy(v *VacancyWithDetails) scoring.ParsedQuery {
 	}
 	pq.Skills = skills
 
-	// Extract domains from English requirements/description
+	// Extract domains from English requirements/description using domain keyword detection
 	for _, t := range v.Texts {
 		if t.Lang == "en" {
-			var domains []string
+			var domainTexts []string
 			if t.Requirements != "" {
-				domains = append(domains, t.Requirements)
+				domainTexts = append(domainTexts, t.Requirements)
 			}
 			if t.Description != "" {
-				domains = append(domains, t.Description)
+				domainTexts = append(domainTexts, t.Description)
 			}
-			if len(domains) > 0 {
-				pq.PreferredDomains = domains
+			if len(domainTexts) > 0 {
+				pq.PreferredDomains = scoring.ExtractDomains(domainTexts...)
 			}
 			break
 		}

@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/ruziba3vich/hr-ai/internal/application"
+	"github.com/ruziba3vich/hr-ai/internal/application/scoring"
 	casbininfra "github.com/ruziba3vich/hr-ai/internal/infrastructure/casbin"
 	"github.com/ruziba3vich/hr-ai/internal/infrastructure/gemini"
 	minioclient "github.com/ruziba3vich/hr-ai/internal/infrastructure/minio"
@@ -43,6 +44,7 @@ type Services struct {
 	HRSavedUser         *application.HRSavedUserService
 	CandidateIndexing   *application.CandidateIndexingService
 	CandidateSearch     *application.CandidateSearchService
+	NormalizationRule   *application.NormalizationService
 	Storage          *application.StorageService
 	GeminiClient     *gemini.Client
 	CasbinEnforcer   *casbinlib.Enforcer
@@ -134,6 +136,14 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 	hrSavedUserRepo := repository.NewHRSavedUserRepository(pool)
 	hrSavedUserSvc := application.NewHRSavedUserService(hrSavedUserRepo)
 
+	// Normalization rules (DB-backed, cached)
+	normRuleRepo := repository.NewNormalizationRuleRepository(pool)
+	normRuleSvc := application.NewNormalizationService(normRuleRepo)
+	if err := normRuleSvc.LoadCache(context.Background()); err != nil {
+		return nil, fmt.Errorf("load normalization cache: %w", err)
+	}
+	scoring.Normalizer = normRuleSvc
+
 	// Candidate search & scoring
 	cspRepo := repository.NewCandidateSearchProfileRepository(pool)
 	companyRefRepo := repository.NewCompanyReferenceRepository(pool)
@@ -148,7 +158,8 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 		cspRepo, searchSessionRepo, userSvc, skillSvc, vacancySvc, expSvc,
 	)
 
-	// Hook indexing into profile parse
+	// Hook indexing into profile parse and set normalization service
+	candidateIndexingSvc.SetNormalizationService(normRuleSvc)
 	profileParseSvc.SetCandidateIndexingService(candidateIndexingSvc)
 
 	hrBotSvc := application.NewHRBotService(companyHRSvc, vacancySvc, vacancyAppSvc, botStateSvc, searchSvc, userSvc, geminiClient)
@@ -180,6 +191,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 		HRSavedUser:        hrSavedUserSvc,
 		CandidateIndexing:  candidateIndexingSvc,
 		CandidateSearch:    candidateSearchSvc,
+		NormalizationRule:  normRuleSvc,
 		Storage:          storageSvc,
 		GeminiClient:     geminiClient,
 		CasbinEnforcer:   enforcer,
