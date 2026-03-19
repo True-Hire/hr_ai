@@ -26,12 +26,17 @@ func (r *NormalizationRuleRepository) Create(ctx context.Context, rule *domain.N
 		return nil, fmt.Errorf("marshal metadata: %w", err)
 	}
 
+	id := rule.ID
+	if id == uuid.Nil {
+		id = uuid.New()
+	}
+
 	query := `
 		INSERT INTO normalization_rules (id, category, source_value, normalized_value, metadata)
 		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id, category, source_value, normalized_value, metadata, created_at
 	`
-	row := r.pool.QueryRow(ctx, query, rule.ID, rule.Category, rule.SourceValue, rule.NormalizedValue, metadataJSON)
+	row := r.pool.QueryRow(ctx, query, id, rule.Category, rule.SourceValue, rule.NormalizedValue, metadataJSON)
 	return scanNormalizationRule(row)
 }
 
@@ -180,6 +185,11 @@ func (r *NormalizationRuleRepository) Upsert(ctx context.Context, rule *domain.N
 		return nil, fmt.Errorf("marshal metadata: %w", err)
 	}
 
+	id := rule.ID
+	if id == uuid.Nil {
+		id = uuid.New()
+	}
+
 	query := `
 		INSERT INTO normalization_rules (id, category, source_value, normalized_value, metadata)
 		VALUES ($1, $2, $3, $4, $5)
@@ -187,7 +197,7 @@ func (r *NormalizationRuleRepository) Upsert(ctx context.Context, rule *domain.N
 		DO UPDATE SET normalized_value = EXCLUDED.normalized_value, metadata = EXCLUDED.metadata
 		RETURNING id, category, source_value, normalized_value, metadata, created_at
 	`
-	row := r.pool.QueryRow(ctx, query, rule.ID, rule.Category, rule.SourceValue, rule.NormalizedValue, metadataJSON)
+	row := r.pool.QueryRow(ctx, query, id, rule.Category, rule.SourceValue, rule.NormalizedValue, metadataJSON)
 	return scanNormalizationRule(row)
 }
 
