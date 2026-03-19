@@ -27,6 +27,7 @@ type CandidateIndexingService struct {
 	educationSvc      *EducationItemService
 	itemTextSvc       *ItemTextService
 	skillSvc          *SkillService
+	normSvc           *NormalizationService
 }
 
 func NewCandidateIndexingService(
@@ -53,6 +54,11 @@ func NewCandidateIndexingService(
 		itemTextSvc:       itemTextSvc,
 		skillSvc:          skillSvc,
 	}
+}
+
+// SetNormalizationService enables auto-discovery of new normalization rules.
+func (s *CandidateIndexingService) SetNormalizationService(normSvc *NormalizationService) {
+	s.normSvc = normSvc
 }
 
 // IndexCandidate computes all signal scores for a user and upserts the candidate search profile.
@@ -134,6 +140,12 @@ func (s *CandidateIndexingService) IndexCandidate(ctx context.Context, userID uu
 	role := scoring.NormalizeRole(title)
 	roleFamily := scoring.RoleFamily(role)
 
+	// Auto-discover: persist role mapping if new
+	if s.normSvc != nil && title != "" {
+		s.normSvc.EnsureNormalized(ctx, "role", strings.ToLower(title), role)
+		s.normSvc.EnsureNormalized(ctx, "role_family", strings.ToLower(role), roleFamily)
+	}
+
 	// Normalize skills
 	normalizedSkills := make([]string, 0, len(skills))
 	seen := make(map[string]bool)
@@ -142,6 +154,10 @@ func (s *CandidateIndexingService) IndexCandidate(ctx context.Context, userID uu
 		if !seen[ns] {
 			normalizedSkills = append(normalizedSkills, ns)
 			seen[ns] = true
+		}
+		// Auto-discover: persist skill mapping if new
+		if s.normSvc != nil {
+			s.normSvc.EnsureNormalized(ctx, "skill", strings.ToLower(sk.Name), ns)
 		}
 	}
 
@@ -168,6 +184,10 @@ func (s *CandidateIndexingService) IndexCandidate(ctx context.Context, userID uu
 		if !companySet[nc] {
 			normalizedCompanies = append(normalizedCompanies, nc)
 			companySet[nc] = true
+		}
+		// Auto-discover: persist company mapping if new
+		if s.normSvc != nil {
+			s.normSvc.EnsureNormalized(ctx, "company", strings.ToLower(item.Company), nc)
 		}
 	}
 
