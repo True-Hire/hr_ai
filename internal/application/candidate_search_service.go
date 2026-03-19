@@ -93,29 +93,20 @@ func (s *CandidateSearchService) Search(ctx context.Context, hrID uuid.UUID, par
 	if filters.RoleFamily != "" {
 		roleFamily = filters.RoleFamily
 	}
-	seniority := parsedQuery.Seniority
-	if filters.Seniority != "" {
-		seniority = filters.Seniority
-	}
-
-	locationCity := parsedQuery.LocationCity
-	if filters.LocationCity != "" {
-		locationCity = filters.LocationCity
-	}
-
 	const poolSize = 500
 
-	// Retrieve candidate pool
+	// Retrieve candidate pool — use broad retrieval, then score/rank.
+	// Location and experience are scoring penalties, NOT hard filters.
 	var pool []domain.CandidateSearchProfile
 	var err error
 
-
 	if queryText != "" {
-		pool, err = s.searchProfileRepo.SearchPool(ctx, queryText, roleFamily, seniority, locationCity, filters.LocationCountry, poolSize)
+		// Only use roleFamily for pool retrieval, not location/seniority (those affect scoring)
+		pool, err = s.searchProfileRepo.SearchPool(ctx, queryText, roleFamily, "", "", "", poolSize)
 	} else if len(filters.Skills) > 0 {
-		pool, err = s.searchProfileRepo.SearchPoolBySkills(ctx, filters.Skills, roleFamily, locationCity, poolSize)
+		pool, err = s.searchProfileRepo.SearchPoolBySkills(ctx, filters.Skills, roleFamily, "", poolSize)
 	} else if len(parsedQuery.Skills) > 0 {
-		pool, err = s.searchProfileRepo.SearchPoolBySkills(ctx, parsedQuery.Skills, roleFamily, locationCity, poolSize)
+		pool, err = s.searchProfileRepo.SearchPoolBySkills(ctx, parsedQuery.Skills, roleFamily, "", poolSize)
 	} else {
 		return &SearchSessionPage{
 			SearchID:   uuid.Nil,
@@ -136,19 +127,10 @@ func (s *CandidateSearchService) Search(ctx context.Context, hrID uuid.UUID, par
 		}, nil
 	}
 
-	// Filter by experience range if specified
-	if filters.MinExperience > 0 || filters.MaxExperience > 0 {
-		filtered := make([]domain.CandidateSearchProfile, 0, len(pool))
-		for _, c := range pool {
-			if filters.MinExperience > 0 && c.TotalExperienceMonths < filters.MinExperience {
-				continue
-			}
-			if filters.MaxExperience > 0 && c.TotalExperienceMonths > filters.MaxExperience {
-				continue
-			}
-			filtered = append(filtered, c)
-		}
-		pool = filtered
+	// Determine target location for scoring penalty
+	targetLocation := parsedQuery.LocationCity
+	if filters.LocationCity != "" {
+		targetLocation = filters.LocationCity
 	}
 
 	// Score each candidate
@@ -189,15 +171,41 @@ func (s *CandidateSearchService) Search(ctx context.Context, hrID uuid.UUID, par
 
 		finalScore := scoring.CalcFinalScore(queryRelevance, roleBonus, marketStrength)
 
-		// Apply location penalty
-		if parsedQuery.LocationCity != "" && !strings.EqualFold(c.LocationCity, parsedQuery.LocationCity) {
+		// Apply location penalty (soft — not a hard filter)
+		locationPenalty := 1.0
+		if targetLocation != "" && !strings.EqualFold(c.LocationCity, targetLocation) {
 			if c.WillingToRelocate {
-				finalScore *= 0.90
+				locationPenalty = 0.92
 			} else {
-				finalScore *= 0.80
+				locationPenalty = 0.85
+			}
+		}
+		finalScore *= locationPenalty
+
+		// Apply experience fit penalty (soft — not a hard filter)
+		if filters.MinExperience > 0 || filters.MaxExperience > 0 {
+			expMonths := c.TotalExperienceMonths
+			minExp := filters.MinExperience
+			maxExp := filters.MaxExperience
+			if minExp > 0 && expMonths < minExp {
+				// Below minimum: scale penalty by how far below
+				ratio := float64(expMonths) / float64(minExp)
+				if ratio < 0 {
+					ratio = 0
+				}
+				finalScore *= 0.70 + 0.30*ratio // at 0 exp → 0.70x, at min → 1.0x
+			} else if maxExp > 0 && expMonths > maxExp {
+				// Above maximum: mild penalty
+				over := float64(expMonths-maxExp) / float64(maxExp)
+				penalty := 1.0 - over*0.15
+				if penalty < 0.75 {
+					penalty = 0.75
+				}
+				finalScore *= penalty
 			}
 		}
 
+		isLocationMatch := targetLocation == "" || strings.EqualFold(c.LocationCity, targetLocation)
 		breakdown := map[string]interface{}{
 			"role_match":      roleMatch,
 			"domain_match":    domainMatch,
@@ -208,6 +216,8 @@ func (s *CandidateSearchService) Search(ctx context.Context, hrID uuid.UUID, par
 			"query_relevance": queryRelevance,
 			"role_bonus":      roleBonus,
 			"market_strength": marketStrength,
+			"location_match":  isLocationMatch,
+			"location_city":   c.LocationCity,
 			"final_score":     finalScore,
 		}
 
@@ -218,8 +228,13 @@ func (s *CandidateSearchService) Search(ctx context.Context, hrID uuid.UUID, par
 		})
 	}
 
-	// Sort by finalScore DESC, then UserID ASC for deterministic ordering
+	// Sort: location matches first, then by finalScore DESC, then UserID ASC
 	sort.Slice(scored, func(i, j int) bool {
+		iLocal := targetLocation != "" && strings.EqualFold(scored[i].profile.LocationCity, targetLocation)
+		jLocal := targetLocation != "" && strings.EqualFold(scored[j].profile.LocationCity, targetLocation)
+		if iLocal != jLocal {
+			return iLocal // local candidates first
+		}
 		if scored[i].finalScore != scored[j].finalScore {
 			return scored[i].finalScore > scored[j].finalScore
 		}
