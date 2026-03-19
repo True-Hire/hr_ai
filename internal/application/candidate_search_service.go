@@ -376,6 +376,12 @@ func (s *CandidateSearchService) SearchByVacancy(ctx context.Context, vacancyID 
 	// Build ParsedQuery from vacancy data
 	parsedQuery := buildParsedQueryFromVacancy(vacancy)
 
+	// Determine seniority from experience range
+	avgExpMonths := int((vacancy.Vacancy.ExperienceMin + vacancy.Vacancy.ExperienceMax) / 2 * 12)
+	if avgExpMonths > 0 {
+		parsedQuery.Seniority = scoring.DetermineSeniority(avgExpMonths, false)
+	}
+
 	// Build SearchFilters from vacancy data
 	filters := SearchFilters{
 		MinExperience: int(vacancy.Vacancy.ExperienceMin) * 12, // years to months
@@ -459,21 +465,24 @@ func (s *CandidateSearchService) CountMatchingByVacancy(ctx context.Context, vac
 func buildParsedQueryFromVacancy(v *VacancyWithDetails) scoring.ParsedQuery {
 	var pq scoring.ParsedQuery
 
-	// Extract role from English title
+	// Extract role from English title and normalize
+	var rawTitle string
 	for _, t := range v.Texts {
 		if t.Lang == "en" && t.Title != "" {
-			pq.PrimaryRole = t.Title
+			rawTitle = t.Title
 			break
 		}
 	}
-	if pq.PrimaryRole == "" {
+	if rawTitle == "" {
 		for _, t := range v.Texts {
 			if t.Title != "" {
-				pq.PrimaryRole = t.Title
+				rawTitle = t.Title
 				break
 			}
 		}
 	}
+	pq.PrimaryRole = scoring.NormalizeRole(rawTitle)
+	pq.RoleFamily = scoring.RoleFamily(pq.PrimaryRole)
 
 	// Extract skills from vacancy skills
 	skills := make([]string, 0, len(v.Skills))
