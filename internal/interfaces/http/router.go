@@ -64,6 +64,7 @@ func NewRouter(svc *app.Services) *gin.Engine {
 	hrVacancyAppHandler := NewHRVacancyApplicationsHandler(svc.VacancyApplication, svc.Vacancy, svc.User, svc.Skill)
 	hrSavedUsersHandler := NewHRSavedUsersHandler(svc.HRSavedUser, svc.User, svc.Skill)
 	candidateSearchHandler := NewCandidateSearchHandler(svc.CandidateSearch, userHandler)
+	normRuleHandler := NewNormalizationRuleHandler(svc.NormalizationRule)
 	hrCombinedAuth := HRCombinedAuthMiddleware(svc.JWTSecret, svc.TelegramHRBotToken, svc.CompanyHR)
 
 	// Serve Mini App HTML
@@ -217,6 +218,17 @@ func NewRouter(svc *app.Services) *gin.Engine {
 			candidateSearch.POST("", candidateSearchHandler.Search)
 			candidateSearch.POST("/by-vacancy/:vacancy_id", candidateSearchHandler.SearchByVacancy)
 			candidateSearch.GET("/:search_id", candidateSearchHandler.GetPage)
+		}
+
+		// Normalization rules CRUD
+		normRules := v1.Group("/normalization-rules")
+		normRules.Use(HRAuthMiddleware(svc.JWTSecret))
+		{
+			normRules.POST("", normRuleHandler.Create)
+			normRules.GET("", normRuleHandler.List)
+			normRules.GET("/:id", normRuleHandler.GetByID)
+			normRules.PUT("/:id", normRuleHandler.Update)
+			normRules.DELETE("/:id", normRuleHandler.Delete)
 		}
 
 		// HR saved users — combined auth: works with both TG miniapp and JWT
