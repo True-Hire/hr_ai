@@ -143,6 +143,15 @@ func main() {
 		userSvc, pfSvc, pftSvc, expSvc, eduSvc, itSvc, skillSvc,
 	)
 
+	// Wire normalization service for auto-discovery
+	normRuleRepo := repository.NewNormalizationRuleRepository(pool)
+	normRuleSvc := application.NewNormalizationService(normRuleRepo)
+	if err := normRuleSvc.LoadCache(ctx); err != nil {
+		log.Printf("warning: load normalization cache: %v", err)
+	}
+	scoring.Normalizer = normRuleSvc
+	indexingSvc.SetNormalizationService(normRuleSvc)
+
 	created := 0
 	skipped := 0
 
