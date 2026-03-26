@@ -21,6 +21,7 @@ type CandidateSearchService struct {
 	skillSvc          *SkillService
 	vacancySvc        *VacancyService
 	experienceSvc     *ExperienceItemService
+	vectorSearchSvc   *SearchService // optional: Qdrant vector search for pool enrichment
 }
 
 func NewCandidateSearchService(
@@ -39,6 +40,11 @@ func NewCandidateSearchService(
 		vacancySvc:        vacancySvc,
 		experienceSvc:     experienceSvc,
 	}
+}
+
+// SetVectorSearchService enables hybrid retrieval (tsvector + Qdrant vectors).
+func (s *CandidateSearchService) SetVectorSearchService(svc *SearchService) {
+	s.vectorSearchSvc = svc
 }
 
 type SearchFilters struct {
@@ -118,6 +124,12 @@ func (s *CandidateSearchService) Search(ctx context.Context, hrID uuid.UUID, par
 	if err != nil {
 		return nil, fmt.Errorf("search pool: %w", err)
 	}
+
+	// Hybrid retrieval: enrich pool with Qdrant vector search results
+	if s.vectorSearchSvc != nil && queryText != "" {
+		pool = s.enrichPoolWithVectorSearch(ctx, pool, queryText, poolSize)
+	}
+
 	if len(pool) == 0 {
 		return &SearchSessionPage{
 			SearchID:   uuid.Nil,
@@ -325,6 +337,48 @@ func (s *CandidateSearchService) Search(ctx context.Context, hrID uuid.UUID, par
 		NextRank:   nextRank,
 		TotalCount: len(scored),
 	}, nil
+}
+
+// enrichPoolWithVectorSearch fetches candidates from Qdrant vector search
+// and merges them into the tsvector pool, deduplicating by user ID.
+// This gives us hybrid retrieval: keyword matching + semantic similarity.
+func (s *CandidateSearchService) enrichPoolWithVectorSearch(ctx context.Context, pool []domain.CandidateSearchProfile, queryText string, poolSize int) []domain.CandidateSearchProfile {
+	// Collect existing user IDs for dedup
+	existing := make(map[uuid.UUID]bool, len(pool))
+	for _, p := range pool {
+		existing[p.UserID] = true
+	}
+
+	// Qdrant vector search — use the old SearchService which handles translate + embed + search
+	vectorLimit := poolSize / 2
+	if vectorLimit < 50 {
+		vectorLimit = 50
+	}
+	vectorResults, err := s.vectorSearchSvc.SearchUsers(ctx, queryText, vectorLimit)
+	if err != nil {
+		// Vector search failed — just use tsvector pool, don't block
+		return pool
+	}
+
+	// For each vector result not already in pool, load their search profile
+	var newUserIDs []uuid.UUID
+	for _, vr := range vectorResults {
+		if !existing[vr.UserID] {
+			newUserIDs = append(newUserIDs, vr.UserID)
+			existing[vr.UserID] = true
+		}
+	}
+
+	// Load search profiles for new candidates
+	for _, uid := range newUserIDs {
+		profile, err := s.searchProfileRepo.GetByUserID(ctx, uid)
+		if err != nil || profile == nil {
+			continue
+		}
+		pool = append(pool, *profile)
+	}
+
+	return pool
 }
 
 // GetPage returns a page of results from an existing search session.
