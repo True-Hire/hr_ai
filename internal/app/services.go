@@ -160,6 +160,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 
 	// Hook indexing into profile parse and set normalization service
 	candidateIndexingSvc.SetNormalizationService(normRuleSvc)
+	candidateSearchSvc.SetVectorSearchService(searchSvc)
 	profileParseSvc.SetCandidateIndexingService(candidateIndexingSvc)
 
 	hrBotSvc := application.NewHRBotService(companyHRSvc, vacancySvc, vacancyAppSvc, botStateSvc, searchSvc, userSvc, geminiClient)
