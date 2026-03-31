@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/ruziba3vich/hr-ai/internal/application"
+	"github.com/ruziba3vich/hr-ai/internal/application/scoring"
 	casbininfra "github.com/ruziba3vich/hr-ai/internal/infrastructure/casbin"
 	"github.com/ruziba3vich/hr-ai/internal/infrastructure/gemini"
 	minioclient "github.com/ruziba3vich/hr-ai/internal/infrastructure/minio"
@@ -40,7 +41,12 @@ type Services struct {
 	Bot                 *application.BotService
 	HRBot               *application.HRBotService
 	AccountDeletion     *application.AccountDeletionService
+	HRSavedUser         *application.HRSavedUserService
+	CandidateIndexing   *application.CandidateIndexingService
+	CandidateSearch     *application.CandidateSearchService
+	NormalizationRule   *application.NormalizationService
 	Storage          *application.StorageService
+	GeminiClient     *gemini.Client
 	CasbinEnforcer   *casbinlib.Enforcer
 	RedisClient      *redisclient.Client
 	JWTSecret        string
@@ -48,14 +54,14 @@ type Services struct {
 	TelegramHRBotToken string
 }
 
-func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdrantURL, qdrantAPIKey, redisURL, minioEndpoint, minioAccessKey, minioSecretKey, minioBucket string, minioUseSSL bool, telegramBotToken, telegramHRBotToken string) (*Services, error) {
+func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdrantURL, qdrantAPIKey, redisURL, minioEndpoint, minioAccessKey, minioSecretKey, minioBucket string, minioUseSSL bool, minioPublicURL, telegramBotToken, telegramHRBotToken string) (*Services, error) {
 	rc, err := redisclient.NewClient(redisURL)
 	if err != nil {
 		return nil, fmt.Errorf("init redis: %w", err)
 	}
 	cacheSvc := application.NewCacheService(rc)
 
-	mc, err := minioclient.NewClient(minioEndpoint, minioAccessKey, minioSecretKey, minioBucket, minioUseSSL)
+	mc, err := minioclient.NewClient(minioEndpoint, minioAccessKey, minioSecretKey, minioBucket, minioUseSSL, minioPublicURL)
 	if err != nil {
 		rc.Close()
 		return nil, fmt.Errorf("init minio: %w", err)
@@ -103,7 +109,6 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 	}
 
 	vectorIndexSvc := application.NewVectorIndexService(qdrantClient, geminiClient, pfSvc, pftSvc, expSvc, itSvc, skillSvc, userSvc, vacancyRepo, vacancyTextRepo)
-	searchSvc := application.NewSearchService(qdrantClient, geminiClient, userSvc)
 
 	companySvc := application.NewCompanyService(companyRepo, companyTextRepo, geminiClient, cacheSvc)
 
@@ -114,8 +119,9 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 
 	profileParseSvc := application.NewProfileParseService(geminiClient, pfSvc, pftSvc, expSvc, eduSvc, itSvc, skillSvc, userSvc, vectorIndexSvc)
 
-	vacancySvc := application.NewVacancyService(vacancyRepo, vacancyTextRepo, skillSvc, companySvc, geminiClient, vectorIndexSvc)
+	vacancySvc := application.NewVacancyService(vacancyRepo, vacancyTextRepo, skillSvc, geminiClient, vectorIndexSvc)
 	vacancySearchSvc := application.NewVacancySearchService(qdrantClient, geminiClient, vacancySvc, pfSvc, pftSvc, skillSvc)
+	searchSvc := application.NewSearchService(qdrantClient, geminiClient, userSvc, vacancySvc, expSvc, skillSvc)
 	vacancyAppSvc := application.NewVacancyApplicationService(vacancyAppRepo)
 
 	companyHRSvc := application.NewCompanyHRService(companyHRRepo)
@@ -127,7 +133,37 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 	)
 	botStateSvc := application.NewBotStateService(rc)
 
-	hrBotSvc := application.NewHRBotService(companyHRSvc, vacancySvc, botStateSvc, searchSvc, userSvc, geminiClient)
+	hrSavedUserRepo := repository.NewHRSavedUserRepository(pool)
+	hrSavedUserSvc := application.NewHRSavedUserService(hrSavedUserRepo)
+
+	// Normalization rules (DB-backed, cached)
+	normRuleRepo := repository.NewNormalizationRuleRepository(pool)
+	normRuleSvc := application.NewNormalizationService(normRuleRepo)
+	if err := normRuleSvc.LoadCache(context.Background()); err != nil {
+		return nil, fmt.Errorf("load normalization cache: %w", err)
+	}
+	scoring.Normalizer = normRuleSvc
+
+	// Candidate search & scoring
+	cspRepo := repository.NewCandidateSearchProfileRepository(pool)
+	companyRefRepo := repository.NewCompanyReferenceRepository(pool)
+	universityRefRepo := repository.NewUniversityReferenceRepository(pool)
+	searchSessionRepo := repository.NewSearchSessionRepository(pool)
+
+	candidateIndexingSvc := application.NewCandidateIndexingService(
+		cspRepo, companyRefRepo, universityRefRepo,
+		userSvc, pfSvc, pftSvc, expSvc, eduSvc, itSvc, skillSvc,
+	)
+	candidateSearchSvc := application.NewCandidateSearchService(
+		cspRepo, searchSessionRepo, userSvc, skillSvc, vacancySvc, expSvc,
+	)
+
+	// Hook indexing into profile parse and set normalization service
+	candidateIndexingSvc.SetNormalizationService(normRuleSvc)
+	candidateSearchSvc.SetVectorSearchService(searchSvc)
+	profileParseSvc.SetCandidateIndexingService(candidateIndexingSvc)
+
+	hrBotSvc := application.NewHRBotService(companyHRSvc, vacancySvc, vacancyAppSvc, botStateSvc, searchSvc, userSvc, geminiClient)
 
 	return &Services{
 		User:             userSvc,
@@ -153,7 +189,12 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 		Bot:                application.NewBotService(userSvc, companyHRSvc, profileParseSvc, storageSvc, botStateSvc, geminiClient),
 		HRBot:              hrBotSvc,
 		AccountDeletion:    accountDeletionSvc,
+		HRSavedUser:        hrSavedUserSvc,
+		CandidateIndexing:  candidateIndexingSvc,
+		CandidateSearch:    candidateSearchSvc,
+		NormalizationRule:  normRuleSvc,
 		Storage:          storageSvc,
+		GeminiClient:     geminiClient,
 		CasbinEnforcer:   enforcer,
 		RedisClient:      rc,
 		JWTSecret:        jwtSecret,

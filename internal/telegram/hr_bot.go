@@ -19,7 +19,6 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-
 // -- Localized messages for HR bot --
 
 var hrMsgWelcomeNew = map[string]string{
@@ -82,28 +81,106 @@ var hrMenuBtnChangeLang = map[string]string{
 	"uz": "🌍 Tilni o'zgartirish",
 }
 
+var hrMsgCompanyDataPrompt = map[string]string{
+	"en": "Before creating a vacancy, tell about your company.\n\nThis will help me:\n— automatically create proper vacancies\n— show candidates information about the company\n— find candidates more accurately for your field of activity\n\nYou can add information now or skip this step.",
+	"ru": "Перед созданием вакансии расскажите о вашей компании.\n\nЭто поможет мне:\n— автоматически формировать правильные вакансии\n— показывать кандидатам информацию о компании\n— точнее подбирать кандидатов под вашу сферу деятельности\n\nВы можете добавить информацию сейчас или пропустить этот шаг.",
+	"uz": "Vakansiya yaratishdan oldin kompaniyangiz haqida gapirib bering.\n\nBu menga yordam beradi:\n— vakansiyalarni avtomatik to'g'ri shakllantirish\n— nomzodlarga kompaniya haqida ma'lumot ko'rsatish\n— faoliyat sohasiga mos nomzodlarni aniqroq tanlash\n\nSiz hozir ma'lumot qo'shishingiz yoki bu bosqichni o'tkazib yuborishingiz mumkin.",
+}
+
+var hrBtnAddCompanyInfo = map[string]string{
+	"en": "📋 Add company information",
+	"ru": "📋 Добавить информацию о компании",
+	"uz": "📋 Kompaniya haqida ma'lumot qo'shish",
+}
+
+var hrBtnSkipCompanyInfo = map[string]string{
+	"en": "⏩ Skip and create vacancy",
+	"ru": "⏩ Пропустить и создать вакансию",
+	"uz": "⏩ O'tkazib yuborish va vakansiya yaratish",
+}
+
+var hrMsgCompanyDataStep = map[string]string{
+	"en": "Send information about your company.\n\nYou can:\n\n✍️ write as text\n🎤 send a voice message\n📎 attach files\n\nPlease include:\n— Company name\n— Logo\n— City / address\n— What the company does\n— etc.",
+	"ru": "Отправьте информацию о вашей компании.\n\nВы можете:\n\n✍️ написать текстом\n🎤 отправить голосовое\n📎 прикрепить файлы\n\nУкажите, пожалуйста:\n— Название компании\n— Логотип\n— Город / адрес\n— Чем занимается компания\n— д.р.",
+	"uz": "Kompaniyangiz haqida ma'lumot yuboring.\n\nSiz quyidagilarni yuborishingiz mumkin:\n\n✍️ matn yozish\n🎤 ovozli xabar yuborish\n📎 fayllar biriktirish\n\nIltimos, quyidagilarni ko'rsating:\n— Kompaniya nomi\n— Logotip\n— Shahar / manzil\n— Kompaniya nima bilan shug'ullanadi\n— va boshqalar",
+}
+
+var hrMsgParsingCompany = map[string]string{
+	"en": "🔎 Got the information. Analyzing company data...",
+	"ru": "🔎 Получил информацию. Анализирую данные компании…",
+	"uz": "🔎 Ma'lumotni oldim. Kompaniya ma'lumotlarini tahlil qilmoqdaman…",
+}
+
+var hrMsgCompanySaved = map[string]string{
+	"en": "✅ Company information saved!\n\nNow let's create your vacancy.",
+	"ru": "✅ Информация о компании сохранена!\n\nТеперь давайте создадим вакансию.",
+	"uz": "✅ Kompaniya ma'lumotlari saqlandi!\n\nEndi vakansiya yaratamiz.",
+}
+
+var hrMsgCompanyAutoAdd = map[string]string{
+	"en": "\n\nThis information will be automatically added to your vacancies.",
+	"ru": "\n\nЭта информация будет автоматически добавляться в ваши вакансии.",
+	"uz": "\n\nBu ma'lumot vakansiyalaringizga avtomatik qo'shiladi.",
+}
+
+var hrBtnCreateVacancyFromCompany = map[string]string{
+	"en": "📝 Create vacancy",
+	"ru": "📝 Создать вакансию",
+	"uz": "📝 Vakansiya yaratish",
+}
+
+var hrBtnEditCompanyInfo = map[string]string{
+	"en": "✏️ Add/Edit",
+	"ru": "✏️ Добавить/Изменить",
+	"uz": "✏️ Qo'shish/O'zgartirish",
+}
+
+var hrBtnAddLogo = map[string]string{
+	"en": "🖼 Add logo",
+	"ru": "🖼 Добавить логотип",
+	"uz": "🖼 Logotip qo'shish",
+}
+
+var hrMsgSendLogo = map[string]string{
+	"en": "Send your company logo as an image.",
+	"ru": "Отправьте логотип вашей компании в виде изображения.",
+	"uz": "Kompaniyangiz logotipini rasm sifatida yuboring.",
+}
+
+var hrMsgLogoSaved = map[string]string{
+	"en": "📎 Logo saved",
+	"ru": "📎 Логотип сохранён",
+	"uz": "📎 Logotip saqlandi",
+}
+
+var hrMsgCompanyFailed = map[string]string{
+	"en": "❌ Failed to process company information. Please try again.",
+	"ru": "❌ Не удалось обработать информацию о компании. Попробуйте ещё раз.",
+	"uz": "❌ Kompaniya ma'lumotlarini qayta ishlashda xatolik. Qaytadan urinib ko'ring.",
+}
+
 var hrMsgPostVacancy = map[string]string{
-	"en": "Send the information in one message:\n— Position\n— City\n— Work format\n— Salary range\n— Key responsibilities\n— Requirements\n— Level (Junior / Middle / Senior)\n— Urgency\n\nYou can:\n\n✍️ write\n🎤 send a voice message\n📎 attach a file\n\n⚡ The more detail — the more accurate the match.",
-	"ru": "Отправьте информацию одним сообщением:\n— Должность\n— Город\n— Формат работы\n— Зарплатная вилка\n— Основные обязанности\n— Требования\n— Уровень (Junior / Middle / Senior)\n— Срочность закрытия\n\nВы можете:\n\n✍️ написать\n🎤 отправить голосовое\n📎 прикрепить файл\n\n⚡ Чем подробнее — тем точнее подбор.",
-	"uz": "Ma'lumotlarni bitta xabarda yuboring:\n— Lavozim\n— Shahar\n— Ish formati\n— Maosh oralig'i\n— Asosiy vazifalar\n— Talablar\n— Daraja (Junior / Middle / Senior)\n— Shoshilinchlik\n\nSiz quyidagilarni yuborishingiz mumkin:\n\n✍️ yozish\n🎤 ovozli xabar yuborish\n📎 fayl biriktirish\n\n⚡ Qancha batafsil bo'lsa — tanlov shuncha aniq.",
+	"en": "Send the information in one message:\n\n— Who are you looking for (Position)\n— City\n— Work format\n— Salary range\n— Key responsibilities\n— Requirements\n— Level (Junior / Middle / Senior)\n\nYou can:\n\n✍️ write\n🎤 send a voice message\n📎 attach a file\n\n⚡ The more detail — the more accurate the match.",
+	"ru": "Отправьте информацию одним сообщением:\n\n— Кого ищете (Должность)\n— Город\n— Формат работы\n— Зарплатная вилка\n— Основные обязанности\n— Требования\n— Уровень (Junior / Middle / Senior)\n\nВы можете:\n\n✍️ написать\n🎤 отправить голосовое\n📎 прикрепить файл\n\n⚡ Чем подробнее — тем точнее подбор.",
+	"uz": "Ma'lumotlarni bitta xabarda yuboring:\n\n— Kimni qidiryapsiz (Lavozim)\n— Shahar\n— Ish formati\n— Maosh oralig'i\n— Asosiy vazifalar\n— Talablar\n— Daraja (Junior / Middle / Senior)\n\nSiz quyidagilarni yuborishingiz mumkin:\n\n✍️ yozish\n🎤 ovozli xabar yuborish\n📎 fayl biriktirish\n\n⚡ Qancha batafsil bo'lsa — tanlov shuncha aniq.",
 }
 
 var hrMsgParsingText = map[string]string{
-	"en": "🔎 Got the information. Analyzing vacancy...",
-	"ru": "🔎 Получил информацию. Анализирую вакансию…",
-	"uz": "🔎 Ma'lumotni oldim. Vakansiyani tahlil qilmoqdaman…",
+	"en": "🔎 Got the information.\nCreating vacancy…\n\n⏳ Please wait...",
+	"ru": "🔎 Получил информацию.\nСоздаю вакансию…\n\n⏳ Ожидайте...",
+	"uz": "🔎 Ma'lumotni oldim.\nVakansiya yaratmoqdaman…\n\n⏳ Kuting...",
 }
 
 var hrMsgParsingVoice = map[string]string{
-	"en": "I transcribed your voice message and will create the vacancy.\n\nPlease wait...",
-	"ru": "Я расшифровал твоё голосовое сообщение и сформирую вакансию.\n\nОжидайте...",
-	"uz": "Ovozli xabaringizni yozib oldim va vakansiya tuzaman.\n\nKuting...",
+	"en": "I transcribed your voice message and I'm creating the vacancy.\n\n⏳ Please wait...",
+	"ru": "Я расшифровал твоё голосовое сообщение и создаю вакансию.\n\n⏳ Ожидайте...",
+	"uz": "Ovozli xabaringizni yozib oldim va vakansiya yaratmoqdaman.\n\n⏳ Kuting...",
 }
 
 var hrMsgParsingFile = map[string]string{
-	"en": "I received your file and will create the vacancy.\n\nPlease wait...",
-	"ru": "Я получил ваш файл и сформирую вакансию.\n\nОжидайте...",
-	"uz": "Faylingizni oldim va vakansiya tuzaman.\n\nKuting...",
+	"en": "I received your file and I'm creating the vacancy.\n\n⏳ Please wait...",
+	"ru": "Я получил ваш файл и создаю вакансию.\n\n⏳ Ожидайте...",
+	"uz": "Faylingizni oldim va vakansiya yaratmoqdaman.\n\n⏳ Kuting...",
 }
 
 var hrMsgVacancyCreated = map[string]string{
@@ -130,22 +207,52 @@ var hrMsgHowToContinue = map[string]string{
 	"uz": "Qanday davom etamiz? ⬇️",
 }
 
+var hrMsgBtnAddMissingInfo = map[string]string{
+	"en": "✏️ Fill in missing information",
+	"ru": "✏️ Заполнить недостающую информацию",
+	"uz": "✏️ Yetishmayotgan ma'lumotlarni to'ldirish",
+}
+
 var hrMsgBtnContinueCurrent = map[string]string{
-	"en": "1️⃣ Continue with current data",
-	"ru": "1️⃣ Продолжить с текущими данными",
-	"uz": "1️⃣ Joriy ma'lumotlar bilan davom etish",
+	"en": "▶️ Continue with current data",
+	"ru": "▶️ Продолжить с текущими данными",
+	"uz": "▶️ Joriy ma'lumotlar bilan davom etish",
 }
 
 var hrMsgBtnCreateDescription = map[string]string{
-	"en": "2️⃣ Create proper vacancy description",
-	"ru": "2️⃣ Создать правильное описание вакансии",
-	"uz": "2️⃣ To'g'ri vakansiya tavsifini yaratish",
+	"en": "✨ Create proper vacancy description",
+	"ru": "✨ Создать правильное описание вакансии",
+	"uz": "✨ To'g'ri vakansiya tavsifini yaratish",
+}
+
+var hrMsgEnhancing = map[string]string{
+	"en": "✨ Creating a professional vacancy description...\n\nThis may take a moment.",
+	"ru": "✨ Создаю профессиональное описание вакансии...\n\nЭто может занять немного времени.",
+	"uz": "✨ Professional vakansiya tavsifi yaratilmoqda...\n\nBu biroz vaqt olishi mumkin.",
+}
+
+var hrMsgEnhanceFailed = map[string]string{
+	"en": "❌ Failed to create description. Creating vacancy with current data instead.",
+	"ru": "❌ Не удалось создать описание. Создаю вакансию с текущими данными.",
+	"uz": "❌ Tavsif yaratib bo'lmadi. Vakansiya joriy ma'lumotlar bilan yaratilmoqda.",
 }
 
 var hrMsgBtnAddInfo = map[string]string{
-	"en": "3️⃣ Add additional information",
-	"ru": "3️⃣ Добавить дополнительную информацию",
-	"uz": "3️⃣ Qo'shimcha ma'lumot qo'shish",
+	"en": "✏️ Add additional information",
+	"ru": "✏️ Добавить дополнительную информацию",
+	"uz": "✏️ Qo'shimcha ma'lumot qo'shish",
+}
+
+var hrMsgBtnConfirmCreate = map[string]string{
+	"en": "✅ Create vacancy",
+	"ru": "✅ Создать вакансию",
+	"uz": "✅ Vakansiya yaratish",
+}
+
+var hrMsgBtnAddMoreInfo = map[string]string{
+	"en": "✏️ Add or change information",
+	"ru": "✏️ Добавить или изменить информацию",
+	"uz": "✏️ Ma'lumot qo'shish yoki o'zgartirish",
 }
 
 var hrMsgSendAdditionalInfo = map[string]string{
@@ -243,12 +350,13 @@ var hrMsgError = map[string]string{
 // -- HR Bot --
 
 type HRBot struct {
-	bot       *tele.Bot
-	hrBotSvc  *application.HRBotService
-	webAppURL string
+	bot        *tele.Bot
+	hrBotSvc   *application.HRBotService
+	storageSvc *application.StorageService
+	webAppURL  string
 }
 
-func NewHRBot(token string, hrBotSvc *application.HRBotService, webAppURL string) (*HRBot, error) {
+func NewHRBot(token string, hrBotSvc *application.HRBotService, storageSvc *application.StorageService, webAppURL string) (*HRBot, error) {
 	b, err := tele.NewBot(tele.Settings{
 		Token:  token,
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
@@ -257,14 +365,14 @@ func NewHRBot(token string, hrBotSvc *application.HRBotService, webAppURL string
 		return nil, fmt.Errorf("create hr telegram bot: %w", err)
 	}
 
-	hb := &HRBot{bot: b, hrBotSvc: hrBotSvc, webAppURL: webAppURL}
+	hb := &HRBot{bot: b, hrBotSvc: hrBotSvc, storageSvc: storageSvc, webAppURL: webAppURL}
 	hb.registerHandlers()
 
 	if webAppURL != "" {
 		_, err = b.Raw("setChatMenuButton", map[string]interface{}{
 			"menu_button": tele.MenuButton{
 				Type:   tele.MenuButtonWebApp,
-				Text:   "Open App",
+				Text:   "Open",
 				WebApp: &tele.WebApp{URL: webAppURL},
 			},
 		})
@@ -336,6 +444,10 @@ func (hb *HRBot) registerHandlers() {
 	bot.Handle("/start", func(c tele.Context) error {
 		sender := c.Sender()
 
+		// Clear any leftover state from previous flow
+		_ = hrBotSvc.ClearState(ctx, sender.ID)
+		_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
+
 		result, err := hrBotSvc.HandleStart(ctx, sender.ID)
 		if err != nil {
 			log.Printf("hr handle /start error for %d: %v", sender.ID, err)
@@ -356,10 +468,7 @@ func (hb *HRBot) registerHandlers() {
 		}
 		lang = langOrDefault(lang)
 		name := strings.TrimSpace(result.HR.FirstName + " " + result.HR.LastName)
-		if err := c.Send(fmt.Sprintf(hrMsgWelcomeBack[lang], name), hb.hrInlineMenu(lang)); err != nil {
-			log.Printf("hr welcome back msg error for %d: %v", sender.ID, err)
-		}
-		return c.Send("⌨️", hrMenu(lang))
+		return c.Send(fmt.Sprintf(hrMsgWelcomeBack[lang], name), hb.hrInlineMenu(lang))
 	})
 
 	// Contact (phone number) handler — create HR record
@@ -380,10 +489,7 @@ func (hb *HRBot) registerHandlers() {
 		}
 
 		lang = langOrDefault(hr.Language)
-		if err := c.Send(hrMsgWelcomeNew[lang], hb.hrInlineMenu(lang)); err != nil {
-			log.Printf("hr welcome msg error for %d: %v", sender.ID, err)
-		}
-		return c.Send("⌨️", hrMenu(lang))
+		return c.Send(hrMsgWelcomeNew[lang], hb.hrInlineMenu(lang))
 	})
 
 	// Language change callback for HR
@@ -417,6 +523,10 @@ func (hb *HRBot) registerHandlers() {
 		action := c.Callback().Data
 		_ = c.Respond(&tele.CallbackResponse{})
 
+		// Clear any previous state/draft when navigating via menu
+		_ = hrBotSvc.ClearState(ctx, sender.ID)
+		_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
+
 		tgID := strconv.FormatInt(sender.ID, 10)
 		hr, err := hrBotSvc.GetHRByTelegramID(ctx, tgID)
 		if err != nil {
@@ -426,6 +536,19 @@ func (hb *HRBot) registerHandlers() {
 
 		switch action {
 		case "create_vacancy":
+			// Check if company data is filled before allowing vacancy creation
+			if !hrBotSvc.HasCompanyData(hr) {
+				markup := &tele.ReplyMarkup{}
+				markup.Inline(
+					markup.Row(
+						markup.Data(hrBtnAddCompanyInfo[lang], "hr_company_add"),
+					),
+					markup.Row(
+						markup.Data(hrBtnSkipCompanyInfo[lang], "hr_company_skip"),
+					),
+				)
+				return c.Send(hrMsgCompanyDataPrompt[lang], markup)
+			}
 			if err := hrBotSvc.SetState(ctx, sender.ID, domain.HRBotStatePostingVacancy, map[string]string{"language": lang, "hr_id": hr.ID.String()}); err != nil {
 				log.Printf("hr set posting state error for %d: %v", sender.ID, err)
 			}
@@ -448,6 +571,111 @@ func (hb *HRBot) registerHandlers() {
 		return nil
 	})
 
+	// Company data prompt callbacks
+	bot.Handle(&tele.Btn{Unique: "hr_company_add"}, func(c tele.Context) error {
+		sender := c.Sender()
+		_ = c.Respond(&tele.CallbackResponse{})
+		_ = c.Delete()
+
+		lang := hb.resolveHRLang(ctx, sender)
+		tgID := strconv.FormatInt(sender.ID, 10)
+		hr, err := hrBotSvc.GetHRByTelegramID(ctx, tgID)
+		if err != nil {
+			return c.Send(hrMsgError[lang], hrMenu(lang))
+		}
+
+		if err := hrBotSvc.SetState(ctx, sender.ID, domain.HRBotStateCollectingCompanyData, map[string]string{"language": lang, "hr_id": hr.ID.String()}); err != nil {
+			log.Printf("hr set company data state error for %d: %v", sender.ID, err)
+		}
+		return c.Send(hrMsgCompanyDataStep[lang])
+	})
+
+	bot.Handle(&tele.Btn{Unique: "hr_company_skip"}, func(c tele.Context) error {
+		sender := c.Sender()
+		_ = c.Respond(&tele.CallbackResponse{})
+		_ = c.Delete()
+
+		lang := hb.resolveHRLang(ctx, sender)
+		tgID := strconv.FormatInt(sender.ID, 10)
+		hr, err := hrBotSvc.GetHRByTelegramID(ctx, tgID)
+		if err != nil {
+			return c.Send(hrMsgError[lang], hrMenu(lang))
+		}
+
+		if err := hrBotSvc.SetState(ctx, sender.ID, domain.HRBotStatePostingVacancy, map[string]string{"language": lang, "hr_id": hr.ID.String()}); err != nil {
+			log.Printf("hr set posting state error for %d: %v", sender.ID, err)
+		}
+		_ = hr // ensure hr is fetched for state data
+		return c.Send(hrMsgPostVacancy[lang])
+	})
+
+	// Company profile review callbacks
+	bot.Handle(&tele.Btn{Unique: "hr_company_create_vacancy"}, func(c tele.Context) error {
+		sender := c.Sender()
+		_ = c.Respond(&tele.CallbackResponse{})
+		_ = c.Delete()
+
+		lang := hb.resolveHRLang(ctx, sender)
+		tgID := strconv.FormatInt(sender.ID, 10)
+		hr, err := hrBotSvc.GetHRByTelegramID(ctx, tgID)
+		if err != nil {
+			return c.Send(hrMsgError[lang], hrMenu(lang))
+		}
+
+		// Save company draft to Postgres
+		draft, err := hrBotSvc.GetCompanyDraft(ctx, sender.ID)
+		if err != nil || draft == nil {
+			return c.Send(hrMsgError[lang], hrMenu(lang))
+		}
+		if _, err := hrBotSvc.SaveCompanyDataFromDraft(ctx, hr.ID, draft); err != nil {
+			log.Printf("hr save company data error for %d: %v", sender.ID, err)
+			return c.Send(hrMsgCompanyFailed[lang], hrMenu(lang))
+		}
+		_ = hrBotSvc.ClearCompanyDraft(ctx, sender.ID)
+
+		// Transition to vacancy posting
+		if err := hrBotSvc.SetState(ctx, sender.ID, domain.HRBotStatePostingVacancy, map[string]string{"language": lang, "hr_id": hr.ID.String()}); err != nil {
+			log.Printf("hr set posting state error for %d: %v", sender.ID, err)
+		}
+		return c.Send(hrMsgPostVacancy[lang])
+	})
+
+	bot.Handle(&tele.Btn{Unique: "hr_company_edit"}, func(c tele.Context) error {
+		sender := c.Sender()
+		_ = c.Respond(&tele.CallbackResponse{})
+		_ = c.Delete()
+
+		lang := hb.resolveHRLang(ctx, sender)
+		tgID := strconv.FormatInt(sender.ID, 10)
+		hr, err := hrBotSvc.GetHRByTelegramID(ctx, tgID)
+		if err != nil {
+			return c.Send(hrMsgError[lang], hrMenu(lang))
+		}
+
+		if err := hrBotSvc.SetState(ctx, sender.ID, domain.HRBotStateCollectingCompanyData, map[string]string{"language": lang, "hr_id": hr.ID.String()}); err != nil {
+			log.Printf("hr set company data state error for %d: %v", sender.ID, err)
+		}
+		return c.Send(hrMsgCompanyDataStep[lang])
+	})
+
+	bot.Handle(&tele.Btn{Unique: "hr_company_logo"}, func(c tele.Context) error {
+		sender := c.Sender()
+		_ = c.Respond(&tele.CallbackResponse{})
+		_ = c.Delete()
+
+		lang := hb.resolveHRLang(ctx, sender)
+		tgID := strconv.FormatInt(sender.ID, 10)
+		hr, err := hrBotSvc.GetHRByTelegramID(ctx, tgID)
+		if err != nil {
+			return c.Send(hrMsgError[lang], hrMenu(lang))
+		}
+
+		if err := hrBotSvc.SetState(ctx, sender.ID, domain.HRBotStateCollectingCompanyLogo, map[string]string{"language": lang, "hr_id": hr.ID.String()}); err != nil {
+			log.Printf("hr set company logo state error for %d: %v", sender.ID, err)
+		}
+		return c.Send(hrMsgSendLogo[lang])
+	})
+
 	// Vacancy review callbacks
 	bot.Handle(&tele.Btn{Unique: "hr_vac_continue"}, func(c tele.Context) error {
 		sender := c.Sender()
@@ -458,28 +686,89 @@ func (hb *HRBot) registerHandlers() {
 
 		draft, err := hrBotSvc.GetVacancyDraft(ctx, sender.ID)
 		if err != nil || draft == nil {
+			_ = hrBotSvc.ClearState(ctx, sender.ID)
+			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 			return c.Send(hrMsgError[lang], hrMenu(lang))
 		}
 
-		state, _ := hrBotSvc.GetBotState(ctx, sender.ID)
-		hrIDStr := ""
-		if state != nil {
-			hrIDStr = state.Data["hr_id"]
-		}
-		hrID, _ := uuid.Parse(hrIDStr)
+		return hb.sendVacancyConfirmation(c, draft, lang)
+	})
 
-		result, err := hrBotSvc.CreateVacancyFromDraft(ctx, hrID, draft)
+	bot.Handle(&tele.Btn{Unique: "hr_vac_create_desc"}, func(c tele.Context) error {
+		sender := c.Sender()
+		_ = c.Respond(&tele.CallbackResponse{})
+		_ = c.Delete()
+
+		lang := hb.resolveHRLang(ctx, sender)
+
+		draft, err := hrBotSvc.GetVacancyDraft(ctx, sender.ID)
+		if err != nil || draft == nil {
+			_ = hrBotSvc.ClearState(ctx, sender.ID)
+			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
+			return c.Send(hrMsgError[lang], hrMenu(lang))
+		}
+
+		// Send "enhancing..." feedback
+		_ = c.Send(hrMsgEnhancing[lang])
+
+		// Enhance via Gemini
+		enhanced, err := hrBotSvc.EnhanceVacancyDraft(ctx, draft)
 		if err != nil {
-			log.Printf("hr create vacancy from draft error for %d: %v", sender.ID, err)
+			log.Printf("hr_vac_create_desc: enhance failed for %d: %v", sender.ID, err)
+			// Fall back to original draft
+			enhanced = draft
+			_ = c.Send(hrMsgEnhanceFailed[lang])
+		}
+
+		// Save enhanced draft to Redis and show confirmation
+		_ = hrBotSvc.SaveVacancyDraft(ctx, sender.ID, enhanced)
+
+		return hb.sendVacancyConfirmation(c, enhanced, lang)
+	})
+
+	bot.Handle(&tele.Btn{Unique: "hr_vac_confirm"}, func(c tele.Context) error {
+		sender := c.Sender()
+		_ = c.Respond(&tele.CallbackResponse{})
+		_ = c.Delete()
+
+		lang := hb.resolveHRLang(ctx, sender)
+
+		draft, err := hrBotSvc.GetVacancyDraft(ctx, sender.ID)
+		if err != nil || draft == nil {
+			_ = hrBotSvc.ClearState(ctx, sender.ID)
+			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
+			return c.Send(hrMsgError[lang], hrMenu(lang))
+		}
+
+		tgIDStr := strconv.FormatInt(sender.ID, 10)
+		hr, err := hrBotSvc.GetHRByTelegramID(ctx, tgIDStr)
+		if err != nil || hr == nil {
+			log.Printf("hr_vac_confirm: failed to get HR for tg_id %d: %v", sender.ID, err)
+			_ = hrBotSvc.ClearState(ctx, sender.ID)
+			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
+			return c.Send(hrMsgError[lang], hrMenu(lang))
+		}
+
+		result, err := hrBotSvc.CreateVacancyFromDraft(ctx, hr.ID, hr.CompanyData, draft)
+		if err != nil {
+			log.Printf("hr_vac_confirm: create vacancy error for %d: %v", sender.ID, err)
+			_ = hrBotSvc.ClearState(ctx, sender.ID)
+			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 			return c.Send(hrMsgVacancyFailed[lang], hrMenu(lang))
 		}
 
 		_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 		_ = hrBotSvc.ClearState(ctx, sender.ID)
 
-		title := vacancyTitle(result, lang)
-		_ = c.Send(hrMsgVacancyCreated[lang])
-		return c.Send(fmt.Sprintf("**%s** ✅", title), &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: hrMenu(lang)})
+		// Count matching candidates
+		var skills []string
+		for _, sk := range result.Skills {
+			skills = append(skills, sk.Name)
+		}
+		matchCount := hrBotSvc.CountMatchingCandidates(ctx, vacancyTitle(result, "en"), skills)
+
+		msg := buildVacancyCreatedMessage(result, lang, matchCount)
+		return c.Send(msg, &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: vacancyPublishedMenu(lang, result.Vacancy.ID.String(), hb.webAppURL)})
 	})
 
 	bot.Handle(&tele.Btn{Unique: "hr_vac_add_info"}, func(c tele.Context) error {
@@ -513,7 +802,105 @@ func (hb *HRBot) registerHandlers() {
 			log.Printf("hr set adding info state error for %d: %v", sender.ID, err)
 		}
 
+		// Show current draft content + missing fields, then ask for additional info
+		draft, _ := hrBotSvc.GetVacancyDraft(ctx, sender.ID)
+		if draft != nil {
+			_ = c.Send(hb.buildAddInfoMessage(draft, lang), &tele.SendOptions{ParseMode: tele.ModeMarkdown})
+		} else {
+			_ = c.Send(hrMsgSendAdditionalInfo[lang])
+		}
+		return nil
+	})
+
+	// -- Vacancy published action buttons (placeholders) --
+	bot.Handle(&tele.Btn{Unique: "hr_pub_candidates"}, func(c tele.Context) error {
+		// Only fires when webAppURL is not configured (WebApp buttons don't trigger callbacks)
+		_ = c.Respond(&tele.CallbackResponse{})
+		return nil
+	})
+	bot.Handle(&tele.Btn{Unique: "hr_pub_view"}, func(c tele.Context) error {
+		_ = c.Respond(&tele.CallbackResponse{Text: "Coming soon..."})
+		return nil
+	})
+	bot.Handle(&tele.Btn{Unique: "hr_pub_edit"}, func(c tele.Context) error {
+		sender := c.Sender()
+		_ = c.Respond(&tele.CallbackResponse{})
+		_ = c.Delete()
+
+		lang := hb.resolveHRLang(ctx, sender)
+		vacancyID := c.Callback().Data
+
+		tgID := strconv.FormatInt(sender.ID, 10)
+		hr, err := hrBotSvc.GetHRByTelegramID(ctx, tgID)
+		if err != nil {
+			return c.Send(hrMsgError[lang], hrMenu(lang))
+		}
+
+		if err := hrBotSvc.SetState(ctx, sender.ID, domain.HRBotStateEditingPublishedVacancy, map[string]string{
+			"language":   lang,
+			"hr_id":      hr.ID.String(),
+			"vacancy_id": vacancyID,
+		}); err != nil {
+			log.Printf("hr set editing published vacancy state error for %d: %v", sender.ID, err)
+		}
+
 		return c.Send(hrMsgSendAdditionalInfo[lang])
+	})
+	bot.Handle(&tele.Btn{Unique: "hr_pub_stop"}, func(c tele.Context) error {
+		sender := c.Sender()
+		_ = c.Respond(&tele.CallbackResponse{})
+		_ = c.Delete()
+
+		lang := hb.resolveHRLang(ctx, sender)
+		vacancyID, err := uuid.Parse(c.Callback().Data)
+		if err != nil {
+			return c.Send(hrMsgError[lang], hrMenu(lang))
+		}
+
+		if err := hrBotSvc.StopVacancy(ctx, vacancyID); err != nil {
+			log.Printf("hr stop vacancy error for %d: %v", sender.ID, err)
+			return c.Send(hrMsgError[lang], hrMenu(lang))
+		}
+
+		shortID := vacancyID.String()[:8]
+		msg := buildVacancyStoppedMessage(shortID, lang)
+
+		markup := &tele.ReplyMarkup{}
+		markup.Inline(
+			markup.Row(markup.Data(hrBtnActivateVacancy[lang], "hr_pub_activate", vacancyID.String())),
+		)
+		return c.Send(msg, &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: markup})
+	})
+
+	bot.Handle(&tele.Btn{Unique: "hr_pub_activate"}, func(c tele.Context) error {
+		sender := c.Sender()
+		_ = c.Respond(&tele.CallbackResponse{})
+		_ = c.Delete()
+
+		lang := hb.resolveHRLang(ctx, sender)
+		vacancyID, err := uuid.Parse(c.Callback().Data)
+		if err != nil {
+			return c.Send(hrMsgError[lang], hrMenu(lang))
+		}
+
+		if err := hrBotSvc.ActivateVacancy(ctx, vacancyID); err != nil {
+			log.Printf("hr activate vacancy error for %d: %v", sender.ID, err)
+			return c.Send(hrMsgError[lang], hrMenu(lang))
+		}
+
+		result, err := hrBotSvc.GetVacancy(ctx, vacancyID)
+		if err != nil {
+			return c.Send(hrMsgError[lang], hrMenu(lang))
+		}
+
+		var skills []string
+		for _, sk := range result.Skills {
+			skills = append(skills, sk.Name)
+		}
+		matchCount := hrBotSvc.CountMatchingCandidates(ctx, vacancyTitle(result, "en"), skills)
+
+		msg := buildVacancyCreatedMessage(result, lang, matchCount)
+		return c.Send(msg, &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: vacancyPublishedMenu(lang, vacancyID.String(), hb.webAppURL)})
 	})
 
 	// Text message handler
@@ -526,10 +913,14 @@ func (hb *HRBot) registerHandlers() {
 			case domain.HRBotStateSharingPhone:
 				lang := langOrDefault(state.Data["language"])
 				return c.Send(hrMsgPhoneReminder[lang])
+			case domain.HRBotStateCollectingCompanyData:
+				return hb.handleCompanyDataInput(ctx, c, state, "text", c.Text(), nil, "")
 			case domain.HRBotStatePostingVacancy:
 				return hb.handleVacancyInput(ctx, c, state, "text", c.Text(), nil, "")
 			case domain.HRBotStateAddingVacancyInfo:
 				return hb.handleVacancyInput(ctx, c, state, "text", c.Text(), nil, "")
+			case domain.HRBotStateEditingPublishedVacancy:
+				return hb.handleEditPublishedVacancy(ctx, c, state, "text", c.Text(), nil, "")
 			case "hr_searching":
 				return hb.handleSearchQuery(ctx, c, state)
 			}
@@ -545,25 +936,45 @@ func (hb *HRBot) registerHandlers() {
 		text := c.Text()
 
 		if isMenuButton(text, hrMenuBtnCreateVacancy) {
+			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
+			// Check if company data is filled before allowing vacancy creation
+			if !hrBotSvc.HasCompanyData(hr) {
+				markup := &tele.ReplyMarkup{}
+				markup.Inline(
+					markup.Row(
+						markup.Data(hrBtnAddCompanyInfo[lang], "hr_company_add"),
+					),
+					markup.Row(
+						markup.Data(hrBtnSkipCompanyInfo[lang], "hr_company_skip"),
+					),
+				)
+				return c.Send(hrMsgCompanyDataPrompt[lang], markup)
+			}
 			if err := hrBotSvc.SetState(ctx, sender.ID, domain.HRBotStatePostingVacancy, map[string]string{"language": lang, "hr_id": hr.ID.String()}); err != nil {
 				log.Printf("hr set posting state error for %d: %v", sender.ID, err)
 			}
 			return c.Send(hrMsgPostVacancy[lang])
 		}
 		if isMenuButton(text, hrMenuBtnActiveVacancies) {
+			_ = hrBotSvc.ClearState(ctx, sender.ID)
+			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 			return hb.handleMyVacancies(ctx, c, hr)
 		}
 		if isMenuButton(text, hrMenuBtnFindCandidates) {
+			_ = hrBotSvc.ClearState(ctx, sender.ID)
+			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 			if hb.webAppURL != "" {
 				markup := &tele.ReplyMarkup{}
 				markup.Inline(
-					markup.Row(markup.WebApp(hrMenuBtnFindCandidates[lang], &tele.WebApp{URL: hb.webAppURL + "/applications"})),
+					markup.Row(markup.WebApp(hrMenuBtnFindCandidates[lang], &tele.WebApp{URL: hb.webAppURL})),
 				)
 				return c.Send("🔍", markup)
 			}
 			return hb.handleFindCandidatesStart(ctx, c, hr)
 		}
 		if isMenuButton(text, hrMenuBtnChangeLang) {
+			_ = hrBotSvc.ClearState(ctx, sender.ID)
+			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 			markup := &tele.ReplyMarkup{}
 			markup.Inline(
 				markup.Row(
@@ -584,19 +995,27 @@ func (hb *HRBot) registerHandlers() {
 		voice := c.Message().Voice
 
 		state, _ := hrBotSvc.GetBotState(ctx, sender.ID)
-		if state != nil && (state.State == domain.HRBotStatePostingVacancy || state.State == domain.HRBotStateAddingVacancyInfo) {
-			reader, err := bot.File(&voice.File)
-			if err != nil {
-				lang := langOrDefault(state.Data["language"])
-				return c.Send(hrMsgDownloadFailed[lang])
+		if state != nil {
+			if state.State == domain.HRBotStatePostingVacancy || state.State == domain.HRBotStateAddingVacancyInfo || state.State == domain.HRBotStateCollectingCompanyData || state.State == domain.HRBotStateEditingPublishedVacancy {
+				reader, err := bot.File(&voice.File)
+				if err != nil {
+					lang := langOrDefault(state.Data["language"])
+					return c.Send(hrMsgDownloadFailed[lang])
+				}
+				fileData, _ := io.ReadAll(reader)
+				reader.Close()
+				mimeType := voice.MIME
+				if mimeType == "" {
+					mimeType = "audio/ogg"
+				}
+				if state.State == domain.HRBotStateCollectingCompanyData {
+					return hb.handleCompanyDataInput(ctx, c, state, "voice", "", fileData, mimeType)
+				}
+				if state.State == domain.HRBotStateEditingPublishedVacancy {
+					return hb.handleEditPublishedVacancy(ctx, c, state, "voice", "", fileData, mimeType)
+				}
+				return hb.handleVacancyInput(ctx, c, state, "voice", "", fileData, mimeType)
 			}
-			fileData, _ := io.ReadAll(reader)
-			reader.Close()
-			mimeType := voice.MIME
-			if mimeType == "" {
-				mimeType = "audio/ogg"
-			}
-			return hb.handleVacancyInput(ctx, c, state, "voice", "", fileData, mimeType)
 		}
 
 		lang := hb.resolveHRLang(ctx, sender)
@@ -609,18 +1028,26 @@ func (hb *HRBot) registerHandlers() {
 		doc := c.Message().Document
 
 		state, _ := hrBotSvc.GetBotState(ctx, sender.ID)
-		if state != nil && (state.State == domain.HRBotStatePostingVacancy || state.State == domain.HRBotStateAddingVacancyInfo) {
-			lang := langOrDefault(state.Data["language"])
-			if !isAllowedMIME(doc.MIME) {
-				return c.Send(hrMsgUnsupportedFile[lang])
+		if state != nil {
+			if state.State == domain.HRBotStatePostingVacancy || state.State == domain.HRBotStateAddingVacancyInfo || state.State == domain.HRBotStateCollectingCompanyData || state.State == domain.HRBotStateEditingPublishedVacancy {
+				lang := langOrDefault(state.Data["language"])
+				if !isAllowedMIME(doc.MIME) {
+					return c.Send(hrMsgUnsupportedFile[lang])
+				}
+				reader, err := bot.File(&doc.File)
+				if err != nil {
+					return c.Send(hrMsgDownloadFailed[lang])
+				}
+				fileData, _ := io.ReadAll(reader)
+				reader.Close()
+				if state.State == domain.HRBotStateCollectingCompanyData {
+					return hb.handleCompanyDataInput(ctx, c, state, "file", "", fileData, doc.MIME)
+				}
+				if state.State == domain.HRBotStateEditingPublishedVacancy {
+					return hb.handleEditPublishedVacancy(ctx, c, state, "file", "", fileData, doc.MIME)
+				}
+				return hb.handleVacancyInput(ctx, c, state, "file", "", fileData, doc.MIME)
 			}
-			reader, err := bot.File(&doc.File)
-			if err != nil {
-				return c.Send(hrMsgDownloadFailed[lang])
-			}
-			fileData, _ := io.ReadAll(reader)
-			reader.Close()
-			return hb.handleVacancyInput(ctx, c, state, "file", "", fileData, doc.MIME)
 		}
 
 		lang := hb.resolveHRLang(ctx, sender)
@@ -633,20 +1060,259 @@ func (hb *HRBot) registerHandlers() {
 		photo := c.Message().Photo
 
 		state, _ := hrBotSvc.GetBotState(ctx, sender.ID)
-		if state != nil && (state.State == domain.HRBotStatePostingVacancy || state.State == domain.HRBotStateAddingVacancyInfo) {
+		if state == nil {
+			lang := hb.resolveHRLang(ctx, sender)
+			return c.Send(hrMsgUseMenu[lang], hrMenu(lang))
+		}
+
+		switch state.State {
+		case domain.HRBotStateCollectingCompanyData:
 			reader, err := bot.File(&photo.File)
 			if err != nil {
-				lang := langOrDefault(state.Data["language"])
-				return c.Send(hrMsgDownloadFailed[lang])
+				return c.Send(hrMsgDownloadFailed[langOrDefault(state.Data["language"])])
+			}
+			fileData, _ := io.ReadAll(reader)
+			reader.Close()
+			return hb.handleCompanyDataInput(ctx, c, state, "file", "", fileData, "image/jpeg")
+
+		case domain.HRBotStateCollectingCompanyLogo:
+			return hb.handleCompanyLogoUpload(ctx, c, state, photo)
+
+		case domain.HRBotStateEditingPublishedVacancy:
+			reader, err := bot.File(&photo.File)
+			if err != nil {
+				return c.Send(hrMsgDownloadFailed[langOrDefault(state.Data["language"])])
+			}
+			fileData, _ := io.ReadAll(reader)
+			reader.Close()
+			return hb.handleEditPublishedVacancy(ctx, c, state, "file", "", fileData, "image/jpeg")
+
+		case domain.HRBotStatePostingVacancy, domain.HRBotStateAddingVacancyInfo:
+			reader, err := bot.File(&photo.File)
+			if err != nil {
+				return c.Send(hrMsgDownloadFailed[langOrDefault(state.Data["language"])])
 			}
 			fileData, _ := io.ReadAll(reader)
 			reader.Close()
 			return hb.handleVacancyInput(ctx, c, state, "file", "", fileData, "image/jpeg")
-		}
 
-		lang := hb.resolveHRLang(ctx, sender)
-		return c.Send(hrMsgUseMenu[lang], hrMenu(lang))
+		default:
+			lang := hb.resolveHRLang(ctx, sender)
+			return c.Send(hrMsgUseMenu[lang], hrMenu(lang))
+		}
 	})
+}
+
+func (hb *HRBot) handleCompanyDataInput(ctx context.Context, c tele.Context, state *domain.BotState, inputType, text string, fileData []byte, mimeType string) error {
+	sender := c.Sender()
+	lang := langOrDefault(state.Data["language"])
+	hrIDStr := state.Data["hr_id"]
+
+	// Send appropriate "processing" message
+	_ = c.Send(hrMsgParsingCompany[lang])
+
+	var parsed *gemini.ParsedCompanyFull
+	var err error
+
+	// If we already have a draft, merge additional info via Gemini
+	existingDraft, _ := hb.hrBotSvc.GetCompanyDraft(ctx, sender.ID)
+
+	if inputType == "text" {
+		parsed, err = hb.hrBotSvc.ParseCompanyFromText(ctx, text)
+	} else if len(fileData) > 0 {
+		parsed, err = hb.hrBotSvc.ParseCompanyFromFile(ctx, fileData, mimeType)
+	}
+
+	if err != nil {
+		log.Printf("hr parse company data error for %d: %v", sender.ID, err)
+		_ = hb.hrBotSvc.ClearState(ctx, sender.ID)
+		return c.Send(hrMsgCompanyFailed[lang], hrMenu(lang))
+	}
+
+	// Convert to domain.CompanyData
+	draft := hb.hrBotSvc.ConvertParsedToCompanyData(parsed)
+
+	// Preserve logo from existing draft if present
+	if existingDraft != nil && existingDraft.LogoURL != "" {
+		draft.LogoURL = existingDraft.LogoURL
+	}
+
+	// Save draft to Redis (not Postgres)
+	if err := hb.hrBotSvc.SaveCompanyDraft(ctx, sender.ID, draft); err != nil {
+		log.Printf("hr save company draft error for %d: %v", sender.ID, err)
+		_ = hb.hrBotSvc.ClearState(ctx, sender.ID)
+		return c.Send(hrMsgCompanyFailed[lang], hrMenu(lang))
+	}
+
+	// Set state to company review
+	if err := hb.hrBotSvc.SetState(ctx, sender.ID, domain.HRBotStateCompanyReview, map[string]string{"language": lang, "hr_id": hrIDStr}); err != nil {
+		log.Printf("hr set company review state error for %d: %v", sender.ID, err)
+	}
+
+	return hb.sendCompanyProfile(c, draft, lang)
+}
+
+func (hb *HRBot) handleCompanyLogoUpload(ctx context.Context, c tele.Context, state *domain.BotState, photo *tele.Photo) error {
+	sender := c.Sender()
+	lang := langOrDefault(state.Data["language"])
+	hrIDStr := state.Data["hr_id"]
+
+	// Download photo from Telegram
+	reader, err := hb.bot.File(&photo.File)
+	if err != nil {
+		return c.Send(hrMsgDownloadFailed[lang])
+	}
+	fileData, _ := io.ReadAll(reader)
+	reader.Close()
+
+	// Upload to MinIO
+	result, err := hb.storageSvc.UploadCompanyLogo(ctx, fileData, "image/jpeg")
+	if err != nil {
+		log.Printf("hr upload company logo error for %d: %v", sender.ID, err)
+		return c.Send(hrMsgCompanyFailed[lang])
+	}
+
+	// Update draft in Redis with logo URL
+	draft, err := hb.hrBotSvc.GetCompanyDraft(ctx, sender.ID)
+	if err != nil || draft == nil {
+		return c.Send(hrMsgError[lang], hrMenu(lang))
+	}
+	draft.LogoURL = result.URL
+	if err := hb.hrBotSvc.SaveCompanyDraft(ctx, sender.ID, draft); err != nil {
+		log.Printf("hr save company draft with logo error for %d: %v", sender.ID, err)
+	}
+
+	// Save to Postgres
+	hrID, parseErr := uuid.Parse(hrIDStr)
+	if parseErr != nil {
+		return c.Send(hrMsgError[lang], hrMenu(lang))
+	}
+	if _, err := hb.hrBotSvc.SaveCompanyDataFromDraft(ctx, hrID, draft); err != nil {
+		log.Printf("hr save company data after logo error for %d: %v", sender.ID, err)
+	}
+
+	// Set state back to company review
+	if err := hb.hrBotSvc.SetState(ctx, sender.ID, domain.HRBotStateCompanyReview, map[string]string{"language": lang, "hr_id": hrIDStr}); err != nil {
+		log.Printf("hr set company review state error for %d: %v", sender.ID, err)
+	}
+
+	return hb.sendCompanyProfile(c, draft, lang)
+}
+
+func (hb *HRBot) sendCompanyProfile(c tele.Context, draft *domain.CompanyData, lang string) error {
+	msg := formatCompanyProfile(draft, lang)
+
+	markup := &tele.ReplyMarkup{}
+	markup.Inline(
+		markup.Row(markup.Data(hrBtnCreateVacancyFromCompany[lang], "hr_company_create_vacancy")),
+		markup.Row(markup.Data(hrBtnEditCompanyInfo[lang], "hr_company_edit")),
+		markup.Row(markup.Data(hrBtnAddLogo[lang], "hr_company_logo")),
+	)
+
+	if draft.LogoURL != "" {
+		photo := &tele.Photo{File: tele.FromURL(draft.LogoURL), Caption: msg}
+		return c.Send(photo, markup)
+	}
+	return c.Send(msg, markup)
+}
+
+func formatCompanyProfile(draft *domain.CompanyData, lang string) string {
+	// Find the text for the requested language
+	var t *domain.CompanyDataText
+	for i := range draft.Texts {
+		if draft.Texts[i].Lang == lang {
+			t = &draft.Texts[i]
+			break
+		}
+	}
+	if t == nil && len(draft.Texts) > 0 {
+		t = &draft.Texts[0]
+	}
+
+	var b strings.Builder
+	b.WriteString("✅ ")
+	switch lang {
+	case "ru":
+		b.WriteString("Профиль компании создан.")
+	case "uz":
+		b.WriteString("Kompaniya profili yaratildi.")
+	default:
+		b.WriteString("Company profile created.")
+	}
+
+	if t != nil {
+		if t.Name != "" {
+			b.WriteString("\n\n")
+			switch lang {
+			case "ru":
+				b.WriteString("Название: ")
+			case "uz":
+				b.WriteString("Nomi: ")
+			default:
+				b.WriteString("Name: ")
+			}
+			b.WriteString(t.Name)
+		}
+		if t.ActivityType != "" {
+			b.WriteString("\n")
+			switch lang {
+			case "ru":
+				b.WriteString("Сфера: ")
+			case "uz":
+				b.WriteString("Soha: ")
+			default:
+				b.WriteString("Field: ")
+			}
+			b.WriteString(t.ActivityType)
+		}
+	}
+
+	if draft.Address != "" {
+		b.WriteString("\n")
+		switch lang {
+		case "ru":
+			b.WriteString("Город: ")
+		case "uz":
+			b.WriteString("Shahar: ")
+		default:
+			b.WriteString("City: ")
+		}
+		b.WriteString(draft.Address)
+	}
+
+	if t != nil && t.About != "" {
+		b.WriteString("\n")
+		switch lang {
+		case "ru":
+			b.WriteString("О компании: ")
+		case "uz":
+			b.WriteString("Kompaniya haqida: ")
+		default:
+			b.WriteString("About: ")
+		}
+		b.WriteString(t.About)
+	}
+
+	if draft.EmployeeCount > 0 {
+		b.WriteString(fmt.Sprintf("\n— %d ", draft.EmployeeCount))
+		switch lang {
+		case "ru":
+			b.WriteString("сотрудников")
+		case "uz":
+			b.WriteString("xodim")
+		default:
+			b.WriteString("employees")
+		}
+	}
+
+	if draft.LogoURL != "" {
+		b.WriteString("\n📎 ")
+		b.WriteString(hrMsgLogoSaved[lang])
+	}
+
+	b.WriteString(hrMsgCompanyAutoAdd[lang])
+
+	return b.String()
 }
 
 func (hb *HRBot) handleVacancyInput(ctx context.Context, c tele.Context, state *domain.BotState, inputType, text string, fileData []byte, mimeType string) error {
@@ -724,20 +1390,148 @@ func (hb *HRBot) handleVacancyInput(ctx context.Context, c tele.Context, state *
 	return hb.sendVacancyReview(c, parsed, lang)
 }
 
+func (hb *HRBot) handleEditPublishedVacancy(ctx context.Context, c tele.Context, state *domain.BotState, inputType, text string, fileData []byte, mimeType string) error {
+	sender := c.Sender()
+	lang := langOrDefault(state.Data["language"])
+	vacancyIDStr := state.Data["vacancy_id"]
+
+	vacancyID, err := uuid.Parse(vacancyIDStr)
+	if err != nil {
+		_ = hb.hrBotSvc.ClearState(ctx, sender.ID)
+		return c.Send(hrMsgError[lang], hrMenu(lang))
+	}
+
+	// Send processing message
+	switch inputType {
+	case "text":
+		_ = c.Send(hrMsgParsingText[lang])
+	case "voice":
+		_ = c.Send(hrMsgParsingVoice[lang])
+	default:
+		_ = c.Send(hrMsgParsingFile[lang])
+	}
+
+	// Load existing vacancy, convert to JSON for merge
+	existing, err := hb.hrBotSvc.GetVacancy(ctx, vacancyID)
+	if err != nil {
+		_ = hb.hrBotSvc.ClearState(ctx, sender.ID)
+		return c.Send(hrMsgError[lang], hrMenu(lang))
+	}
+	existingJSON := vacancyToMergeJSON(existing, lang)
+
+	// Parse user input
+	var newInfo string
+	if inputType == "text" {
+		newInfo = text
+	} else if len(fileData) > 0 {
+		fileParsed, fileErr := hb.hrBotSvc.ParseVacancyFromFile(ctx, fileData, mimeType)
+		if fileErr == nil {
+			b, _ := json.Marshal(fileParsed)
+			newInfo = string(b)
+		}
+	}
+
+	if newInfo == "" {
+		_ = hb.hrBotSvc.ClearState(ctx, sender.ID)
+		return c.Send(hrMsgVacancyFailed[lang], hrMenu(lang))
+	}
+
+	// Merge via Gemini
+	merged, err := hb.hrBotSvc.MergeVacancy(ctx, existingJSON, newInfo)
+	if err != nil {
+		log.Printf("hr merge published vacancy error for %d: %v", sender.ID, err)
+		_ = hb.hrBotSvc.ClearState(ctx, sender.ID)
+		return c.Send(hrMsgVacancyFailed[lang], hrMenu(lang))
+	}
+
+	// Update in Postgres
+	result, err := hb.hrBotSvc.UpdatePublishedVacancy(ctx, vacancyID, merged)
+	if err != nil {
+		log.Printf("hr update published vacancy error for %d: %v", sender.ID, err)
+		_ = hb.hrBotSvc.ClearState(ctx, sender.ID)
+		return c.Send(hrMsgVacancyFailed[lang], hrMenu(lang))
+	}
+
+	_ = hb.hrBotSvc.ClearState(ctx, sender.ID)
+
+	// Show published message with 4 buttons
+	var skills []string
+	for _, sk := range result.Skills {
+		skills = append(skills, sk.Name)
+	}
+	matchCount := hb.hrBotSvc.CountMatchingCandidates(ctx, vacancyTitle(result, "en"), skills)
+
+	updatedMsg := map[string]string{
+		"en": "✅ Vacancy updated!\n\n",
+		"ru": "✅ Вакансия обновлена!\n\n",
+		"uz": "✅ Vakansiya yangilandi!\n\n",
+	}
+
+	msg := updatedMsg[lang] + buildVacancyCreatedMessage(result, lang, matchCount)
+	return c.Send(msg, &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: vacancyPublishedMenu(lang, vacancyID.String(), hb.webAppURL)})
+}
+
+// vacancyToMergeJSON converts existing vacancy data to JSON for Gemini merge.
+func vacancyToMergeJSON(v *application.VacancyWithDetails, lang string) string {
+	data := map[string]any{
+		"format":          v.Vacancy.Format,
+		"schedule":        v.Vacancy.Schedule,
+		"salary_min":      v.Vacancy.SalaryMin,
+		"salary_max":      v.Vacancy.SalaryMax,
+		"salary_currency": v.Vacancy.SalaryCurrency,
+		"experience_min":  v.Vacancy.ExperienceMin,
+		"experience_max":  v.Vacancy.ExperienceMax,
+		"address":         v.Vacancy.Address,
+		"phone":           v.Vacancy.Phone,
+		"telegram":        v.Vacancy.Telegram,
+		"email":           v.Vacancy.Email,
+	}
+	var skillNames []string
+	for _, sk := range v.Skills {
+		skillNames = append(skillNames, sk.Name)
+	}
+	data["skills"] = skillNames
+
+	fields := map[string]map[string]string{}
+	for _, t := range v.Texts {
+		for _, field := range []struct{ key, val string }{
+			{"title", t.Title},
+			{"description", t.Description},
+			{"responsibilities", t.Responsibilities},
+			{"requirements", t.Requirements},
+			{"benefits", t.Benefits},
+		} {
+			if field.val != "" {
+				if fields[field.key] == nil {
+					fields[field.key] = map[string]string{}
+				}
+				fields[field.key][t.Lang] = field.val
+			}
+		}
+	}
+	data["fields"] = fields
+
+	b, _ := json.Marshal(data)
+	return string(b)
+}
+
 func (hb *HRBot) sendVacancyReview(c tele.Context, draft *gemini.ParsedVacancyFull, lang string) error {
 	var sb strings.Builder
+
+	// Header
+	yourVacancy := map[string]string{"en": "Your vacancy", "ru": "Ваша вакансия", "uz": "Vakansiyangiz"}
+	sb.WriteString(fmt.Sprintf("*%s*\n\n", yourVacancy[lang]))
 
 	// Title (bold)
 	title := draftField(draft, "title", lang)
 	if title != "" {
-		sb.WriteString(fmt.Sprintf("*%s*\n\n", title))
+		sb.WriteString(fmt.Sprintf("%s\n\n", title))
 	}
 
 	// Description / About the company
 	desc := draftField(draft, "description", lang)
 	if desc != "" {
-		descLabel := map[string]string{"en": "About:", "ru": "О компании:", "uz": "Kompaniya haqida:"}
-		sb.WriteString(fmt.Sprintf("*%s*\n%s\n\n", descLabel[lang], desc))
+		sb.WriteString(fmt.Sprintf("%s\n\n", desc))
 	}
 
 	// Responsibilities
@@ -761,42 +1555,40 @@ func (hb *HRBot) sendVacancyReview(c tele.Context, draft *gemini.ParsedVacancyFu
 		sb.WriteString(fmt.Sprintf("*%s*\n%s\n\n", benLabel[lang], formatAsBullets(ben)))
 	}
 
-	// Details line: format, experience, salary, skills
-	var details []string
-
+	// Details line: format, address, experience, salary
 	if draft.Format != "" {
+		formatLabel := map[string]string{"en": "Work format: ", "ru": "Формат работы: ", "uz": "Ish formati: "}
 		formatNames := map[string]map[string]string{
 			"office": {"en": "Office", "ru": "Офис", "uz": "Ofis"},
 			"remote": {"en": "Remote", "ru": "Удалёнка", "uz": "Masofaviy"},
 			"hybrid": {"en": "Hybrid", "ru": "Гибрид", "uz": "Gibrid"},
 		}
 		if names, ok := formatNames[draft.Format]; ok {
-			details = append(details, fmt.Sprintf("📍 %s", names[lang]))
+			sb.WriteString(fmt.Sprintf("%s%s\n", formatLabel[lang], names[lang]))
 		}
 	}
 	if draft.Address != "" {
-		details = append(details, fmt.Sprintf("🏢 %s", draft.Address))
+		addrLabel := map[string]string{"en": "Location: ", "ru": "Адрес: ", "uz": "Manzil: "}
+		sb.WriteString(fmt.Sprintf("%s%s\n", addrLabel[lang], draft.Address))
+	}
+	if draft.SalaryMin > 0 || draft.SalaryMax > 0 {
+		salaryLabel := map[string]string{"en": "Salary: ", "ru": "Зарплата: ", "uz": "Maosh: "}
+		minStr := formatNumber(int64(draft.SalaryMin))
+		maxStr := formatNumber(int64(draft.SalaryMax))
+		sb.WriteString(fmt.Sprintf("💸%s%s – %s %s\n", salaryLabel[lang], minStr, maxStr, draft.SalaryCurrency))
 	}
 	if draft.ExperienceMin > 0 || draft.ExperienceMax > 0 {
 		expYears := map[string]string{"en": "years", "ru": "лет", "uz": "yil"}
+		expLabel := map[string]string{"en": "Experience: ", "ru": "Опыт: ", "uz": "Tajriba: "}
 		if draft.ExperienceMin > 0 && draft.ExperienceMax > 0 {
-			details = append(details, fmt.Sprintf("💼 %d–%d %s", draft.ExperienceMin, draft.ExperienceMax, expYears[lang]))
+			sb.WriteString(fmt.Sprintf("%s%d–%d %s\n", expLabel[lang], draft.ExperienceMin, draft.ExperienceMax, expYears[lang]))
 		} else if draft.ExperienceMin > 0 {
-			details = append(details, fmt.Sprintf("💼 %d+ %s", draft.ExperienceMin, expYears[lang]))
+			sb.WriteString(fmt.Sprintf("%s%d+ %s\n", expLabel[lang], draft.ExperienceMin, expYears[lang]))
 		}
-	}
-	if draft.SalaryMin > 0 || draft.SalaryMax > 0 {
-		minStr := formatNumber(int64(draft.SalaryMin))
-		maxStr := formatNumber(int64(draft.SalaryMax))
-		details = append(details, fmt.Sprintf("💰 %s – %s %s", minStr, maxStr, draft.SalaryCurrency))
-	}
-	if len(details) > 0 {
-		sb.WriteString(strings.Join(details, "\n"))
-		sb.WriteString("\n\n")
 	}
 
 	if len(draft.Skills) > 0 {
-		sb.WriteString(fmt.Sprintf("🛠 %s\n\n", strings.Join(draft.Skills, ", ")))
+		sb.WriteString(fmt.Sprintf("\n🛠 %s\n", strings.Join(draft.Skills, ", ")))
 	}
 
 	// Contacts
@@ -811,8 +1603,9 @@ func (hb *HRBot) sendVacancyReview(c tele.Context, draft *gemini.ParsedVacancyFu
 		contacts = append(contacts, fmt.Sprintf("📧 %s", draft.Email))
 	}
 	if len(contacts) > 0 {
+		sb.WriteString("\n")
 		sb.WriteString(strings.Join(contacts, "  "))
-		sb.WriteString("\n\n")
+		sb.WriteString("\n")
 	}
 
 	// Missing fields
@@ -834,23 +1627,202 @@ func (hb *HRBot) sendVacancyReview(c tele.Context, draft *gemini.ParsedVacancyFu
 	}
 
 	if len(missing) > 0 {
-		sb.WriteString(fmt.Sprintf("⚠️ %s\n", hrMsgMissing[lang]))
+		missingNow := map[string]string{"en": "Currently missing:", "ru": "Сейчас не хватает:", "uz": "Hozircha yetishmayapti:"}
+		sb.WriteString(fmt.Sprintf("\n❗️ %s\n", missingNow[lang]))
 		for _, m := range missing {
 			sb.WriteString(fmt.Sprintf("• %s\n", m))
 		}
-		sb.WriteString("\n")
 	}
 
+	sb.WriteString("\n")
 	sb.WriteString(hrMsgHowToContinue[lang])
 
 	markup := &tele.ReplyMarkup{}
 	markup.Inline(
+		markup.Row(markup.Data(hrMsgBtnAddMissingInfo[lang], "hr_vac_add_info")),
 		markup.Row(markup.Data(hrMsgBtnContinueCurrent[lang], "hr_vac_continue")),
 		markup.Row(markup.Data(hrMsgBtnCreateDescription[lang], "hr_vac_create_desc")),
-		markup.Row(markup.Data(hrMsgBtnAddInfo[lang], "hr_vac_add_info")),
 	)
 
 	return c.Send(sb.String(), &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: markup})
+}
+
+// sendVacancyConfirmation shows the vacancy preview with two buttons: create and add/change info.
+func (hb *HRBot) sendVacancyConfirmation(c tele.Context, draft *gemini.ParsedVacancyFull, lang string) error {
+	var sb strings.Builder
+
+	header := map[string]string{
+		"en": "📋 *Your vacancy:*\n\n",
+		"ru": "📋 *Ваша вакансия:*\n\n",
+		"uz": "📋 *Sizning vakansiyangiz:*\n\n",
+	}
+	sb.WriteString(header[lang])
+
+	// Title
+	if title := draftField(draft, "title", lang); title != "" {
+		sb.WriteString(fmt.Sprintf("*%s*\n", title))
+	}
+
+	// Salary
+	if draft.SalaryMin > 0 || draft.SalaryMax > 0 {
+		sb.WriteString(fmt.Sprintf("💰 %s – %s %s\n", formatNumber(int64(draft.SalaryMin)), formatNumber(int64(draft.SalaryMax)), draft.SalaryCurrency))
+	}
+
+	// Format
+	if draft.Format != "" {
+		formatNames := map[string]map[string]string{
+			"office": {"en": "Office", "ru": "Офис", "uz": "Ofis"},
+			"remote": {"en": "Remote", "ru": "Удалёнка", "uz": "Masofaviy"},
+			"hybrid": {"en": "Hybrid", "ru": "Гибрид", "uz": "Gibrid"},
+		}
+		if names, ok := formatNames[draft.Format]; ok {
+			sb.WriteString(fmt.Sprintf("📍 %s\n", names[lang]))
+		}
+	}
+
+	// Experience
+	if draft.ExperienceMin > 0 || draft.ExperienceMax > 0 {
+		expLabel := map[string]string{"en": "Experience", "ru": "Опыт", "uz": "Tajriba"}
+		sb.WriteString(fmt.Sprintf("📅 %s: %d–%d\n", expLabel[lang], draft.ExperienceMin, draft.ExperienceMax))
+	}
+
+	// Description
+	if desc := draftField(draft, "description", lang); desc != "" {
+		sb.WriteString(fmt.Sprintf("\n%s\n", desc))
+	}
+
+	// Responsibilities
+	if resp := draftField(draft, "responsibilities", lang); resp != "" {
+		respLabel := map[string]string{"en": "Responsibilities", "ru": "Обязанности", "uz": "Vazifalar"}
+		sb.WriteString(fmt.Sprintf("\n*%s:*\n%s\n", respLabel[lang], resp))
+	}
+
+	// Requirements
+	if req := draftField(draft, "requirements", lang); req != "" {
+		reqLabel := map[string]string{"en": "Requirements", "ru": "Требования", "uz": "Talablar"}
+		sb.WriteString(fmt.Sprintf("\n*%s:*\n%s\n", reqLabel[lang], req))
+	}
+
+	// Conditions
+	if cond := draftField(draft, "conditions", lang); cond != "" {
+		condLabel := map[string]string{"en": "Conditions", "ru": "Условия", "uz": "Shartlar"}
+		sb.WriteString(fmt.Sprintf("\n*%s:*\n%s\n", condLabel[lang], cond))
+	}
+
+	// Skills
+	if len(draft.Skills) > 0 {
+		sb.WriteString(fmt.Sprintf("\n🛠 %s\n", strings.Join(draft.Skills, ", ")))
+	}
+
+	// Contacts
+	var contacts []string
+	if draft.Phone != "" {
+		contacts = append(contacts, fmt.Sprintf("📞 %s", draft.Phone))
+	}
+	if draft.Email != "" {
+		contacts = append(contacts, fmt.Sprintf("📧 %s", draft.Email))
+	}
+	if len(contacts) > 0 {
+		sb.WriteString("\n")
+		sb.WriteString(strings.Join(contacts, "  "))
+		sb.WriteString("\n")
+	}
+
+	markup := &tele.ReplyMarkup{}
+	markup.Inline(
+		markup.Row(markup.Data(hrMsgBtnConfirmCreate[lang], "hr_vac_confirm")),
+		markup.Row(markup.Data(hrMsgBtnAddMoreInfo[lang], "hr_vac_add_info")),
+	)
+
+	return c.Send(sb.String(), &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: markup})
+}
+
+// buildAddInfoMessage shows the current vacancy content, missing fields, and asks for more info.
+func (hb *HRBot) buildAddInfoMessage(draft *gemini.ParsedVacancyFull, lang string) string {
+	var sb strings.Builder
+
+	// Current data header
+	currentLabel := map[string]string{
+		"en": "📋 *Current vacancy data:*\n\n",
+		"ru": "📋 *Текущие данные вакансии:*\n\n",
+		"uz": "📋 *Joriy vakansiya ma'lumotlari:*\n\n",
+	}
+	sb.WriteString(currentLabel[lang])
+
+	// Title
+	if title := draftField(draft, "title", lang); title != "" {
+		sb.WriteString(fmt.Sprintf("*%s*\n", title))
+	}
+
+	// Key details in compact form
+	if draft.SalaryMin > 0 || draft.SalaryMax > 0 {
+		sb.WriteString(fmt.Sprintf("💰 %s – %s %s\n", formatNumber(int64(draft.SalaryMin)), formatNumber(int64(draft.SalaryMax)), draft.SalaryCurrency))
+	}
+	if draft.Format != "" {
+		formatNames := map[string]map[string]string{
+			"office": {"en": "Office", "ru": "Офис", "uz": "Ofis"},
+			"remote": {"en": "Remote", "ru": "Удалёнка", "uz": "Masofaviy"},
+			"hybrid": {"en": "Hybrid", "ru": "Гибрид", "uz": "Gibrid"},
+		}
+		if names, ok := formatNames[draft.Format]; ok {
+			sb.WriteString(fmt.Sprintf("📍 %s\n", names[lang]))
+		}
+	}
+	if draft.ExperienceMin > 0 || draft.ExperienceMax > 0 {
+		expYears := map[string]string{"en": "years", "ru": "лет", "uz": "yil"}
+		if draft.ExperienceMin > 0 && draft.ExperienceMax > 0 {
+			sb.WriteString(fmt.Sprintf("💼 %d–%d %s\n", draft.ExperienceMin, draft.ExperienceMax, expYears[lang]))
+		} else if draft.ExperienceMin > 0 {
+			sb.WriteString(fmt.Sprintf("💼 %d+ %s\n", draft.ExperienceMin, expYears[lang]))
+		}
+	}
+	if len(draft.Skills) > 0 {
+		sb.WriteString(fmt.Sprintf("🛠 %s\n", strings.Join(draft.Skills, ", ")))
+	}
+	sb.WriteString("\n")
+
+	// Missing fields
+	var missing []string
+	if draft.SalaryMin == 0 && draft.SalaryMax == 0 {
+		missing = append(missing, hrMsgMissingSalary[lang])
+	}
+	if draft.Format == "" {
+		missing = append(missing, hrMsgMissingFormat[lang])
+	}
+	if draftField(draft, "responsibilities", lang) == "" {
+		missing = append(missing, hrMsgMissingResponsibilities[lang])
+	}
+	if draftField(draft, "requirements", lang) == "" {
+		missing = append(missing, hrMsgMissingRequirements[lang])
+	}
+	if draft.ExperienceMin == 0 && draft.ExperienceMax == 0 {
+		missing = append(missing, hrMsgMissingExperience[lang])
+	}
+
+	if len(missing) > 0 {
+		missingLabel := map[string]string{
+			"en": "⚠️ Send the missing information:",
+			"ru": "⚠️ Отправьте недостающую информацию:",
+			"uz": "⚠️ Yetishmayotgan ma'lumotlarni yuboring:",
+		}
+		sb.WriteString(fmt.Sprintf("%s\n", missingLabel[lang]))
+		for _, m := range missing {
+			sb.WriteString(fmt.Sprintf("• %s\n", m))
+		}
+	} else {
+		sb.WriteString(hrMsgSendAdditionalInfo[lang])
+	}
+
+	sb.WriteString("\n")
+
+	howToSend := map[string]string{
+		"en": "You can:\n✍️ write\n🎤 send a voice message\n📎 attach a file\n\n⚡ The more detail — the more accurate the match.",
+		"ru": "Вы можете:\n✍️ написать\n🎤 отправить голосовое\n📎 прикрепить файл\n\n⚡ Чем подробнее — тем точнее подбор.",
+		"uz": "Siz quyidagilarni yuborishingiz mumkin:\n✍️ yozish\n🎤 ovozli xabar yuborish\n📎 fayl biriktirish\n\n⚡ Qanchalik batafsil — shunchalik aniq tanlov.",
+	}
+	sb.WriteString(howToSend[lang])
+
+	return sb.String()
 }
 
 // draftField returns the text field value for the given language, falling back to English.
@@ -901,12 +1873,26 @@ func (hb *HRBot) handleMyVacancies(ctx context.Context, c tele.Context, hr *doma
 		return c.Send(hrMsgNoVacancies[lang])
 	}
 
+	applicantsLabel := map[string]string{"en": "applicants", "ru": "откликов", "uz": "ariza"}
+	newLabel := map[string]string{"en": "new", "ru": "новых", "uz": "yangi"}
+
 	var sb strings.Builder
 	for i, v := range vacancies {
 		title := vacancyTitle(&v, lang)
 		minStr := formatNumber(int64(v.Vacancy.SalaryMin))
 		maxStr := formatNumber(int64(v.Vacancy.SalaryMax))
-		sb.WriteString(fmt.Sprintf("%d. **%s**\n   %s – %s %s | %s\n\n", i+1, title, minStr, maxStr, v.Vacancy.SalaryCurrency, v.Vacancy.Status))
+
+		statsStr := ""
+		total, unseen, err := hb.hrBotSvc.GetVacancyStats(ctx, v.Vacancy.ID)
+		if err == nil && total > 0 {
+			if unseen > 0 {
+				statsStr = fmt.Sprintf(" | 👥 %d %s (%d %s)", total, applicantsLabel[lang], unseen, newLabel[lang])
+			} else {
+				statsStr = fmt.Sprintf(" | 👥 %d %s", total, applicantsLabel[lang])
+			}
+		}
+
+		sb.WriteString(fmt.Sprintf("%d. **%s**\n   %s – %s %s | %s%s\n\n", i+1, title, minStr, maxStr, v.Vacancy.SalaryCurrency, v.Vacancy.Status, statsStr))
 	}
 
 	return c.Send(sb.String(), &tele.SendOptions{ParseMode: tele.ModeMarkdown})
@@ -985,13 +1971,137 @@ func (hb *HRBot) hrInlineMenu(lang string) *tele.ReplyMarkup {
 		markup.Row(markup.Data(hrMenuBtnActiveVacancies[lang], "hr_menu", "active_vacancies")),
 	}
 	if hb.webAppURL != "" {
-		rows = append(rows, markup.Row(markup.WebApp(hrMenuBtnFindCandidates[lang], &tele.WebApp{URL: hb.webAppURL + "/applications"})))
+		rows = append(rows, markup.Row(markup.WebApp(hrMenuBtnFindCandidates[lang], &tele.WebApp{URL: hb.webAppURL})))
 	} else {
 		rows = append(rows, markup.Row(markup.Data(hrMenuBtnFindCandidates[lang], "hr_menu", "find_candidates")))
 	}
 	rows = append(rows, markup.Row(markup.Data(hrMenuBtnChangeLang[lang], "hr_menu", "change_lang")))
 	markup.Inline(rows...)
 	return markup
+}
+
+var hrBtnShowCandidates = map[string]string{
+	"en": "👀 Show candidates",
+	"ru": "👀 Показать кандидатов",
+	"uz": "👀 Nomzodlarni ko'rsatish",
+}
+var hrBtnViewVacancy = map[string]string{
+	"en": "📄 View vacancy",
+	"ru": "📄 Посмотреть вакансию",
+	"uz": "📄 Vakansiyani ko'rish",
+}
+var hrBtnEditVacancy = map[string]string{
+	"en": "🔄 Add or edit info",
+	"ru": "🔄 Добавить или изменить информацию",
+	"uz": "🔄 Ma'lumot qo'shish yoki o'zgartirish",
+}
+var hrBtnStopPublication = map[string]string{
+	"en": "⏹️ Stop publication",
+	"ru": "⏹️ Остановить публикацию",
+	"uz": "⏹️ E'lonni to'xtatish",
+}
+
+var hrBtnActivateVacancy = map[string]string{
+	"en": "▶️ Activate",
+	"ru": "▶️ Активировать",
+	"uz": "▶️ Faollashtirish",
+}
+
+func vacancyPublishedMenu(lang, vacancyID, webAppURL string) *tele.ReplyMarkup {
+	markup := &tele.ReplyMarkup{}
+	var rows []tele.Row
+
+	if webAppURL != "" {
+		rows = append(rows,
+			markup.Row(markup.WebApp(hrBtnShowCandidates[lang], &tele.WebApp{
+				URL: webAppURL + "/?vacancy_id=" + vacancyID,
+			})),
+			markup.Row(markup.WebApp(hrBtnViewVacancy[lang], &tele.WebApp{
+				URL: webAppURL + "/vacancies/" + vacancyID,
+			})),
+		)
+	} else {
+		rows = append(rows,
+			markup.Row(markup.Data(hrBtnShowCandidates[lang], "hr_pub_candidates", vacancyID)),
+			markup.Row(markup.Data(hrBtnViewVacancy[lang], "hr_pub_view", vacancyID)),
+		)
+	}
+	rows = append(rows,
+		markup.Row(markup.Data(hrBtnEditVacancy[lang], "hr_pub_edit", vacancyID)),
+		markup.Row(markup.Data(hrBtnStopPublication[lang], "hr_pub_stop", vacancyID)),
+	)
+	markup.Inline(rows...)
+	return markup
+}
+
+func buildVacancyCreatedMessage(v *application.VacancyWithDetails, lang string, matchingCount int) string {
+	date := v.Vacancy.CreatedAt.Format("02.01.2006")
+	shortID := v.Vacancy.ID.String()[:8]
+
+	switch lang {
+	case "ru":
+		msg := fmt.Sprintf("✅ *Вакансия опубликована!*\n\n"+
+			"📌 ID вакансии: #%s\n"+
+			"📅 Дата публикации: %s\n"+
+			"👁 Статус: Активна\n\n"+
+			"Первые отклики ожидаются в течение 2–24 часов.",
+			shortID, date)
+		if matchingCount > 0 {
+			msg += fmt.Sprintf("\n\n📊 В базе предварительно подходят: *%d кандидатов*.", matchingCount)
+			msg += "\n\nЯ могу показать ТОП-кандидатов с наивысшим %% совместимости (80%%+)."
+		}
+		return msg
+	case "uz":
+		msg := fmt.Sprintf("✅ *Vakansiya e'lon qilindi!*\n\n"+
+			"📌 Vakansiya ID: #%s\n"+
+			"📅 E'lon sanasi: %s\n"+
+			"👁 Holat: Faol\n\n"+
+			"Birinchi javoblar 2–24 soat ichida kutilmoqda.",
+			shortID, date)
+		if matchingCount > 0 {
+			msg += fmt.Sprintf("\n\n📊 Bazada taxminan *%d nomzod* mos keladi.", matchingCount)
+			msg += "\n\nEng yuqori moslik foiziga ega (80%%+) TOP-nomzodlarni ko'rsata olaman."
+		}
+		return msg
+	default:
+		msg := fmt.Sprintf("✅ *Vacancy published!*\n\n"+
+			"📌 Vacancy ID: #%s\n"+
+			"📅 Published: %s\n"+
+			"👁 Status: Active\n\n"+
+			"First responses are expected within 2–24 hours.",
+			shortID, date)
+		if matchingCount > 0 {
+			msg += fmt.Sprintf("\n\n📊 Preliminary matching candidates: *%d*.", matchingCount)
+			msg += "\n\nI can show TOP candidates with the highest compatibility (80%%+)."
+		}
+		return msg
+	}
+}
+
+func buildVacancyStoppedMessage(shortID, lang string) string {
+	switch lang {
+	case "ru":
+		return fmt.Sprintf("⏸ *Публикация вакансии приостановлена.*\n\n"+
+			"📌 ID вакансии: #%s\n"+
+			"🔴 Статус: Неактивна\n\n"+
+			"Вакансия больше не отображается кандидатам и исключена из поиска.\n\n"+
+			"— Все полученные отклики сохранены.\n"+
+			"— Вы можете вернуться к подбору в любое время.", shortID)
+	case "uz":
+		return fmt.Sprintf("⏸ *Vakansiya e'loni to'xtatildi.*\n\n"+
+			"📌 Vakansiya ID: #%s\n"+
+			"🔴 Holat: Nofaol\n\n"+
+			"Vakansiya nomzodlarga ko'rinmaydi va qidiruvdan chiqarildi.\n\n"+
+			"— Barcha olingan javoblar saqlangan.\n"+
+			"— Istalgan vaqtda tanlovga qaytishingiz mumkin.", shortID)
+	default:
+		return fmt.Sprintf("⏸ *Vacancy publication paused.*\n\n"+
+			"📌 Vacancy ID: #%s\n"+
+			"🔴 Status: Inactive\n\n"+
+			"The vacancy is no longer visible to candidates and excluded from search.\n\n"+
+			"— All received responses are saved.\n"+
+			"— You can return to recruitment at any time.", shortID)
+	}
 }
 
 func vacancyTitle(v *application.VacancyWithDetails, lang string) string {

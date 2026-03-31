@@ -164,9 +164,9 @@ func (s *AccountDeletionService) deleteUser(ctx context.Context, userID uuid.UUI
 }
 
 func (s *AccountDeletionService) deleteHR(ctx context.Context, hrID uuid.UUID) error {
-	// 1. Soft-delete HR sessions
-	if err := s.hrSessionRepo.SoftDeleteByHR(ctx, hrID); err != nil {
-		log.Printf("delete hr %s: soft delete sessions: %v", hrID, err)
+	// 1. Hard-delete HR sessions (FK constraint blocks company_hrs deletion otherwise)
+	if err := s.hrSessionRepo.HardDeleteByHR(ctx, hrID); err != nil {
+		log.Printf("delete hr %s: hard delete sessions: %v", hrID, err)
 	}
 
 	// 2. For each vacancy owned by this HR, clean up applications in Qdrant

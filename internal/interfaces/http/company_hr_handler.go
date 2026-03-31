@@ -212,3 +212,9 @@ func (h *CompanyHRHandler) Delete(c *gin.Context) {
 
 	c.Status(http.StatusNoContent)
 }
+
+// MiniAppMe returns the current HR profile for the Mini App.
+// It uses hr_id set by TelegramHRAuthMiddleware.
+func (h *CompanyHRHandler) MiniAppMe(c *gin.Context) {
+	h.Me(c)
+}

@@ -100,6 +100,10 @@ func (r *VacancyApplicationRepository) CountByVacancy(ctx context.Context, vacan
 	return r.q.CountVacancyApplicationsByVacancy(ctx, uuidToPgtype(vacancyID))
 }
 
+func (r *VacancyApplicationRepository) CountUnseenByVacancy(ctx context.Context, vacancyID uuid.UUID) (int64, error) {
+	return r.q.CountUnseenVacancyApplicationsByVacancy(ctx, uuidToPgtype(vacancyID))
+}
+
 func (r *VacancyApplicationRepository) UpdateStatus(ctx context.Context, id uuid.UUID, status string) (*domain.VacancyApplication, error) {
 	row, err := r.q.UpdateVacancyApplicationStatus(ctx, vadb.UpdateVacancyApplicationStatusParams{
 		ID:     uuidToPgtype(id),
@@ -110,6 +114,17 @@ func (r *VacancyApplicationRepository) UpdateStatus(ctx context.Context, id uuid
 			return nil, domain.ErrVacancyApplicationNotFound
 		}
 		return nil, fmt.Errorf("update vacancy application status: %w", err)
+	}
+	return vacancyApplicationFromRow(row), nil
+}
+
+func (r *VacancyApplicationRepository) MarkSeen(ctx context.Context, id uuid.UUID) (*domain.VacancyApplication, error) {
+	row, err := r.q.MarkVacancyApplicationSeen(ctx, uuidToPgtype(id))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrVacancyApplicationNotFound
+		}
+		return nil, fmt.Errorf("mark vacancy application seen: %w", err)
 	}
 	return vacancyApplicationFromRow(row), nil
 }
@@ -127,7 +142,7 @@ func (r *VacancyApplicationRepository) DeleteByVacancy(ctx context.Context, vaca
 }
 
 func vacancyApplicationFromRow(row vadb.VacancyApplication) *domain.VacancyApplication {
-	return &domain.VacancyApplication{
+	va := &domain.VacancyApplication{
 		ID:          pgtypeToUUID(row.ID),
 		UserID:      pgtypeToUUID(row.UserID),
 		VacancyID:   pgtypeToUUID(row.VacancyID),
@@ -136,4 +151,9 @@ func vacancyApplicationFromRow(row vadb.VacancyApplication) *domain.VacancyAppli
 		CreatedAt:   row.CreatedAt.Time,
 		UpdatedAt:   row.UpdatedAt.Time,
 	}
+	if row.SeenAt.Valid {
+		t := row.SeenAt.Time
+		va.SeenAt = &t
+	}
+	return va
 }

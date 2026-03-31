@@ -331,6 +331,12 @@ func (tb *Bot) registerHandlers() {
 	bot.Handle("/start", func(c tele.Context) error {
 		sender := c.Sender()
 
+		// Clear any leftover state from previous flow (e.g., after account deletion)
+		state, _ := botSvc.GetBotState(ctx, sender.ID)
+		if state != nil {
+			_ = botSvc.ClearBotState(ctx, sender.ID)
+		}
+
 		result, err := botSvc.HandleStart(ctx, sender.ID)
 		if err != nil {
 			log.Printf("handle /start error for %d: %v", sender.ID, err)
@@ -348,6 +354,21 @@ func (tb *Bot) registerHandlers() {
 				markup.Row(btnUz),
 			)
 			return c.Send(msgWelcomeNew["en"], markup)
+		}
+
+		// Update profile pic if missing
+		if result.User != nil && result.User.ProfilePicURL == "" {
+			go func() {
+				photos, err := bot.ProfilePhotosOf(sender)
+				if err == nil && len(photos) > 0 {
+					reader, err := bot.File(&photos[0].File)
+					if err == nil {
+						photoData, _ := io.ReadAll(reader)
+						reader.Close()
+						botSvc.UpdateProfilePicIfMissing(ctx, result.User.ID, "", photoData)
+					}
+				}
+			}()
 		}
 
 		lang := langOrDefault(result.User.Language)

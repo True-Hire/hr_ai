@@ -5,24 +5,27 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
 	"github.com/ruziba3vich/hr-ai/internal/application"
+	"github.com/ruziba3vich/hr-ai/internal/application/scoring"
 	"github.com/ruziba3vich/hr-ai/internal/domain"
 )
 
 type UserHandler struct {
-	service         *application.UserService
-	profileFieldSvc *application.ProfileFieldService
-	profileTextSvc  *application.ProfileFieldTextService
-	experienceSvc   *application.ExperienceItemService
-	educationSvc    *application.EducationItemService
-	itemTextSvc     *application.ItemTextService
-	skillSvc        *application.SkillService
-	authSvc         *application.AuthService
-	searchSvc       *application.SearchService
+	service            *application.UserService
+	profileFieldSvc    *application.ProfileFieldService
+	profileTextSvc     *application.ProfileFieldTextService
+	experienceSvc      *application.ExperienceItemService
+	educationSvc       *application.EducationItemService
+	itemTextSvc        *application.ItemTextService
+	skillSvc           *application.SkillService
+	authSvc            *application.AuthService
+	searchSvc          *application.SearchService
+	candidateSearchSvc *application.CandidateSearchService
 }
 
 func NewUserHandler(
@@ -35,18 +38,95 @@ func NewUserHandler(
 	skillSvc *application.SkillService,
 	authSvc *application.AuthService,
 	searchSvc *application.SearchService,
+	candidateSearchSvc *application.CandidateSearchService,
 ) *UserHandler {
 	return &UserHandler{
-		service:         service,
-		profileFieldSvc: profileFieldSvc,
-		profileTextSvc:  profileTextSvc,
-		experienceSvc:   experienceSvc,
-		educationSvc:    educationSvc,
-		itemTextSvc:     itemTextSvc,
-		skillSvc:        skillSvc,
-		authSvc:         authSvc,
-		searchSvc:       searchSvc,
+		service:            service,
+		profileFieldSvc:    profileFieldSvc,
+		profileTextSvc:     profileTextSvc,
+		experienceSvc:      experienceSvc,
+		educationSvc:       educationSvc,
+		itemTextSvc:        itemTextSvc,
+		skillSvc:           skillSvc,
+		authSvc:            authSvc,
+		searchSvc:          searchSvc,
+		candidateSearchSvc: candidateSearchSvc,
 	}
+}
+
+// listByVacancy returns candidates matching a specific vacancy using the scoring system.
+func (h *UserHandler) listByVacancy(c *gin.Context, vacancyID string, lang string) {
+	vid, err := uuid.Parse(vacancyID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid vacancy_id"})
+		return
+	}
+
+	pageSize := parseQueryInt32(c, "page_size", 20)
+
+	// Use new scoring system
+	if h.candidateSearchSvc != nil {
+		page, err := h.candidateSearchSvc.SearchByVacancy(c.Request.Context(), vid, uuid.Nil, int(pageSize))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to match candidates"})
+			return
+		}
+
+		users := make([]UserResponse, 0, len(page.Items))
+		for _, sc := range page.Items {
+			user, err := h.service.GetUser(c.Request.Context(), sc.UserID)
+			if err != nil {
+				continue
+			}
+			profile := h.buildUserProfile(c, user.ID, lang)
+			resp := toUserResponseWithProfile(user, profile)
+			pct := sc.MatchPercentage
+			exp := sc.TotalExperienceYears
+			score := sc.FinalScore
+			resp.MatchPercentage = &pct
+			resp.TotalExperienceYears = &exp
+			resp.SearchScore = &score
+			users = append(users, resp)
+		}
+
+		c.JSON(http.StatusOK, PaginatedUsersResponse{
+			Users:    users,
+			Total:    int64(page.TotalCount),
+			Page:     1,
+			PageSize: pageSize,
+		})
+		return
+	}
+
+	// Fallback to old search
+	matches, err := h.searchSvc.SearchMatchingCandidates(c.Request.Context(), vid, int(pageSize))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to match candidates"})
+		return
+	}
+
+	users := make([]UserResponse, 0, len(matches))
+	for _, m := range matches {
+		user, err := h.service.GetUser(c.Request.Context(), m.UserID)
+		if err != nil {
+			continue
+		}
+		profile := h.buildUserProfile(c, user.ID, lang)
+		resp := toUserResponseWithProfile(user, profile)
+		pct := m.MatchPercentage
+		exp := m.TotalExperienceYears
+		resp.MatchPercentage = &pct
+		resp.TotalExperienceYears = &exp
+		resp.SearchScore = &m.VectorScore
+		users = append(users, resp)
+	}
+
+	c.JSON(http.StatusOK, PaginatedUsersResponse{
+		Users:    users,
+		Total:    int64(len(users)),
+		Page:     1,
+		PageSize: pageSize,
+	})
 }
 
 // Create godoc
@@ -160,6 +240,7 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 // @Tags users
 // @Produce json
 // @Param q query string false "Search query (any language). When provided, returns semantically ranked results"
+// @Param vacancy_id query string false "Vacancy ID (UUID). When provided, returns matching candidates sorted by match percentage"
 // @Param page query int false "Page number (pagination mode)" default(1)
 // @Param page_size query int false "Page size" default(20)
 // @Param lang query string false "Language code (uz, ru, en)" default(en)
@@ -169,8 +250,28 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 func (h *UserHandler) List(c *gin.Context) {
 	lang := c.DefaultQuery("lang", "en")
 
-	// If search query provided, use semantic search
-	if q := c.Query("q"); q != "" {
+	// If vacancy_id provided, return matching candidates
+	if vacancyID := c.Query("vacancy_id"); vacancyID != "" {
+		h.listByVacancy(c, vacancyID, lang)
+		return
+	}
+
+	// If search query or filters provided, use scoring system
+	q := c.Query("q")
+	roleFamily := c.Query("role_family")
+	seniority := c.Query("seniority")
+	locationCity := c.Query("location_city")
+	skillsParam := c.Query("skills")
+
+	hasFilters := q != "" || roleFamily != "" || seniority != "" || locationCity != "" || skillsParam != ""
+
+	if hasFilters && h.candidateSearchSvc != nil {
+		h.listBySearchScored(c, q, roleFamily, seniority, locationCity, skillsParam, lang)
+		return
+	}
+
+	// Fallback: old vector search if only q is provided
+	if q != "" {
 		h.listBySearch(c, q, lang)
 		return
 	}
@@ -197,6 +298,74 @@ func (h *UserHandler) List(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, resp)
+}
+
+// listBySearchScored uses the new candidate scoring system for any combination of query + filters.
+func (h *UserHandler) listBySearchScored(c *gin.Context, query, roleFamily, seniority, locationCity, skillsParam, lang string) {
+	pageSize := parseQueryInt32(c, "page_size", 20)
+
+	// Parse skills from comma-separated param
+	var skills []string
+	if skillsParam != "" {
+		for _, s := range strings.Split(skillsParam, ",") {
+			s = strings.TrimSpace(s)
+			if s != "" {
+				skills = append(skills, s)
+			}
+		}
+	}
+
+	// Build parsed query
+	parsedQuery := scoring.ParsedQuery{
+		RoleFamily:   roleFamily,
+		Skills:       skills,
+		Seniority:    seniority,
+		LocationCity: locationCity,
+	}
+	if query != "" {
+		parsedQuery.PrimaryRole = scoring.NormalizeRole(query)
+		if parsedQuery.RoleFamily == "" {
+			parsedQuery.RoleFamily = scoring.RoleFamily(parsedQuery.PrimaryRole)
+		}
+		parsedQuery.MustDomains = scoring.ExtractDomains(query)
+	}
+
+	filters := application.SearchFilters{
+		LocationCity: locationCity,
+		Seniority:    seniority,
+		RoleFamily:   roleFamily,
+		Skills:       skills,
+	}
+
+	page, err := h.candidateSearchSvc.Search(c.Request.Context(), uuid.Nil, parsedQuery, filters, int(pageSize))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "search failed: " + err.Error()})
+		return
+	}
+
+	users := make([]UserResponse, 0, len(page.Items))
+	for _, sc := range page.Items {
+		user, err := h.service.GetUser(c.Request.Context(), sc.UserID)
+		if err != nil {
+			continue
+		}
+		profile := h.buildUserProfile(c, user.ID, lang)
+		resp := toUserResponseWithProfile(user, profile)
+		pct := sc.MatchPercentage
+		exp := sc.TotalExperienceYears
+		score := sc.FinalScore
+		resp.MatchPercentage = &pct
+		resp.TotalExperienceYears = &exp
+		resp.SearchScore = &score
+		users = append(users, resp)
+	}
+
+	c.JSON(http.StatusOK, PaginatedUsersResponse{
+		Users:    users,
+		Total:    int64(page.TotalCount),
+		Page:     1,
+		PageSize: pageSize,
+	})
 }
 
 func (h *UserHandler) listBySearch(c *gin.Context, query, lang string) {

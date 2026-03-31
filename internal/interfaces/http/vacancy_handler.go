@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -13,11 +14,15 @@ import (
 )
 
 type VacancyHandler struct {
-	service *application.VacancyService
+	service          *application.VacancyService
+	companyHRSvc     *application.CompanyHRService
+	vacancySearchSvc *application.VacancySearchService
+	vacancyAppSvc    *application.VacancyApplicationService
+	searchSvc        *application.SearchService
 }
 
-func NewVacancyHandler(service *application.VacancyService) *VacancyHandler {
-	return &VacancyHandler{service: service}
+func NewVacancyHandler(service *application.VacancyService, companyHRSvc *application.CompanyHRService, vacancySearchSvc *application.VacancySearchService, vacancyAppSvc *application.VacancyApplicationService, searchSvc *application.SearchService) *VacancyHandler {
+	return &VacancyHandler{service: service, companyHRSvc: companyHRSvc, vacancySearchSvc: vacancySearchSvc, vacancyAppSvc: vacancyAppSvc, searchSvc: searchSvc}
 }
 
 // Create godoc
@@ -45,9 +50,11 @@ func (h *VacancyHandler) Create(c *gin.Context) {
 		return
 	}
 
-	companyID, err := uuid.Parse(req.CompanyID)
+	// Fetch HR to get company data
+	hr, err := h.companyHRSvc.GetCompanyHR(c.Request.Context(), hrID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid company_id"})
+		log.Printf("create vacancy: failed to get hr: %v", err)
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to get hr"})
 		return
 	}
 
@@ -62,7 +69,7 @@ func (h *VacancyHandler) Create(c *gin.Context) {
 
 	input := &application.CreateVacancyInput{
 		HRID:             hrID,
-		CompanyID:        companyID,
+		CompanyData:      hr.CompanyData,
 		CountryID:        countryID,
 		SalaryMin:        req.SalaryMin,
 		SalaryMax:        req.SalaryMax,
@@ -119,13 +126,15 @@ func (h *VacancyHandler) Parse(c *gin.Context) {
 		return
 	}
 
-	companyID, err := uuid.Parse(req.CompanyID)
+	// Fetch HR to get company data
+	hr, err := h.companyHRSvc.GetCompanyHR(c.Request.Context(), hrID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid company_id"})
+		log.Printf("parse vacancy: failed to get hr: %v", err)
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to get hr"})
 		return
 	}
 
-	result, err := h.service.ParseVacancy(c.Request.Context(), hrID, companyID, req.UserInput)
+	result, err := h.service.ParseVacancy(c.Request.Context(), hrID, hr.CompanyData, req.UserInput)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to parse vacancy"})
 		return
@@ -167,52 +176,134 @@ func (h *VacancyHandler) GetByID(c *gin.Context) {
 }
 
 // List godoc
-// @Summary List vacancies with pagination (optional company_id filter)
+// @Summary List vacancies with pagination and optional filters
 // @Tags vacancies
 // @Produce json
 // @Param page query int false "Page number" default(1)
 // @Param page_size query int false "Page size" default(20)
-// @Param company_id query string false "Filter by company ID"
+// @Param q query string false "Search query"
+// @Param lang query string false "Language code" default(en)
+// @Param status query string false "Filter by status (active, draft, closed)"
+// @Param format query string false "Filter by format (office, remote, hybrid)"
+// @Param schedule query string false "Filter by schedule (full-time, part-time)"
+// @Param salary_currency query string false "Filter by salary currency"
+// @Param salary_min query int false "Min salary (returns vacancies that pay at least this)"
+// @Param salary_max query int false "Max salary (returns vacancies that pay at most this)"
+// @Param experience_min query int false "Min experience (returns vacancies accepting this level)"
+// @Param experience_max query int false "Max experience (returns vacancies accepting this level)"
+// @Param country_id query string false "Filter by country ID (UUID)"
+// @Param hr_id query string false "Filter by HR ID (UUID)"
 // @Success 200 {object} PaginatedVacanciesResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /vacancies [get]
 func (h *VacancyHandler) List(c *gin.Context) {
 	page := parseQueryInt32(c, "page", 1)
 	pageSize := parseQueryInt32(c, "page_size", 20)
-	companyIDStr := c.Query("company_id")
+	query := c.Query("q")
+	lang := c.DefaultQuery("lang", "en")
+
+	// Build filter from query params
+	filter := h.buildVacancyFilter(c)
 
 	var result *application.ListVacanciesResult
 	var err error
 
-	if companyIDStr != "" {
-		companyID, parseErr := uuid.Parse(companyIDStr)
-		if parseErr != nil {
-			c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid company_id"})
-			return
-		}
-		result, err = h.service.ListVacanciesByCompany(c.Request.Context(), companyID, page, pageSize)
+	// If semantic search query is provided, use vector search
+	if query != "" && h.vacancySearchSvc != nil {
+		result, err = h.vacancySearchSvc.SearchVacancies(c.Request.Context(), query, page, pageSize)
+	} else if hasVacancyFilters(filter) {
+		// Use filtered query when any filter is set
+		result, err = h.service.ListVacanciesFiltered(c.Request.Context(), filter, page, pageSize)
 	} else {
 		result, err = h.service.ListVacancies(c.Request.Context(), page, pageSize)
 	}
 
 	if err != nil {
+		log.Printf("list vacancies error: %v", err)
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to list vacancies"})
 		return
 	}
 
-	lang := c.DefaultQuery("lang", "en")
-
 	resp := PaginatedVacanciesResponse{
-		Vacancies: make([]VacancyResponse, 0, len(result.Vacancies)),
+		Vacancies: make([]VacancyResponse, len(result.Vacancies)),
 		Total:     result.Total,
 		Page:      page,
 		PageSize:  pageSize,
 	}
-	for _, vwd := range result.Vacancies {
-		resp.Vacancies = append(resp.Vacancies, toVacancyResponse(&vwd, lang))
+
+	// Build base responses
+	for i, vwd := range result.Vacancies {
+		resp.Vacancies[i] = toVacancyResponse(&vwd, lang)
 	}
 
+	// Enrich with application counts and matching candidates concurrently
+	ctx := c.Request.Context()
+	var wg sync.WaitGroup
+	for i, vwd := range result.Vacancies {
+		wg.Add(1)
+		go func(idx int, v application.VacancyWithDetails) {
+			defer wg.Done()
+
+			// Application count (cheap DB query)
+			if h.vacancyAppSvc != nil {
+				if count, err := h.vacancyAppSvc.CountByVacancy(ctx, v.Vacancy.ID); err == nil {
+					resp.Vacancies[idx].ApplicationCount = &count
+				}
+			}
+
+			// Matching candidates count (Qdrant vector search, no Gemini calls)
+			if h.searchSvc != nil {
+				count := h.searchSvc.CountMatchingCandidatesByVacancy(ctx, v.Vacancy.ID)
+				resp.Vacancies[idx].MatchingCandidatesCount = &count
+			}
+		}(i, vwd)
+	}
+	wg.Wait()
+
 	c.JSON(http.StatusOK, resp)
+}
+
+func (h *VacancyHandler) buildVacancyFilter(c *gin.Context) domain.VacancyFilter {
+	var filter domain.VacancyFilter
+
+	// HR calling via middleware → auto-filter by their ID
+	if hrID, exists := c.Get("hr_id"); exists {
+		if parsed, err := uuid.Parse(hrID.(string)); err == nil {
+			filter.HRID = parsed
+		}
+	}
+
+	// Explicit hr_id query param overrides (for admin use)
+	if hrIDParam := c.Query("hr_id"); hrIDParam != "" {
+		if parsed, err := uuid.Parse(hrIDParam); err == nil {
+			filter.HRID = parsed
+		}
+	}
+
+	filter.Status = c.Query("status")
+	filter.Format = c.Query("format")
+	filter.Schedule = c.Query("schedule")
+	filter.SalaryCurrency = c.Query("salary_currency")
+	filter.SalaryMin = parseQueryInt32(c, "salary_min", 0)
+	filter.SalaryMax = parseQueryInt32(c, "salary_max", 0)
+	filter.ExperienceMin = parseQueryInt32(c, "experience_min", 0)
+	filter.ExperienceMax = parseQueryInt32(c, "experience_max", 0)
+
+	if countryID := c.Query("country_id"); countryID != "" {
+		if parsed, err := uuid.Parse(countryID); err == nil {
+			filter.CountryID = parsed
+		}
+	}
+
+	return filter
+}
+
+func hasVacancyFilters(f domain.VacancyFilter) bool {
+	return f.HRID != uuid.Nil || f.Status != "" || f.Format != "" ||
+		f.Schedule != "" || f.SalaryCurrency != "" ||
+		f.SalaryMin > 0 || f.SalaryMax > 0 ||
+		f.ExperienceMin > 0 || f.ExperienceMax > 0 ||
+		f.CountryID != uuid.Nil
 }
 
 // Update godoc

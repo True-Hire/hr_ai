@@ -22,6 +22,14 @@ import (
 // @version 1.0
 // @description HR AI platform API with multilingual profile parsing powered by Gemini
 // @BasePath /api/v1
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description JWT Bearer token (e.g. "Bearer <token>")
+// @securityDefinitions.apikey TelegramAuth
+// @in header
+// @name Authorization
+// @description Telegram Mini App init data (e.g. "tma <initData>")
 func main() {
 	cfg, err := config.Load()
 	if err != nil {
@@ -35,7 +43,7 @@ func main() {
 	}
 	defer pool.Close()
 
-	services, err := app.NewServices(pool, cfg.GeminiAPIKey, cfg.JWTSecret, cfg.DatabaseURL, cfg.QdrantURL, cfg.QdrantAPIKey, cfg.RedisURL, cfg.MinioEndpoint, cfg.MinioAccessKey, cfg.MinioSecretKey, cfg.MinioBucket, cfg.MinioUseSSL, cfg.TelegramBotToken, cfg.TelegramHRBotToken)
+	services, err := app.NewServices(pool, cfg.GeminiAPIKey, cfg.JWTSecret, cfg.DatabaseURL, cfg.QdrantURL, cfg.QdrantAPIKey, cfg.RedisURL, cfg.MinioEndpoint, cfg.MinioAccessKey, cfg.MinioSecretKey, cfg.MinioBucket, cfg.MinioUseSSL, cfg.MinioPublicURL, cfg.TelegramBotToken, cfg.TelegramHRBotToken)
 	if err != nil {
 		log.Fatalf("failed to init services: %v", err)
 	}
@@ -56,7 +64,7 @@ func main() {
 	// Start HR Telegram bot in background
 	var hrBot *telegram.HRBot
 	if cfg.TelegramHRBotToken != "" {
-		hrBot, err = telegram.NewHRBot(cfg.TelegramHRBotToken, services.HRBot, cfg.HRWebAppURL)
+		hrBot, err = telegram.NewHRBot(cfg.TelegramHRBotToken, services.HRBot, services.Storage, cfg.HRWebAppURL)
 		if err != nil {
 			log.Fatalf("failed to init hr telegram bot: %v", err)
 		}
