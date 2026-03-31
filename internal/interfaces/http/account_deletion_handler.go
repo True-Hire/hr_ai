@@ -2,6 +2,7 @@ package http
 
 import (
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -67,6 +68,7 @@ func (h *AccountDeletionHandler) DeleteHRByPhone(c *gin.Context) {
 			c.JSON(http.StatusNotFound, ErrorResponse{Error: "hr not found"})
 			return
 		}
+		log.Printf("delete hr by phone %s: %v", phone, err)
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to delete hr"})
 		return
 	}

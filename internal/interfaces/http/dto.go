@@ -116,8 +116,10 @@ type UserResponse struct {
 	EstimatedSalaryMax      int32                `json:"estimated_salary_max"`
 	EstimatedSalaryCurrency string               `json:"estimated_salary_currency,omitempty"`
 	CreatedAt               string               `json:"created_at"`
-	Profile         *UserProfileResponse `json:"profile,omitempty"`
-	SearchScore     *float64             `json:"search_score,omitempty"`
+	Profile              *UserProfileResponse `json:"profile,omitempty"`
+	SearchScore          *float64             `json:"search_score,omitempty"`
+	MatchPercentage      *int                 `json:"match_percentage,omitempty"`
+	TotalExperienceYears *float64             `json:"total_experience_years,omitempty"`
 }
 
 type UserProfileResponse struct {

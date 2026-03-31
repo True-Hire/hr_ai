@@ -27,5 +27,6 @@ type HRSessionRepository interface {
 	GetByDeviceID(ctx context.Context, hrID uuid.UUID, deviceID string) (*HRSession, error)
 	SoftDelete(ctx context.Context, id uuid.UUID) error
 	SoftDeleteByHR(ctx context.Context, hrID uuid.UUID) error
+	HardDeleteByHR(ctx context.Context, hrID uuid.UUID) error
 	UpdateRefreshToken(ctx context.Context, id uuid.UUID, hash string) error
 }

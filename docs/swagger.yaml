@@ -1,5 +1,215 @@
 basePath: /api/v1
 definitions:
+  domain.CompanyData:
+    properties:
+      address:
+        type: string
+      country:
+        type: string
+      email:
+        type: string
+      employee_count:
+        type: integer
+      instagram:
+        type: string
+      logo_url:
+        type: string
+      phone:
+        type: string
+      source_lang:
+        type: string
+      telegram:
+        type: string
+      telegram_channel:
+        type: string
+      texts:
+        items:
+          $ref: '#/definitions/domain.CompanyDataText'
+        type: array
+      web_site:
+        type: string
+    type: object
+  domain.CompanyDataText:
+    properties:
+      about:
+        type: string
+      activity_type:
+        type: string
+      company_type:
+        type: string
+      is_source:
+        type: boolean
+      lang:
+        type: string
+      market:
+        type: string
+      name:
+        type: string
+    type: object
+  http.AuthTokenResponse:
+    properties:
+      access_token:
+        type: string
+      device_id:
+        type: string
+      expires_at:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+  http.CompanyHRResponse:
+    properties:
+      company_data:
+        $ref: '#/definitions/domain.CompanyData'
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: string
+      last_name:
+        type: string
+      patronymic:
+        type: string
+      phone:
+        type: string
+      position:
+        type: string
+      status:
+        type: string
+      telegram:
+        type: string
+      telegram_id:
+        type: string
+    type: object
+  http.CompanyResponse:
+    properties:
+      address:
+        type: string
+      country:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      employee_count:
+        type: integer
+      id:
+        type: string
+      instagram:
+        type: string
+      logo_url:
+        type: string
+      phone:
+        type: string
+      source_lang:
+        type: string
+      telegram:
+        type: string
+      telegram_channel:
+        type: string
+      texts:
+        items:
+          $ref: '#/definitions/http.CompanyTextResponse'
+        type: array
+      web_site:
+        type: string
+    type: object
+  http.CompanyTextResponse:
+    properties:
+      about:
+        type: string
+      activity_type:
+        type: string
+      company_type:
+        type: string
+      is_source:
+        type: boolean
+      lang:
+        type: string
+      market:
+        type: string
+      model_version:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  http.CountryResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      short_code:
+        type: string
+    type: object
+  http.CreateCompanyHRRequest:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      patronymic:
+        type: string
+      phone:
+        type: string
+      position:
+        type: string
+      telegram:
+        type: string
+      telegram_id:
+        type: string
+    required:
+    - first_name
+    - last_name
+    - password
+    type: object
+  http.CreateCompanyRequest:
+    properties:
+      about:
+        type: string
+      activity_type:
+        type: string
+      address:
+        type: string
+      company_type:
+        type: string
+      country:
+        type: string
+      email:
+        type: string
+      employee_count:
+        type: integer
+      instagram:
+        type: string
+      logo_url:
+        type: string
+      market:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      telegram:
+        type: string
+      telegram_channel:
+        type: string
+      web_site:
+        type: string
+    required:
+    - name
+    type: object
   http.CreateProfileFieldRequest:
     properties:
       field_name:
@@ -42,6 +252,9 @@ definitions:
         type: string
       nationality:
         type: string
+      password:
+        minLength: 6
+        type: string
       patronymic:
         type: string
       phone:
@@ -60,9 +273,58 @@ definitions:
         type: string
       telegram:
         type: string
+      telegram_id:
+        type: string
     required:
     - first_name
     - last_name
+    - password
+    type: object
+  http.CreateVacancyRequest:
+    properties:
+      address:
+        type: string
+      benefits:
+        type: string
+      country_id:
+        type: string
+      description:
+        type: string
+      email:
+        type: string
+      experience_max:
+        type: integer
+      experience_min:
+        type: integer
+      format:
+        type: string
+      hr_id:
+        type: string
+      phone:
+        type: string
+      requirements:
+        type: string
+      responsibilities:
+        type: string
+      salary_currency:
+        type: string
+      salary_max:
+        type: integer
+      salary_min:
+        type: integer
+      schedule:
+        type: string
+      skills:
+        items:
+          type: string
+        type: array
+      telegram:
+        type: string
+      title:
+        type: string
+    required:
+    - hr_id
+    - title
     type: object
   http.EducationItemResponse:
     properties:
@@ -109,12 +371,210 @@ definitions:
       web_site:
         type: string
     type: object
+  http.HRApplicantResponse:
+    properties:
+      cover_letter:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      seen_at:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/http.HRApplicantUserResponse'
+      user_id:
+        type: string
+      vacancy_id:
+        type: string
+    type: object
+  http.HRApplicantUserResponse:
+    properties:
+      first_name:
+        type: string
+      id:
+        type: string
+      last_name:
+        type: string
+      phone:
+        type: string
+      skills:
+        items:
+          type: string
+        type: array
+      telegram:
+        type: string
+    type: object
+  http.HRApplicationListResponse:
+    properties:
+      applications:
+        items:
+          $ref: '#/definitions/http.HRApplicantResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      seen:
+        type: integer
+      total:
+        type: integer
+      unseen:
+        type: integer
+    type: object
+  http.HRApplicationStatsResponse:
+    properties:
+      seen:
+        type: integer
+      total:
+        type: integer
+      unseen:
+        type: integer
+    type: object
+  http.HRMiniAppCompanyData:
+    properties:
+      about:
+        type: string
+      activity_type:
+        type: string
+      address:
+        type: string
+      company_type:
+        type: string
+      country:
+        type: string
+      email:
+        type: string
+      employee_count:
+        type: integer
+      instagram:
+        type: string
+      logo_url:
+        type: string
+      market:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      telegram:
+        type: string
+      telegram_channel:
+        type: string
+      web_site:
+        type: string
+    type: object
+  http.HRMiniAppMeResponse:
+    properties:
+      company_data:
+        $ref: '#/definitions/domain.CompanyData'
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: string
+      last_name:
+        type: string
+      patronymic:
+        type: string
+      phone:
+        type: string
+      position:
+        type: string
+      status:
+        type: string
+      telegram:
+        type: string
+      telegram_id:
+        type: string
+    type: object
+  http.HRMiniAppUpdateRequest:
+    properties:
+      company:
+        $ref: '#/definitions/http.HRMiniAppCompanyData'
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      patronymic:
+        type: string
+      phone:
+        type: string
+      position:
+        type: string
+    type: object
+  http.HRUpdateApplicationStatusRequest:
+    properties:
+      status:
+        type: string
+    required:
+    - status
+    type: object
   http.LanguageItemResponse:
     properties:
       level:
         type: string
       name:
         type: string
+    type: object
+  http.LoginRequest:
+    properties:
+      fcm_token:
+        type: string
+      login:
+        type: string
+      password:
+        type: string
+    required:
+    - login
+    - password
+    type: object
+  http.LogoutRequest:
+    properties:
+      device_id:
+        type: string
+    required:
+    - device_id
+    type: object
+  http.MessageResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  http.PaginatedCompaniesResponse:
+    properties:
+      companies:
+        items:
+          $ref: '#/definitions/http.CompanyResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  http.PaginatedCompanyHRsResponse:
+    properties:
+      hrs:
+        items:
+          $ref: '#/definitions/http.CompanyHRResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
     type: object
   http.PaginatedUsersResponse:
     properties:
@@ -127,6 +587,19 @@ definitions:
       users:
         items:
           $ref: '#/definitions/http.UserResponse'
+        type: array
+    type: object
+  http.PaginatedVacanciesResponse:
+    properties:
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+      vacancies:
+        items:
+          $ref: '#/definitions/http.VacancyResponse'
         type: array
     type: object
   http.ProfileFieldResponse:
@@ -269,11 +742,107 @@ definitions:
       project:
         type: string
     type: object
+  http.RefreshRequest:
+    properties:
+      device_id:
+        type: string
+      refresh_token:
+        type: string
+    required:
+    - device_id
+    - refresh_token
+    type: object
+  http.SaveUserRequest:
+    properties:
+      note:
+        type: string
+      user_id:
+        type: string
+    required:
+    - user_id
+    type: object
+  http.SavedUserListResponse:
+    properties:
+      page:
+        type: integer
+      page_size:
+        type: integer
+      saved_users:
+        items:
+          $ref: '#/definitions/http.SavedUserResponse'
+        type: array
+      total:
+        type: integer
+    type: object
+  http.SavedUserResponse:
+    properties:
+      note:
+        type: string
+      saved_at:
+        type: string
+      user:
+        $ref: '#/definitions/http.HRApplicantUserResponse'
+      user_id:
+        type: string
+    type: object
+  http.SetPasswordRequest:
+    properties:
+      password:
+        minLength: 6
+        type: string
+      user_id:
+        type: string
+    required:
+    - password
+    - user_id
+    type: object
   http.SkillResponse:
     properties:
       id:
         type: string
       name:
+        type: string
+    type: object
+  http.UpdateCompanyHRRequest:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      patronymic:
+        type: string
+      phone:
+        type: string
+      position:
+        type: string
+      telegram:
+        type: string
+      telegram_id:
+        type: string
+    type: object
+  http.UpdateCompanyRequest:
+    properties:
+      address:
+        type: string
+      country:
+        type: string
+      email:
+        type: string
+      employee_count:
+        type: integer
+      instagram:
+        type: string
+      logo_url:
+        type: string
+      phone:
+        type: string
+      telegram:
+        type: string
+      telegram_channel:
+        type: string
+      web_site:
         type: string
     type: object
   http.UpdateProfileFieldRequest:
@@ -287,16 +856,12 @@ definitions:
     properties:
       content:
         type: string
-      model_version:
-        type: string
     required:
     - content
     type: object
   http.UpdateUserRequest:
     properties:
       activity_type:
-        type: string
-      country:
         type: string
       email:
         type: string
@@ -327,6 +892,58 @@ definitions:
       tariff_type:
         type: string
       telegram:
+        type: string
+      telegram_id:
+        type: string
+    type: object
+  http.UpdateVacancyRequest:
+    properties:
+      address:
+        type: string
+      benefits:
+        type: string
+      country_id:
+        type: string
+      description:
+        type: string
+      email:
+        type: string
+      experience_max:
+        type: integer
+      experience_min:
+        type: integer
+      format:
+        type: string
+      phone:
+        type: string
+      requirements:
+        type: string
+      responsibilities:
+        type: string
+      salary_currency:
+        type: string
+      salary_max:
+        type: integer
+      salary_min:
+        type: integer
+      schedule:
+        type: string
+      skills:
+        items:
+          type: string
+        type: array
+      status:
+        type: string
+      telegram:
+        type: string
+      title:
+        type: string
+    type: object
+  http.UploadResponse:
+    properties:
+      object_name:
+        type: string
+      url:
         type: string
     type: object
   http.UserProfileResponse:
@@ -368,6 +985,12 @@ definitions:
         type: string
       email:
         type: string
+      estimated_salary_currency:
+        type: string
+      estimated_salary_max:
+        type: integer
+      estimated_salary_min:
+        type: integer
       first_name:
         type: string
       gender:
@@ -378,6 +1001,8 @@ definitions:
         type: string
       last_name:
         type: string
+      match_percentage:
+        type: integer
       nationality:
         type: string
       patronymic:
@@ -388,8 +1013,12 @@ definitions:
         $ref: '#/definitions/http.UserProfileResponse'
       profile_pic_url:
         type: string
+      profile_score:
+        type: integer
       region:
         type: string
+      search_score:
+        type: number
       specializations:
         items:
           type: string
@@ -400,6 +1029,103 @@ definitions:
         type: string
       telegram:
         type: string
+      telegram_id:
+        type: string
+      total_experience_years:
+        type: number
+    type: object
+  http.VacancyCompanyResponse:
+    properties:
+      about:
+        type: string
+      activity_type:
+        type: string
+      company_type:
+        type: string
+      country:
+        type: string
+      employee_count:
+        type: integer
+      logo_url:
+        type: string
+      name:
+        type: string
+    type: object
+  http.VacancyParseRequest:
+    properties:
+      hr_id:
+        type: string
+      user_input:
+        type: string
+    required:
+    - hr_id
+    - user_input
+    type: object
+  http.VacancyResponse:
+    properties:
+      address:
+        type: string
+      company:
+        $ref: '#/definitions/http.VacancyCompanyResponse'
+      country_id:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      experience_max:
+        type: integer
+      experience_min:
+        type: integer
+      format:
+        type: string
+      hr_id:
+        type: string
+      id:
+        type: string
+      phone:
+        type: string
+      salary_currency:
+        type: string
+      salary_max:
+        type: integer
+      salary_min:
+        type: integer
+      schedule:
+        type: string
+      skills:
+        items:
+          $ref: '#/definitions/http.SkillResponse'
+        type: array
+      source_lang:
+        type: string
+      status:
+        type: string
+      telegram:
+        type: string
+      text:
+        $ref: '#/definitions/http.VacancyTextResponse'
+    type: object
+  http.VacancyTextResponse:
+    properties:
+      benefits:
+        type: string
+      description:
+        type: string
+      is_source:
+        type: boolean
+      lang:
+        type: string
+      model_version:
+        type: string
+      requirements:
+        type: string
+      responsibilities:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
     type: object
 info:
   contact: {}
@@ -407,6 +1133,1094 @@ info:
   title: HR AI API
   version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.AuthTokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Login with phone or email and password
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Bearer access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Device ID
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.LogoutRequest'
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Logout and invalidate session
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Refresh token and device ID
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.RefreshRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.AuthTokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Get new access and refresh tokens
+      tags:
+      - auth
+  /auth/set-password:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User ID and password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.SetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Set password for an existing user
+      tags:
+      - auth
+  /companies:
+    get:
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.PaginatedCompaniesResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: List companies with pagination
+      tags:
+      - companies
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Company data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.CreateCompanyRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.CompanyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Create a new company (data is translated via Gemini into uz/ru/en)
+      tags:
+      - companies
+  /companies/{id}:
+    delete:
+      parameters:
+      - description: Company ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Delete a company and all its translations
+      tags:
+      - companies
+    get:
+      parameters:
+      - description: Company ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.CompanyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Get company by ID with all translations
+      tags:
+      - companies
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Company ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated company data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateCompanyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.CompanyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Update company (non-text fields only)
+      tags:
+      - companies
+  /countries:
+    get:
+      parameters:
+      - default: en
+        description: Language (uz, ru, en)
+        in: query
+        name: lang
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.CountryResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: List all countries with translated names
+      tags:
+      - countries
+  /countries/{id}:
+    get:
+      parameters:
+      - description: Country ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - default: en
+        description: Language (uz, ru, en)
+        in: query
+        name: lang
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.CountryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Get country by ID with translated name
+      tags:
+      - countries
+  /files:
+    delete:
+      parameters:
+      - description: Object name (e.g. profile-photos/uuid)
+        in: query
+        name: object_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Delete a file from storage
+      tags:
+      - files
+    get:
+      parameters:
+      - description: Object name (e.g. profile-photos/uuid)
+        in: query
+        name: object_name
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Download a file from storage
+      tags:
+      - files
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Storage folder prefix (e.g. profile-photos, resumes)
+        in: formData
+        name: folder
+        required: true
+        type: string
+      - description: File to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.UploadResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Upload a file to storage
+      tags:
+      - files
+  /hr-miniapp/me:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.HRMiniAppMeResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: Get current HR profile with company data
+      tags:
+      - hr-miniapp
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: HR and optional company data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.HRMiniAppUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.HRMiniAppMeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: Update current HR profile and optionally create/update company data
+      tags:
+      - hr-miniapp
+  /hr-miniapp/vacancies/{id}/applications:
+    get:
+      parameters:
+      - description: Vacancy ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.HRApplicationListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: List applicants for a vacancy
+      tags:
+      - hr-miniapp
+  /hr-miniapp/vacancies/{id}/applications/{app_id}/seen:
+    put:
+      parameters:
+      - description: Vacancy ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Application ID
+        in: path
+        name: app_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.HRApplicantResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: Mark application as seen
+      tags:
+      - hr-miniapp
+  /hr-miniapp/vacancies/{id}/applications/{app_id}/status:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Vacancy ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Application ID
+        in: path
+        name: app_id
+        required: true
+        type: string
+      - description: New status
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.HRUpdateApplicationStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.HRApplicantResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: Update application status (accepted/rejected/pending)
+      tags:
+      - hr-miniapp
+  /hr-miniapp/vacancies/{id}/applications/stats:
+    get:
+      parameters:
+      - description: Vacancy ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.HRApplicationStatsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: Get application statistics for a vacancy
+      tags:
+      - hr-miniapp
+  /hr/auth/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.AuthTokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Login as company HR
+      tags:
+      - hr-auth
+  /hr/auth/logout:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Device ID
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.LogoutRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Logout HR (invalidate session)
+      tags:
+      - hr-auth
+  /hr/auth/refresh:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Refresh token and device ID
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.RefreshRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.AuthTokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Refresh HR access token
+      tags:
+      - hr-auth
+  /hr/auth/set-password:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: HR ID and password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.SetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Set password for a company HR
+      tags:
+      - hr-auth
+  /hr/saved-users:
+    get:
+      parameters:
+      - description: Search by name
+        in: query
+        name: q
+        type: string
+      - description: Filter by skills (comma-separated)
+        in: query
+        name: skills
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.SavedUserListResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: List saved users with optional filtering
+      tags:
+      - hr-saved-users
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User to save
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.SaveUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.SavedUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: Save a user to HR's saved list
+      tags:
+      - hr-saved-users
+  /hr/saved-users/{user_id}:
+    delete:
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: Remove a user from HR's saved list
+      tags:
+      - hr-saved-users
+  /hrs:
+    get:
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.PaginatedCompanyHRsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: List company HRs with pagination
+      tags:
+      - hrs
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: HR data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.CreateCompanyHRRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.CompanyHRResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Create a new company HR
+      tags:
+      - hrs
+  /hrs/{id}:
+    delete:
+      parameters:
+      - description: HR ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Delete a company HR
+      tags:
+      - hrs
+    get:
+      parameters:
+      - description: HR ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.CompanyHRResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Get company HR by ID
+      tags:
+      - hrs
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: HR ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated HR data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateCompanyHRRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.CompanyHRResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Update a company HR
+      tags:
+      - hrs
+  /hrs/by-phone/{phone}:
+    delete:
+      description: Removes an HR account and nullifies hr_id on their vacancies (vacancies
+        are preserved)
+      parameters:
+      - description: Phone number
+        in: path
+        name: phone
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Delete an HR account by phone number
+      tags:
+      - account-deletion
+  /hrs/me:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.CompanyHRResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get current authenticated HR with full details
+      tags:
+      - hrs
   /profile-fields/{id}:
     delete:
       parameters:
@@ -560,6 +2374,42 @@ paths:
       summary: Create a text translation for a profile field
       tags:
       - profile-field-texts
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Profile field ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated text data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateProfileFieldTextRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.ProfileFieldTextResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Update a profile field text (retranslates into all 3 languages via
+        Gemini)
+      tags:
+      - profile-field-texts
   /profile-fields/{id}/texts/{lang}:
     delete:
       parameters:
@@ -625,48 +2475,6 @@ paths:
       summary: Get a profile field text by field ID and language
       tags:
       - profile-field-texts
-    put:
-      consumes:
-      - application/json
-      parameters:
-      - description: Profile field ID (UUID)
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Language code (uz, ru, en)
-        in: path
-        name: lang
-        required: true
-        type: string
-      - description: Updated text data
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/http.UpdateProfileFieldTextRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/http.ProfileFieldTextResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
-      summary: Update a profile field text
-      tags:
-      - profile-field-texts
   /skills:
     get:
       description: Returns skills matching the query, or all skills if no query is
@@ -695,8 +2503,18 @@ paths:
   /users:
     get:
       parameters:
+      - description: Search query (any language). When provided, returns semantically
+          ranked results
+        in: query
+        name: q
+        type: string
+      - description: Vacancy ID (UUID). When provided, returns matching candidates
+          sorted by match percentage
+        in: query
+        name: vacancy_id
+        type: string
       - default: 1
-        description: Page number
+        description: Page number (pagination mode)
         in: query
         name: page
         type: integer
@@ -721,7 +2539,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/http.ErrorResponse'
-      summary: List users with pagination
+      summary: List users with pagination or semantic search
       tags:
       - users
     post:
@@ -910,7 +2728,63 @@ paths:
       summary: Create a profile field for a user
       tags:
       - profile-fields
-  /users/{id}/profile/parse:
+  /users/by-phone/{phone}:
+    delete:
+      description: Completely removes a user and all associated data (profile, skills,
+        experience, education, applications, sessions, vectors)
+      parameters:
+      - description: Phone number
+        in: path
+        name: phone
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Delete a user account by phone number
+      tags:
+      - account-deletion
+  /users/me:
+    get:
+      parameters:
+      - default: en
+        description: Language code (uz, ru, en)
+        in: query
+        name: lang
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get current authenticated user with full profile
+      tags:
+      - users
+  /users/me/profile/parse:
     post:
       consumes:
       - application/json
@@ -919,11 +2793,6 @@ paths:
         either user_input field or a file (PDF, PNG, JPG, TXT). Parses the profile
         and stores multilingual translations (uz, ru, en).
       parameters:
-      - description: User ID (UUID)
-        in: path
-        name: id
-        required: true
-        type: string
       - description: Text input (for JSON content type)
         in: body
         name: request
@@ -948,6 +2817,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
         "404":
           description: Not Found
           schema:
@@ -956,7 +2829,257 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Parse a user profile from text or file using Gemini AI
       tags:
       - profile-parse
+  /vacancies:
+    get:
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Search query
+        in: query
+        name: q
+        type: string
+      - default: en
+        description: Language code
+        in: query
+        name: lang
+        type: string
+      - description: Filter by status (active, draft, closed)
+        in: query
+        name: status
+        type: string
+      - description: Filter by format (office, remote, hybrid)
+        in: query
+        name: format
+        type: string
+      - description: Filter by schedule (full-time, part-time)
+        in: query
+        name: schedule
+        type: string
+      - description: Filter by salary currency
+        in: query
+        name: salary_currency
+        type: string
+      - description: Min salary (returns vacancies that pay at least this)
+        in: query
+        name: salary_min
+        type: integer
+      - description: Max salary (returns vacancies that pay at most this)
+        in: query
+        name: salary_max
+        type: integer
+      - description: Min experience (returns vacancies accepting this level)
+        in: query
+        name: experience_min
+        type: integer
+      - description: Max experience (returns vacancies accepting this level)
+        in: query
+        name: experience_max
+        type: integer
+      - description: Filter by country ID (UUID)
+        in: query
+        name: country_id
+        type: string
+      - description: Filter by HR ID (UUID)
+        in: query
+        name: hr_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.PaginatedVacanciesResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: List vacancies with pagination and optional filters
+      tags:
+      - vacancies
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Vacancy data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.CreateVacancyRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.VacancyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Create a new vacancy (text fields translated via Gemini into uz/ru/en)
+      tags:
+      - vacancies
+  /vacancies/{id}:
+    delete:
+      parameters:
+      - description: Vacancy ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Delete a vacancy and all its translations and skills
+      tags:
+      - vacancies
+    get:
+      parameters:
+      - description: Vacancy ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.VacancyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Get vacancy by ID with all translations and skills
+      tags:
+      - vacancies
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Vacancy ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated vacancy data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateVacancyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.VacancyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Update vacancy (non-text fields only)
+      tags:
+      - vacancies
+  /vacancies/parse:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Free-form vacancy text
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.VacancyParseRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.VacancyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Parse a vacancy from free-form text (Gemini extracts all fields + translates)
+      tags:
+      - vacancies
+securityDefinitions:
+  BearerAuth:
+    description: JWT Bearer token (e.g. "Bearer <token>")
+    in: header
+    name: Authorization
+    type: apiKey
+  TelegramAuth:
+    description: Telegram Mini App init data (e.g. "tma <initData>")
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

@@ -173,6 +173,60 @@ Company data:
 %s`, userInput)
 }
 
+func buildCompanyParsePrompt(userInput string) string {
+	return fmt.Sprintf(`You are an AI that extracts company information from free-form text. The HR manager is describing their company in any format — extract all relevant details and translate text fields into 3 languages: Uzbek (uz), Russian (ru), and English (en).
+
+Detect which language the input is primarily written in and set source_lang to one of: "uz", "ru", "en".
+
+TEXT FIELDS (translated into 3 languages):
+- name: Company name (transliterate, don't translate)
+- activity_type: Type of business activity
+- company_type: Type of company (e.g. LLC, OOO, etc.)
+- about: Description of the company
+- market: Market or industry the company operates in
+
+NON-TEXT FIELDS (extract as-is):
+- employee_count: Number of employees as integer (0 if not mentioned)
+- country: Country where company is based (empty string if not mentioned)
+- address: Office address (empty string if not mentioned)
+- phone: Phone number (empty string if not mentioned)
+- telegram: Telegram contact (empty string if not mentioned)
+- telegram_channel: Telegram channel (empty string if not mentioned)
+- email: Email address (empty string if not mentioned)
+- web_site: Website URL (empty string if not mentioned)
+- instagram: Instagram handle (empty string if not mentioned)
+
+IMPORTANT RULES:
+- Extract as much information as possible from the text
+- For text fields, translate accurately and naturally into all 3 languages
+- Only include text fields where you can extract meaningful content
+- Do NOT include text fields with empty or placeholder content
+
+Return ONLY valid JSON in this exact format:
+{
+  "source_lang": "ru",
+  "fields": {
+    "name": {"uz": "...", "ru": "...", "en": "..."},
+    "activity_type": {"uz": "...", "ru": "...", "en": "..."},
+    "company_type": {"uz": "...", "ru": "...", "en": "..."},
+    "about": {"uz": "...", "ru": "...", "en": "..."},
+    "market": {"uz": "...", "ru": "...", "en": "..."}
+  },
+  "employee_count": 50,
+  "country": "Uzbekistan",
+  "address": "Tashkent, Amir Temur 1",
+  "phone": "+998901234567",
+  "telegram": "@company",
+  "telegram_channel": "@company_channel",
+  "email": "info@company.com",
+  "web_site": "https://company.com",
+  "instagram": "@company"
+}
+
+HR's company description:
+%s`, userInput)
+}
+
 func buildVacancyPrompt(userInput string) string {
 	return fmt.Sprintf(`You are an AI that translates vacancy/job posting information into 3 languages: Uzbek (uz), Russian (ru), and English (en).
 
@@ -297,6 +351,34 @@ NEW ADDITIONAL INFORMATION:
 %s
 
 Return ONLY valid JSON in the same format as the existing data.`, existingJSON, additionalInfo)
+}
+
+func buildVacancyEnhancePrompt(draftJSON string) string {
+	return fmt.Sprintf(`You are a professional HR copywriter. You are given a raw vacancy draft (parsed from an HR manager's informal input). Your task is to rewrite it into a polished, professional job posting.
+
+IMPORTANT: You must keep ALL the existing structured data (salary, experience, format, schedule, phone, telegram, email, address, skills) EXACTLY as-is. Only rewrite the TEXT FIELDS to be professional and compelling.
+
+TEXT FIELDS to rewrite (in all 3 languages: en, ru, uz):
+- title: Clean, professional job title (e.g. "Senior Go Backend Developer" not "we need a go dev")
+- description: A compelling 2-3 sentence overview of the role and why someone should apply
+- responsibilities: Clear, bullet-point-style list of duties (separated by "; ")
+- requirements: Clear list of must-have qualifications (separated by "; ")
+- benefits: Attractive list of what the company offers (separated by "; ")
+
+WRITING GUIDELINES:
+- Professional but engaging tone
+- Be specific and detailed — expand on vague points
+- For responsibilities: start each item with an action verb
+- For requirements: be clear about what's mandatory vs nice-to-have
+- For benefits: highlight both tangible (salary, insurance) and intangible (growth, culture) perks
+- Translate naturally — don't do word-for-word translation. Each language should read as if written by a native speaker.
+- Russian job postings often use "Мы ищем..." or "Обязанности:" style
+- Uzbek job postings should use professional Uzbek, not transliterated Russian
+
+Return ONLY valid JSON in the EXACT SAME format as the input (same structure, same non-text field values, rewritten text fields).
+
+VACANCY DRAFT:
+%s`, draftJSON)
 }
 
 func buildTranslateToEnglishPrompt(text string) string {

@@ -16,18 +16,17 @@ type VacancyService struct {
 	repo           domain.VacancyRepository
 	textRepo       domain.VacancyTextRepository
 	skillSvc       *SkillService
-	companySvc     *CompanyService
 	geminiClient   *gemini.Client
 	vectorIndexSvc *VectorIndexService
 }
 
-func NewVacancyService(repo domain.VacancyRepository, textRepo domain.VacancyTextRepository, skillSvc *SkillService, companySvc *CompanyService, geminiClient *gemini.Client, vectorIndexSvc *VectorIndexService) *VacancyService {
-	return &VacancyService{repo: repo, textRepo: textRepo, skillSvc: skillSvc, companySvc: companySvc, geminiClient: geminiClient, vectorIndexSvc: vectorIndexSvc}
+func NewVacancyService(repo domain.VacancyRepository, textRepo domain.VacancyTextRepository, skillSvc *SkillService, geminiClient *gemini.Client, vectorIndexSvc *VectorIndexService) *VacancyService {
+	return &VacancyService{repo: repo, textRepo: textRepo, skillSvc: skillSvc, geminiClient: geminiClient, vectorIndexSvc: vectorIndexSvc}
 }
 
 type CreateVacancyInput struct {
 	HRID             uuid.UUID
-	CompanyID        uuid.UUID
+	CompanyData      *domain.CompanyData
 	CountryID        uuid.UUID
 	SalaryMin        int32
 	SalaryMax        int32
@@ -52,7 +51,6 @@ type VacancyWithDetails struct {
 	Vacancy *domain.Vacancy
 	Texts   []domain.VacancyText
 	Skills  []domain.Skill
-	Company *CompanyWithTexts
 }
 
 func (s *VacancyService) CreateVacancy(ctx context.Context, input *CreateVacancyInput) (*VacancyWithDetails, error) {
@@ -83,7 +81,7 @@ func (s *VacancyService) CreateVacancy(ctx context.Context, input *CreateVacancy
 	vacancy := &domain.Vacancy{
 		ID:             uuid.New(),
 		HRID:           input.HRID,
-		CompanyID:      input.CompanyID,
+		CompanyData:    input.CompanyData,
 		CountryID:      input.CountryID,
 		SalaryMin:      input.SalaryMin,
 		SalaryMax:      input.SalaryMax,
@@ -97,7 +95,7 @@ func (s *VacancyService) CreateVacancy(ctx context.Context, input *CreateVacancy
 		Email:          input.Email,
 		Address:        input.Address,
 		SourceLang:     parsed.SourceLang,
-		Status:         "draft",
+		Status:         domain.VacancyStatusActive,
 	}
 
 	if vacancy.SalaryCurrency == "" {
@@ -128,8 +126,6 @@ func (s *VacancyService) CreateVacancy(ctx context.Context, input *CreateVacancy
 		}
 	}
 
-	company, _ := s.companySvc.GetCompany(ctx, created.CompanyID)
-
 	if s.vectorIndexSvc != nil {
 		go func() {
 			if err := s.vectorIndexSvc.IndexVacancy(context.Background(), created.ID); err != nil {
@@ -138,10 +134,10 @@ func (s *VacancyService) CreateVacancy(ctx context.Context, input *CreateVacancy
 		}()
 	}
 
-	return &VacancyWithDetails{Vacancy: created, Texts: texts, Skills: skills, Company: company}, nil
+	return &VacancyWithDetails{Vacancy: created, Texts: texts, Skills: skills}, nil
 }
 
-func (s *VacancyService) ParseVacancy(ctx context.Context, hrID, companyID uuid.UUID, userInput string) (*VacancyWithDetails, error) {
+func (s *VacancyService) ParseVacancy(ctx context.Context, hrID uuid.UUID, companyData *domain.CompanyData, userInput string) (*VacancyWithDetails, error) {
 	parsed, err := s.geminiClient.ParseVacancyFromText(ctx, userInput)
 	if err != nil {
 		return nil, fmt.Errorf("gemini parse vacancy: %w", err)
@@ -163,7 +159,7 @@ func (s *VacancyService) ParseVacancy(ctx context.Context, hrID, companyID uuid.
 	vacancy := &domain.Vacancy{
 		ID:             uuid.New(),
 		HRID:           hrID,
-		CompanyID:      companyID,
+		CompanyData:    companyData,
 		SalaryMin:      parsed.SalaryMin,
 		SalaryMax:      parsed.SalaryMax,
 		SalaryCurrency: salaryCurrency,
@@ -176,7 +172,7 @@ func (s *VacancyService) ParseVacancy(ctx context.Context, hrID, companyID uuid.
 		Email:          parsed.Email,
 		Address:        parsed.Address,
 		SourceLang:     parsed.SourceLang,
-		Status:         "draft",
+		Status:         domain.VacancyStatusActive,
 	}
 
 	created, err := s.repo.Create(ctx, vacancy)
@@ -197,8 +193,6 @@ func (s *VacancyService) ParseVacancy(ctx context.Context, hrID, companyID uuid.
 		}
 	}
 
-	company, _ := s.companySvc.GetCompany(ctx, created.CompanyID)
-
 	if s.vectorIndexSvc != nil {
 		go func() {
 			if err := s.vectorIndexSvc.IndexVacancy(context.Background(), created.ID); err != nil {
@@ -207,10 +201,10 @@ func (s *VacancyService) ParseVacancy(ctx context.Context, hrID, companyID uuid.
 		}()
 	}
 
-	return &VacancyWithDetails{Vacancy: created, Texts: texts, Skills: skills, Company: company}, nil
+	return &VacancyWithDetails{Vacancy: created, Texts: texts, Skills: skills}, nil
 }
 
-func (s *VacancyService) CreateVacancyFromParsed(ctx context.Context, hrID, companyID uuid.UUID, parsed *gemini.ParsedVacancyFull) (*VacancyWithDetails, error) {
+func (s *VacancyService) CreateVacancyFromParsed(ctx context.Context, hrID uuid.UUID, companyData *domain.CompanyData, parsed *gemini.ParsedVacancyFull) (*VacancyWithDetails, error) {
 	salaryCurrency := parsed.SalaryCurrency
 	if salaryCurrency == "" {
 		salaryCurrency = "USD"
@@ -227,7 +221,7 @@ func (s *VacancyService) CreateVacancyFromParsed(ctx context.Context, hrID, comp
 	vacancy := &domain.Vacancy{
 		ID:             uuid.New(),
 		HRID:           hrID,
-		CompanyID:      companyID,
+		CompanyData:    companyData,
 		SalaryMin:      parsed.SalaryMin,
 		SalaryMax:      parsed.SalaryMax,
 		SalaryCurrency: salaryCurrency,
@@ -240,7 +234,7 @@ func (s *VacancyService) CreateVacancyFromParsed(ctx context.Context, hrID, comp
 		Email:          parsed.Email,
 		Address:        parsed.Address,
 		SourceLang:     parsed.SourceLang,
-		Status:         "draft",
+		Status:         domain.VacancyStatusActive,
 	}
 
 	created, err := s.repo.Create(ctx, vacancy)
@@ -261,8 +255,6 @@ func (s *VacancyService) CreateVacancyFromParsed(ctx context.Context, hrID, comp
 		}
 	}
 
-	company, _ := s.companySvc.GetCompany(ctx, created.CompanyID)
-
 	if s.vectorIndexSvc != nil {
 		go func() {
 			if err := s.vectorIndexSvc.IndexVacancy(context.Background(), created.ID); err != nil {
@@ -271,7 +263,7 @@ func (s *VacancyService) CreateVacancyFromParsed(ctx context.Context, hrID, comp
 		}()
 	}
 
-	return &VacancyWithDetails{Vacancy: created, Texts: texts, Skills: skills, Company: company}, nil
+	return &VacancyWithDetails{Vacancy: created, Texts: texts, Skills: skills}, nil
 }
 
 func (s *VacancyService) storeVacancyTexts(ctx context.Context, vacancyID uuid.UUID, sourceLang string, fields map[string]map[string]string) ([]domain.VacancyText, error) {
@@ -329,9 +321,7 @@ func (s *VacancyService) GetVacancy(ctx context.Context, id uuid.UUID) (*Vacancy
 		return nil, fmt.Errorf("list vacancy skills: %w", err)
 	}
 
-	company, _ := s.companySvc.GetCompany(ctx, vacancy.CompanyID)
-
-	return &VacancyWithDetails{Vacancy: vacancy, Texts: texts, Skills: skills, Company: company}, nil
+	return &VacancyWithDetails{Vacancy: vacancy, Texts: texts, Skills: skills}, nil
 }
 
 type ListVacanciesResult struct {
@@ -368,14 +358,13 @@ func (s *VacancyService) ListVacancies(ctx context.Context, page, pageSize int32
 		if err != nil {
 			return nil, fmt.Errorf("list vacancy skills for %s: %w", v.ID, err)
 		}
-		company, _ := s.companySvc.GetCompany(ctx, v.CompanyID)
-		result = append(result, VacancyWithDetails{Vacancy: &v, Texts: texts, Skills: skills, Company: company})
+		result = append(result, VacancyWithDetails{Vacancy: &v, Texts: texts, Skills: skills})
 	}
 
 	return &ListVacanciesResult{Vacancies: result, Total: total}, nil
 }
 
-func (s *VacancyService) ListVacanciesByCompany(ctx context.Context, companyID uuid.UUID, page, pageSize int32) (*ListVacanciesResult, error) {
+func (s *VacancyService) ListVacanciesByHR(ctx context.Context, hrID uuid.UUID, page, pageSize int32) (*ListVacanciesResult, error) {
 	if page < 1 {
 		page = 1
 	}
@@ -384,21 +373,17 @@ func (s *VacancyService) ListVacanciesByCompany(ctx context.Context, companyID u
 	}
 	offset := (page - 1) * pageSize
 
-	total, err := s.repo.CountByCompany(ctx, companyID)
+	total, err := s.repo.CountByHR(ctx, hrID)
 	if err != nil {
-		return nil, fmt.Errorf("service count vacancies by company: %w", err)
+		return nil, fmt.Errorf("service count vacancies by hr: %w", err)
 	}
 
-	vacancies, err := s.repo.ListByCompany(ctx, companyID, pageSize, offset)
+	vacancies, err := s.repo.ListByHR(ctx, hrID, pageSize, offset)
 	if err != nil {
-		return nil, fmt.Errorf("service list vacancies by company: %w", err)
+		return nil, fmt.Errorf("service list vacancies by hr: %w", err)
 	}
 
 	result := make([]VacancyWithDetails, 0, len(vacancies))
-	var company *CompanyWithTexts
-	if len(vacancies) > 0 {
-		company, _ = s.companySvc.GetCompany(ctx, companyID)
-	}
 	for _, v := range vacancies {
 		texts, err := s.textRepo.ListByVacancy(ctx, v.ID)
 		if err != nil {
@@ -408,7 +393,42 @@ func (s *VacancyService) ListVacanciesByCompany(ctx context.Context, companyID u
 		if err != nil {
 			return nil, fmt.Errorf("list vacancy skills for %s: %w", v.ID, err)
 		}
-		result = append(result, VacancyWithDetails{Vacancy: &v, Texts: texts, Skills: skills, Company: company})
+		result = append(result, VacancyWithDetails{Vacancy: &v, Texts: texts, Skills: skills})
+	}
+
+	return &ListVacanciesResult{Vacancies: result, Total: total}, nil
+}
+
+func (s *VacancyService) ListVacanciesFiltered(ctx context.Context, filter domain.VacancyFilter, page, pageSize int32) (*ListVacanciesResult, error) {
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 20
+	}
+	offset := (page - 1) * pageSize
+
+	total, err := s.repo.CountFiltered(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("service count filtered vacancies: %w", err)
+	}
+
+	vacancies, err := s.repo.ListFiltered(ctx, filter, pageSize, offset)
+	if err != nil {
+		return nil, fmt.Errorf("service list filtered vacancies: %w", err)
+	}
+
+	result := make([]VacancyWithDetails, 0, len(vacancies))
+	for _, v := range vacancies {
+		texts, err := s.textRepo.ListByVacancy(ctx, v.ID)
+		if err != nil {
+			return nil, fmt.Errorf("list vacancy texts for %s: %w", v.ID, err)
+		}
+		skills, err := s.skillSvc.ListVacancySkills(ctx, v.ID)
+		if err != nil {
+			return nil, fmt.Errorf("list vacancy skills for %s: %w", v.ID, err)
+		}
+		result = append(result, VacancyWithDetails{Vacancy: &v, Texts: texts, Skills: skills})
 	}
 
 	return &ListVacanciesResult{Vacancies: result, Total: total}, nil
@@ -511,8 +531,6 @@ func (s *VacancyService) UpdateVacancy(ctx context.Context, input *UpdateVacancy
 		return nil, fmt.Errorf("list vacancy skills: %w", err)
 	}
 
-	company, _ := s.companySvc.GetCompany(ctx, updated.CompanyID)
-
 	if s.vectorIndexSvc != nil {
 		go func() {
 			if err := s.vectorIndexSvc.IndexVacancy(context.Background(), updated.ID); err != nil {
@@ -521,7 +539,94 @@ func (s *VacancyService) UpdateVacancy(ctx context.Context, input *UpdateVacancy
 		}()
 	}
 
-	return &VacancyWithDetails{Vacancy: updated, Texts: texts, Skills: skills, Company: company}, nil
+	return &VacancyWithDetails{Vacancy: updated, Texts: texts, Skills: skills}, nil
+}
+
+func (s *VacancyService) UpdateVacancyFromParsed(ctx context.Context, vacancyID uuid.UUID, parsed *gemini.ParsedVacancyFull) (*VacancyWithDetails, error) {
+	existing, err := s.repo.GetByID(ctx, vacancyID)
+	if err != nil {
+		return nil, fmt.Errorf("get vacancy for update: %w", err)
+	}
+
+	// Update fields from parsed data
+	if parsed.SalaryMin > 0 {
+		existing.SalaryMin = parsed.SalaryMin
+	}
+	if parsed.SalaryMax > 0 {
+		existing.SalaryMax = parsed.SalaryMax
+	}
+	if parsed.SalaryCurrency != "" {
+		existing.SalaryCurrency = parsed.SalaryCurrency
+	}
+	if parsed.ExperienceMin > 0 {
+		existing.ExperienceMin = parsed.ExperienceMin
+	}
+	if parsed.ExperienceMax > 0 {
+		existing.ExperienceMax = parsed.ExperienceMax
+	}
+	if parsed.Format != "" {
+		existing.Format = parsed.Format
+	}
+	if parsed.Schedule != "" {
+		existing.Schedule = parsed.Schedule
+	}
+	if parsed.Phone != "" {
+		existing.Phone = parsed.Phone
+	}
+	if parsed.Telegram != "" {
+		existing.Telegram = parsed.Telegram
+	}
+	if parsed.Email != "" {
+		existing.Email = parsed.Email
+	}
+	if parsed.Address != "" {
+		existing.Address = parsed.Address
+	}
+
+	updated, err := s.repo.Update(ctx, existing)
+	if err != nil {
+		return nil, fmt.Errorf("update vacancy: %w", err)
+	}
+
+	// Replace texts
+	if err := s.textRepo.DeleteByVacancy(ctx, updated.ID); err != nil {
+		return nil, fmt.Errorf("delete old vacancy texts: %w", err)
+	}
+	texts, err := s.storeVacancyTexts(ctx, updated.ID, parsed.SourceLang, parsed.Fields)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update skills
+	var skills []domain.Skill
+	if len(parsed.Skills) > 0 {
+		skills, err = s.skillSvc.SetVacancySkills(ctx, updated.ID, parsed.Skills)
+		if err != nil {
+			return nil, fmt.Errorf("set vacancy skills: %w", err)
+		}
+	} else {
+		skills, _ = s.skillSvc.ListVacancySkills(ctx, updated.ID)
+	}
+
+	if s.vectorIndexSvc != nil {
+		go func() {
+			if err := s.vectorIndexSvc.IndexVacancy(context.Background(), updated.ID); err != nil {
+				log.Printf("reindex vacancy %s after edit: %v", updated.ID, err)
+			}
+		}()
+	}
+
+	return &VacancyWithDetails{Vacancy: updated, Texts: texts, Skills: skills}, nil
+}
+
+func (s *VacancyService) UpdateVacancyStatus(ctx context.Context, id uuid.UUID, status string) error {
+	v, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("get vacancy: %w", err)
+	}
+	v.Status = status
+	_, err = s.repo.Update(ctx, v)
+	return err
 }
 
 func (s *VacancyService) DeleteVacancy(ctx context.Context, id uuid.UUID) error {

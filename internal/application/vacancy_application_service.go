@@ -61,3 +61,19 @@ func (s *VacancyApplicationService) ListByVacancy(ctx context.Context, vacancyID
 func (s *VacancyApplicationService) CountByVacancy(ctx context.Context, vacancyID uuid.UUID) (int64, error) {
 	return s.repo.CountByVacancy(ctx, vacancyID)
 }
+
+func (s *VacancyApplicationService) CountUnseenByVacancy(ctx context.Context, vacancyID uuid.UUID) (int64, error) {
+	return s.repo.CountUnseenByVacancy(ctx, vacancyID)
+}
+
+func (s *VacancyApplicationService) GetByID(ctx context.Context, id uuid.UUID) (*domain.VacancyApplication, error) {
+	return s.repo.GetByID(ctx, id)
+}
+
+func (s *VacancyApplicationService) UpdateStatus(ctx context.Context, id uuid.UUID, status string) (*domain.VacancyApplication, error) {
+	return s.repo.UpdateStatus(ctx, id, status)
+}
+
+func (s *VacancyApplicationService) MarkSeen(ctx context.Context, id uuid.UUID) (*domain.VacancyApplication, error) {
+	return s.repo.MarkSeen(ctx, id)
+}

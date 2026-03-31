@@ -1,6 +1,6 @@
 -- name: CreateVacancy :one
 INSERT INTO vacancies (
-    id, hr_id, company_id, country_id, salary_min, salary_max, salary_currency,
+    id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
     phone, telegram, email, address, status, source_lang, created_at
 ) VALUES (
@@ -8,36 +8,27 @@ INSERT INTO vacancies (
     $8, $9, $10, $11,
     $12, $13, $14, $15, $16, $17, now()
 )
-RETURNING id, hr_id, company_id, country_id, salary_min, salary_max, salary_currency,
+RETURNING id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
     phone, telegram, email, address, status, source_lang, created_at;
 
 -- name: GetVacancyByID :one
-SELECT id, hr_id, company_id, country_id, salary_min, salary_max, salary_currency,
+SELECT id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
     phone, telegram, email, address, status, source_lang, created_at
 FROM vacancies
 WHERE id = $1;
 
 -- name: ListVacancies :many
-SELECT id, hr_id, company_id, country_id, salary_min, salary_max, salary_currency,
+SELECT id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
     phone, telegram, email, address, status, source_lang, created_at
 FROM vacancies
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2;
 
--- name: ListVacanciesByCompany :many
-SELECT id, hr_id, company_id, country_id, salary_min, salary_max, salary_currency,
-    experience_min, experience_max, format, schedule,
-    phone, telegram, email, address, status, source_lang, created_at
-FROM vacancies
-WHERE company_id = $1
-ORDER BY created_at DESC
-LIMIT $2 OFFSET $3;
-
 -- name: ListVacanciesByHR :many
-SELECT id, hr_id, company_id, country_id, salary_min, salary_max, salary_currency,
+SELECT id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
     phone, telegram, email, address, status, source_lang, created_at
 FROM vacancies
@@ -48,8 +39,8 @@ LIMIT $2 OFFSET $3;
 -- name: CountVacancies :one
 SELECT count(*) FROM vacancies;
 
--- name: CountVacanciesByCompany :one
-SELECT count(*) FROM vacancies WHERE company_id = $1;
+-- name: CountVacanciesByHR :one
+SELECT count(*) FROM vacancies WHERE hr_id = $1;
 
 -- name: UpdateVacancy :one
 UPDATE vacancies
@@ -67,12 +58,12 @@ SET salary_min = CASE WHEN sqlc.arg(salary_min)::INT = 0 THEN salary_min ELSE sq
     status = COALESCE(NULLIF(sqlc.arg(status), ''), status),
     country_id = COALESCE(sqlc.arg(country_id), country_id)
 WHERE id = sqlc.arg(id)
-RETURNING id, hr_id, company_id, country_id, salary_min, salary_max, salary_currency,
+RETURNING id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
     phone, telegram, email, address, status, source_lang, created_at;
 
 -- name: SearchVacancies :many
-SELECT DISTINCT v.id, v.hr_id, v.company_id, v.country_id, v.salary_min, v.salary_max, v.salary_currency,
+SELECT DISTINCT v.id, v.hr_id, v.company_data, v.country_id, v.salary_min, v.salary_max, v.salary_currency,
     v.experience_min, v.experience_max, v.format, v.schedule,
     v.phone, v.telegram, v.email, v.address, v.status, v.source_lang, v.created_at
 FROM vacancies v
