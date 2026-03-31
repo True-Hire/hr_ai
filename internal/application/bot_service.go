@@ -169,6 +169,11 @@ func (s *BotService) GetBotState(ctx context.Context, telegramID int64) (*domain
 	return s.stateSvc.GetState(ctx, tgID)
 }
 
+func (s *BotService) ClearBotState(ctx context.Context, telegramID int64) error {
+	tgID := strconv.FormatInt(telegramID, 10)
+	return s.stateSvc.ClearState(ctx, tgID)
+}
+
 func (s *BotService) UpdateLanguage(ctx context.Context, userID uuid.UUID, language string) (*domain.User, error) {
 	return s.userSvc.UpdateLanguage(ctx, userID, language)
 }

@@ -331,6 +331,12 @@ func (tb *Bot) registerHandlers() {
 	bot.Handle("/start", func(c tele.Context) error {
 		sender := c.Sender()
 
+		// Clear any leftover state from previous flow (e.g., after account deletion)
+		state, _ := botSvc.GetBotState(ctx, sender.ID)
+		if state != nil {
+			_ = botSvc.ClearBotState(ctx, sender.ID)
+		}
+
 		result, err := botSvc.HandleStart(ctx, sender.ID)
 		if err != nil {
 			log.Printf("handle /start error for %d: %v", sender.ID, err)
