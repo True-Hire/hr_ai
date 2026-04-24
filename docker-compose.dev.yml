@@ -1,0 +1,15 @@
+services:
+  hr-ai-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - .:/app
+    network_mode: host
+    env_file:
+      - .env
+    restart: unless-stopped
+    # Depending on your setup, you might want to wait for other services
+    # depends_on:
+    #   - db
+    #   - redis

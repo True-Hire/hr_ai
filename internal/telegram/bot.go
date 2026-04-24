@@ -84,6 +84,12 @@ var menuBtnUpdateResume = map[string]string{
 	"uz": "📄 Rezyumeni yangilash",
 }
 
+var menuBtnCreateResume = map[string]string{
+	"en": "📄 Create Resume",
+	"ru": "📄 Создать резюме",
+	"uz": "📄 Rezyume yaratish",
+}
+
 var menuBtnSearchVacancies = map[string]string{
 	"en": "🔍 Search Jobs",
 	"ru": "🔍 Найти работу",
@@ -264,6 +270,7 @@ func NewBot(token string, botSvc *application.BotService, webAppURL string) (*Bo
 	}
 
 	tb := &Bot{bot: b, botSvc: botSvc, webAppURL: webAppURL}
+	_ = b.RemoveWebhook()
 	tb.registerHandlers()
 	return tb, nil
 }
@@ -301,7 +308,7 @@ func (tb *Bot) BroadcastMenu() {
 			continue
 		}
 		lang := langOrDefault(user.Language)
-		_, err = tb.bot.Send(&tele.User{ID: tgID}, msgMenuUpdated[lang], userMenu(lang))
+		_, err = tb.bot.Send(&tele.User{ID: tgID}, msgMenuUpdated[lang], userMenu(lang, user.ProfileScore > 0))
 		if err != nil {
 			log.Printf("broadcast menu: failed to send to %s: %v", user.TelegramID, err)
 			continue
@@ -330,6 +337,7 @@ func (tb *Bot) registerHandlers() {
 	// /start handler
 	bot.Handle("/start", func(c tele.Context) error {
 		sender := c.Sender()
+		log.Printf("Received /start from %d (%s)", sender.ID, sender.Username)
 
 		// Clear any leftover state from previous flow (e.g., after account deletion)
 		state, _ := botSvc.GetBotState(ctx, sender.ID)
@@ -382,7 +390,7 @@ func (tb *Bot) registerHandlers() {
 			return c.Send(msgError["en"])
 		}
 
-		return c.Send(fmt.Sprintf(msgWelcomeBackUser[lang], firstName), userMenu(lang))
+		return c.Send(fmt.Sprintf(msgWelcomeBackUser[lang], firstName), userMenu(lang, result.User != nil && result.User.ProfileScore > 0))
 	})
 
 	// Language selection callback — creates user and asks for phone
@@ -443,7 +451,7 @@ func (tb *Bot) registerHandlers() {
 			return c.Send(msgDetermineSalary[lang])
 		}
 
-		return c.Send(fmt.Sprintf(msgRegisteredUser[lang], c.Sender().FirstName), userMenu(lang))
+		return c.Send(fmt.Sprintf(msgRegisteredUser[lang], c.Sender().FirstName), userMenu(lang, false))
 	})
 
 	// "Done" button — process collected resume data
@@ -454,9 +462,12 @@ func (tb *Bot) registerHandlers() {
 		_ = c.Delete()
 
 		lang := getStateLang(ctx, botSvc, sender.ID)
-		_ = c.Send(msgParsingText[lang])
+		waitMsg, _ := c.Bot().Send(c.Recipient(), msgParsingText[lang])
 
 		result, err := botSvc.ProcessCollectedResume(ctx, sender.ID)
+		if waitMsg != nil {
+			_ = c.Bot().Delete(waitMsg)
+		}
 		if err != nil {
 			log.Printf("process collected resume error for %d: %v", sender.ID, err)
 			return c.Send(msgResumeFailed[lang])
@@ -469,7 +480,7 @@ func (tb *Bot) registerHandlers() {
 			_ = c.Send(fmt.Sprintf(msgSalaryResult[lang], minStr, result.Salary.Currency, maxStr, result.Salary.Currency))
 		}
 
-		return c.Send(msgProfileReady[lang], userMenu(lang))
+		return c.Send(msgProfileReady[lang], userMenu(lang, true))
 	})
 
 	// Change language callback — updates user language and refreshes menu
@@ -493,7 +504,7 @@ func (tb *Bot) registerHandlers() {
 			return c.Send(msgError[newLang])
 		}
 
-		return c.Send(msgLangChanged[newLang], userMenu(newLang))
+		return c.Send(msgLangChanged[newLang], userMenu(newLang, user.ProfileScore > 0))
 	})
 
 	// Contact (phone number) handler — after phone, show goal buttons
@@ -562,7 +573,7 @@ func (tb *Bot) registerHandlers() {
 			}
 			return c.Send(msgOpenProfile[lang])
 		}
-		if isMenuButton(text, menuBtnUpdateResume) {
+		if isMenuButton(text, menuBtnUpdateResume) || isMenuButton(text, menuBtnCreateResume) {
 			if err := botSvc.StartCollectingResume(ctx, sender.ID, lang); err != nil {
 				log.Printf("start collecting resume error for %d: %v", sender.ID, err)
 			}
@@ -596,7 +607,7 @@ func (tb *Bot) registerHandlers() {
 		}
 
 		// Unknown text — suggest using menu
-		return c.Send(msgUseMenu[lang], userMenu(lang))
+		return c.Send(msgUseMenu[lang], userMenu(lang, user.ProfileScore > 0))
 	})
 
 	// Document handler
@@ -641,7 +652,7 @@ func (tb *Bot) registerHandlers() {
 		}
 		lang = langOrDefault(user.Language)
 
-		return c.Send(msgUseMenu[lang], userMenu(lang))
+		return c.Send(msgUseMenu[lang], userMenu(lang, user.ProfileScore > 0))
 	})
 
 	// Photo handler
@@ -682,7 +693,7 @@ func (tb *Bot) registerHandlers() {
 		}
 		lang = langOrDefault(user.Language)
 
-		return c.Send(msgUseMenu[lang], userMenu(lang))
+		return c.Send(msgUseMenu[lang], userMenu(lang, user.ProfileScore > 0))
 	})
 
 	// Voice message handler
@@ -727,7 +738,7 @@ func (tb *Bot) registerHandlers() {
 		}
 		lang = langOrDefault(user.Language)
 
-		return c.Send(msgUseMenu[lang], userMenu(lang))
+		return c.Send(msgUseMenu[lang], userMenu(lang, user.ProfileScore > 0))
 	})
 }
 
@@ -738,10 +749,18 @@ func anythingElseMarkup(lang string) *tele.ReplyMarkup {
 	return markup
 }
 
-func userMenu(lang string) *tele.ReplyMarkup {
+func userMenu(lang string, hasResume bool) *tele.ReplyMarkup {
 	markup := &tele.ReplyMarkup{ResizeKeyboard: true}
+
+	var topRow tele.Row
+	if hasResume {
+		topRow = markup.Row(tele.Btn{Text: menuBtnViewProfile[lang]}, tele.Btn{Text: menuBtnUpdateResume[lang]})
+	} else {
+		topRow = markup.Row(tele.Btn{Text: menuBtnCreateResume[lang]})
+	}
+
 	markup.Reply(
-		markup.Row(tele.Btn{Text: menuBtnViewProfile[lang]}, tele.Btn{Text: menuBtnUpdateResume[lang]}),
+		topRow,
 		markup.Row(tele.Btn{Text: menuBtnSearchVacancies[lang]}, tele.Btn{Text: menuBtnSalaryTips[lang]}),
 		markup.Row(tele.Btn{Text: menuBtnChangeLang[lang]}),
 	)
@@ -759,7 +778,7 @@ func searchVacanciesInline(lang, webAppURL string) *tele.ReplyMarkup {
 func profileViewInline(lang, webAppURL string) *tele.ReplyMarkup {
 	markup := &tele.ReplyMarkup{}
 	markup.Inline(
-		markup.Row(tele.Btn{Text: menuBtnUpdateResume[lang], WebApp: &tele.WebApp{URL: webAppURL + "?view=profile"}}),
+		markup.Row(tele.Btn{Text: menuBtnViewProfile[lang], WebApp: &tele.WebApp{URL: webAppURL + "?view=profile"}}),
 	)
 	return markup
 }

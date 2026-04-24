@@ -77,6 +77,16 @@ func (s *HRBotService) HandlePhoneShared(ctx context.Context, telegramID int64, 
 		Language:   language,
 	}
 
+	existing, err := s.hrSvc.GetByTelegramID(ctx, tgID)
+	if err == nil {
+		existing.FirstName = firstName
+		existing.LastName = lastName
+		existing.Phone = phone
+		existing.Telegram = tg
+		existing.Language = language
+		return s.hrSvc.UpdateCompanyHR(ctx, existing)
+	}
+
 	created, err := s.hrSvc.CreateCompanyHR(ctx, hr)
 	if err != nil {
 		return nil, fmt.Errorf("create company hr: %w", err)

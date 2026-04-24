@@ -117,8 +117,26 @@ func (c *Client) generateJSON(ctx context.Context, parts []part) (string, error)
 			})
 		}
 		if p.InlineData != nil {
+			if p.InlineData.MimeType == "text/plain" {
+				decoded, _ := base64.StdEncoding.DecodeString(p.InlineData.Data)
+				if len(decoded) > 0 {
+					messages[0].Content = append(messages[0].Content, anthropicContent{
+						Type: "text",
+						Text: string(decoded),
+					})
+					continue
+				}
+			}
+
+			contentType := "image"
+			if p.InlineData.MimeType == "application/pdf" {
+				contentType = "document"
+			} else if !strings.HasPrefix(p.InlineData.MimeType, "image/") {
+				continue
+			}
+
 			messages[0].Content = append(messages[0].Content, anthropicContent{
-				Type: "image",
+				Type: contentType,
 				Source: &anthropicSource{
 					Type:      "base64",
 					MediaType: p.InlineData.MimeType,
@@ -126,6 +144,10 @@ func (c *Client) generateJSON(ctx context.Context, parts []part) (string, error)
 				},
 			})
 		}
+	}
+
+	if len(messages[0].Content) == 0 {
+		return "", fmt.Errorf("no valid content to send to AI")
 	}
 
 	reqBody := anthropicRequest{

@@ -366,6 +366,7 @@ func NewHRBot(token string, hrBotSvc *application.HRBotService, storageSvc *appl
 	}
 
 	hb := &HRBot{bot: b, hrBotSvc: hrBotSvc, storageSvc: storageSvc, webAppURL: webAppURL}
+	_ = b.RemoveWebhook()
 	hb.registerHandlers()
 
 	if webAppURL != "" {
@@ -443,6 +444,7 @@ func (hb *HRBot) registerHandlers() {
 	// /start handler
 	bot.Handle("/start", func(c tele.Context) error {
 		sender := c.Sender()
+		log.Printf("HR Bot: Received /start from %d (%s)", sender.ID, sender.Username)
 
 		// Clear any leftover state from previous flow
 		_ = hrBotSvc.ClearState(ctx, sender.ID)
@@ -468,7 +470,7 @@ func (hb *HRBot) registerHandlers() {
 		}
 		lang = langOrDefault(lang)
 		name := strings.TrimSpace(result.HR.FirstName + " " + result.HR.LastName)
-		return c.Send(fmt.Sprintf(hrMsgWelcomeBack[lang], name), hb.hrInlineMenu(lang))
+		return c.Send(fmt.Sprintf(hrMsgWelcomeBack[lang], name), hrMenu(lang))
 	})
 
 	// Contact (phone number) handler — create HR record
@@ -489,7 +491,7 @@ func (hb *HRBot) registerHandlers() {
 		}
 
 		lang = langOrDefault(hr.Language)
-		return c.Send(hrMsgWelcomeNew[lang], hb.hrInlineMenu(lang))
+		return c.Send(hrMsgWelcomeNew[lang], hrMenu(lang))
 	})
 
 	// Language change callback for HR
@@ -709,10 +711,13 @@ func (hb *HRBot) registerHandlers() {
 		}
 
 		// Send "enhancing..." feedback
-		_ = c.Send(hrMsgEnhancing[lang])
+		waitMsg, _ := c.Bot().Send(c.Recipient(), hrMsgEnhancing[lang])
 
 		// Enhance via Gemini
 		enhanced, err := hrBotSvc.EnhanceVacancyDraft(ctx, draft)
+		if waitMsg != nil {
+			_ = c.Bot().Delete(waitMsg)
+		}
 		if err != nil {
 			log.Printf("hr_vac_create_desc: enhance failed for %d: %v", sender.ID, err)
 			// Fall back to original draft
@@ -1109,7 +1114,7 @@ func (hb *HRBot) handleCompanyDataInput(ctx context.Context, c tele.Context, sta
 	hrIDStr := state.Data["hr_id"]
 
 	// Send appropriate "processing" message
-	_ = c.Send(hrMsgParsingCompany[lang])
+	waitMsg, _ := c.Bot().Send(c.Recipient(), hrMsgParsingCompany[lang])
 
 	var parsed *gemini.ParsedCompanyFull
 	var err error
@@ -1121,6 +1126,10 @@ func (hb *HRBot) handleCompanyDataInput(ctx context.Context, c tele.Context, sta
 		parsed, err = hb.hrBotSvc.ParseCompanyFromText(ctx, text)
 	} else if len(fileData) > 0 {
 		parsed, err = hb.hrBotSvc.ParseCompanyFromFile(ctx, fileData, mimeType)
+	}
+
+	if waitMsg != nil {
+		_ = c.Bot().Delete(waitMsg)
 	}
 
 	if err != nil {
@@ -1323,13 +1332,14 @@ func (hb *HRBot) handleVacancyInput(ctx context.Context, c tele.Context, state *
 	isAdding := state.State == domain.HRBotStateAddingVacancyInfo
 
 	// Send appropriate "processing" message
+	var waitMsg *tele.Message
 	switch inputType {
 	case "text":
-		_ = c.Send(hrMsgParsingText[lang])
+		waitMsg, _ = c.Bot().Send(c.Recipient(), hrMsgParsingText[lang])
 	case "voice":
-		_ = c.Send(hrMsgParsingVoice[lang])
+		waitMsg, _ = c.Bot().Send(c.Recipient(), hrMsgParsingVoice[lang])
 	case "file":
-		_ = c.Send(hrMsgParsingFile[lang])
+		waitMsg, _ = c.Bot().Send(c.Recipient(), hrMsgParsingFile[lang])
 	}
 
 	var parsed *gemini.ParsedVacancyFull
@@ -1367,6 +1377,10 @@ func (hb *HRBot) handleVacancyInput(ctx context.Context, c tele.Context, state *
 		}
 	}
 
+	if waitMsg != nil {
+		_ = c.Bot().Delete(waitMsg)
+	}
+
 	if err != nil {
 		log.Printf("hr parse vacancy error for %d: %v", sender.ID, err)
 		return c.Send(hrMsgVacancyFailed[lang], hrMenu(lang))
@@ -1387,6 +1401,11 @@ func (hb *HRBot) handleVacancyInput(ctx context.Context, c tele.Context, state *
 	}
 
 	// Format and send the vacancy summary + missing fields + action buttons
+	if parsed == nil {
+		log.Printf("hr parse vacancy result is nil for %d", sender.ID)
+		return c.Send(hrMsgVacancyFailed[lang], hrMenu(lang))
+	}
+
 	return hb.sendVacancyReview(c, parsed, lang)
 }
 
@@ -1827,6 +1846,9 @@ func (hb *HRBot) buildAddInfoMessage(draft *gemini.ParsedVacancyFull, lang strin
 
 // draftField returns the text field value for the given language, falling back to English.
 func draftField(draft *gemini.ParsedVacancyFull, field, lang string) string {
+	if draft == nil || draft.Fields == nil {
+		return ""
+	}
 	if fields, ok := draft.Fields[field]; ok {
 		if v := fields[lang]; v != "" {
 			return v
@@ -1913,9 +1935,12 @@ func (hb *HRBot) handleSearchQuery(ctx context.Context, c tele.Context, state *d
 	sender := c.Sender()
 	lang := langOrDefault(state.Data["language"])
 
-	_ = c.Send(hrMsgSearching[lang])
+	waitMsg, _ := c.Bot().Send(c.Recipient(), hrMsgSearching[lang])
 
 	results, err := hb.hrBotSvc.SearchCandidates(ctx, c.Text())
+	if waitMsg != nil {
+		_ = c.Bot().Delete(waitMsg)
+	}
 	if err != nil {
 		log.Printf("hr search candidates error for %d: %v", sender.ID, err)
 		return c.Send(hrMsgError[lang], hrMenu(lang))
