@@ -54,7 +54,7 @@ type Services struct {
 	TelegramHRBotToken string
 }
 
-func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdrantURL, qdrantAPIKey, redisURL, minioEndpoint, minioAccessKey, minioSecretKey, minioBucket string, minioUseSSL bool, minioPublicURL, telegramBotToken, telegramHRBotToken string) (*Services, error) {
+func NewServices(pool *pgxpool.Pool, geminiAPIKey, anthropicAPIKey, jwtSecret, databaseURL, qdrantURL, qdrantAPIKey, redisURL, minioEndpoint, minioAccessKey, minioSecretKey, minioBucket string, minioUseSSL bool, minioPublicURL, telegramBotToken, telegramHRBotToken string) (*Services, error) {
 	rc, err := redisclient.NewClient(redisURL)
 	if err != nil {
 		return nil, fmt.Errorf("init redis: %w", err)
@@ -71,7 +71,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, jwtSecret, databaseURL, qdran
 	userRepo := repository.NewUserRepository(pool)
 	sessionRepo := repository.NewSessionRepository(pool)
 	userSvc := application.NewUserService(userRepo)
-	geminiClient := gemini.NewClient(geminiAPIKey)
+	geminiClient := gemini.NewClient(geminiAPIKey, anthropicAPIKey)
 
 	pfRepo := repository.NewProfileFieldRepository(pool)
 	pftRepo := repository.NewProfileFieldTextRepository(pool)

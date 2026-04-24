@@ -15,4 +15,4 @@ services:
       - ./db/migrations:/migrations:ro
     env_file:
       - .env
-    entrypoint: ["sh", "-c", "for f in /migrations/*.sql; do echo \"Running $$f...\"; psql \"$$DATABASE_URL\" -f \"$$f\"; done"]
+    entrypoint: [ "sh", "-c", "for f in /migrations/*.sql; do echo \"Running $$f...\"; psql \"$$DATABASE_URL\" -f \"$$f\"; done" ]

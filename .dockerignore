@@ -1,7 +1,7 @@
 .git
 .env
 .dockerignore
-Dockerfile
-docker-compose.yaml
+Dockerfile.local
+docker-compose.local
 Makefile
 docs/

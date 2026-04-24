@@ -18,6 +18,13 @@ func corsMiddleware() gin.HandlerFunc {
 			allowed := []string{
 				"https://hr-ai-wb-app.leetcoders.uz",
 				"https://hr-ai.compile-me.uz",
+				"https://transport-factor-prior.ngrok-free.dev",
+				"http://localhost:11911",
+				"http://127.0.0.1:11911",
+				"http://localhost:5173",
+				"http://127.0.0.1:5173",
+				"http://localhost:3000",
+				"http://127.0.0.1:3000",
 			}
 			for _, a := range allowed {
 				if strings.EqualFold(origin, a) {

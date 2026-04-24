@@ -371,8 +371,18 @@ func (tb *Bot) registerHandlers() {
 			}()
 		}
 
-		lang := langOrDefault(result.User.Language)
-		return c.Send(fmt.Sprintf(msgWelcomeBackUser[lang], result.User.FirstName), userMenu(lang))
+		var lang, firstName string
+		if result.User != nil {
+			lang = langOrDefault(result.User.Language)
+			firstName = result.User.FirstName
+		} else if result.IsHR && result.HR != nil {
+			lang = langOrDefault(result.HR.Language)
+			firstName = result.HR.FirstName
+		} else {
+			return c.Send(msgError["en"])
+		}
+
+		return c.Send(fmt.Sprintf(msgWelcomeBackUser[lang], firstName), userMenu(lang))
 	})
 
 	// Language selection callback — creates user and asks for phone
@@ -798,8 +808,6 @@ func isAllowedMIME(mime string) bool {
 	}
 	return false
 }
-
-
 
 func langOrDefault(lang string) string {
 	if lang == "en" || lang == "ru" || lang == "uz" {

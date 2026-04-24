@@ -16,19 +16,21 @@ import (
 )
 
 const (
-	baseURL      = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+	baseURL      = "https://api.anthropic.com/v1/messages"
 	embeddingURL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent"
-	modelVersion = "gemini-2.5-flash"
+	modelVersion = "claude-sonnet-4-6"
 )
 
 type Client struct {
-	apiKey     string
-	httpClient *http.Client
+	googleKey    string
+	anthropicKey string
+	httpClient   *http.Client
 }
 
-func NewClient(apiKey string) *Client {
+func NewClient(googleKey, anthropicKey string) *Client {
 	return &Client{
-		apiKey: apiKey,
+		googleKey:    googleKey,
+		anthropicKey: anthropicKey,
 		httpClient: &http.Client{
 			Timeout: 60 * time.Second,
 		},
@@ -45,28 +47,42 @@ var retryDelayRegex = regexp.MustCompile(`"retryDelay":\s*"(\d+)s?"`)
 
 // doRequest sends a Gemini API request with retry on 429 rate limit errors.
 // It parses the retryDelay from the response body and waits accordingly.
-func (c *Client) doRequest(ctx context.Context, url string, jsonBody []byte) ([]byte, error) {
+func (c *Client) doRequest(ctx context.Context, apiURL string, jsonBody []byte) ([]byte, error) {
+	fullURL := apiURL
+	isAnthropic := strings.Contains(apiURL, "anthropic.com")
+	if !isAnthropic && !strings.Contains(apiURL, "key=") {
+		connector := "?"
+		if strings.Contains(apiURL, "?") {
+			connector = "&"
+		}
+		fullURL = apiURL + connector + "key=" + c.googleKey
+	}
+
 	for attempt := 0; attempt <= maxRetries; attempt++ {
-		req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(jsonBody))
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, fullURL, bytes.NewReader(jsonBody))
 		if err != nil {
-			return nil, fmt.Errorf("create gemini request: %w", err)
+			return nil, fmt.Errorf("create API request: %w", err)
 		}
 		req.Header.Set("Content-Type", "application/json")
+		if isAnthropic {
+			req.Header.Set("x-api-key", c.anthropicKey)
+			req.Header.Set("anthropic-version", "2023-06-01")
+		}
 
 		resp, err := c.httpClient.Do(req)
 		if err != nil {
-			return nil, fmt.Errorf("gemini API call: %w", err)
+			return nil, fmt.Errorf("API call: %w", err)
 		}
 
 		body, err := io.ReadAll(resp.Body)
 		resp.Body.Close()
 		if err != nil {
-			return nil, fmt.Errorf("read gemini response: %w", err)
+			return nil, fmt.Errorf("read response: %w", err)
 		}
 
 		if resp.StatusCode == http.StatusTooManyRequests && attempt < maxRetries {
 			delay := parseRetryDelay(body)
-			log.Printf("gemini rate limited, retrying in %v (attempt %d/%d)", delay, attempt+1, maxRetries)
+			log.Printf("API rate limited, retrying in %v (attempt %d/%d)", delay, attempt+1, maxRetries)
 			select {
 			case <-ctx.Done():
 				return nil, ctx.Err()
@@ -76,40 +92,82 @@ func (c *Client) doRequest(ctx context.Context, url string, jsonBody []byte) ([]
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("gemini API error (status %d): %s", resp.StatusCode, string(body))
+			return nil, fmt.Errorf("API error (status %d): %s", resp.StatusCode, string(body))
 		}
 
 		return body, nil
 	}
-	return nil, fmt.Errorf("gemini API: max retries exceeded")
+	return nil, fmt.Errorf("API: max retries exceeded")
 }
 
 // generateJSON sends parts to Gemini, retries on 429, and returns the text from the first candidate.
 func (c *Client) generateJSON(ctx context.Context, parts []part) (string, error) {
-	reqBody := generateRequest{
-		Contents:         []content{{Parts: parts}},
-		GenerationConfig: generationConfig{ResponseMimeType: "application/json"},
+	messages := []anthropicMessage{
+		{
+			Role:    "user",
+			Content: make([]anthropicContent, 0, len(parts)),
+		},
+	}
+
+	for _, p := range parts {
+		if p.Text != "" {
+			messages[0].Content = append(messages[0].Content, anthropicContent{
+				Type: "text",
+				Text: p.Text,
+			})
+		}
+		if p.InlineData != nil {
+			messages[0].Content = append(messages[0].Content, anthropicContent{
+				Type: "image",
+				Source: &anthropicSource{
+					Type:      "base64",
+					MediaType: p.InlineData.MimeType,
+					Data:      p.InlineData.Data,
+				},
+			})
+		}
+	}
+
+	reqBody := anthropicRequest{
+		Model:     modelVersion,
+		MaxTokens: 4096,
+		Messages:  messages,
 	}
 	jsonBody, err := json.Marshal(reqBody)
 	if err != nil {
-		return "", fmt.Errorf("marshal gemini request: %w", err)
+		return "", fmt.Errorf("marshal Claude request: %w", err)
 	}
 
-	body, err := c.doRequest(ctx, baseURL+"?key="+c.apiKey, jsonBody)
+	body, err := c.doRequest(ctx, baseURL, jsonBody)
 	if err != nil {
 		return "", err
 	}
 
-	var genResp generateResponse
+	var genResp anthropicResponse
 	if err := json.Unmarshal(body, &genResp); err != nil {
-		return "", fmt.Errorf("unmarshal gemini response: %w", err)
+		return "", fmt.Errorf("unmarshal Claude response: %w", err)
 	}
 
-	if len(genResp.Candidates) == 0 || len(genResp.Candidates[0].Content.Parts) == 0 {
-		return "", fmt.Errorf("gemini returned no content")
+	if len(genResp.Content) == 0 {
+		return "", fmt.Errorf("Claude returned no content")
 	}
 
-	return genResp.Candidates[0].Content.Parts[0].Text, nil
+	return stripMarkdown(genResp.Content[0].Text), nil
+}
+
+func stripMarkdown(text string) string {
+	text = strings.TrimSpace(text)
+	if strings.HasPrefix(text, "```") {
+		// Find the first newline
+		if firstNewline := strings.Index(text, "\n"); firstNewline != -1 {
+			text = text[firstNewline+1:]
+		}
+		// Find the last ```
+		if lastBackticks := strings.LastIndex(text, "```"); lastBackticks != -1 {
+			text = text[:lastBackticks]
+		}
+	}
+	return strings.TrimSpace(text)
 }
 
 func parseRetryDelay(body []byte) time.Duration {
@@ -175,12 +233,12 @@ func (f *FlexibleFields) UnmarshalJSON(data []byte) error {
 
 // ParsedProfile is the structured result from Gemini profile parsing.
 type ParsedProfile struct {
-	SourceLang     string               `json:"source_lang"`
-	ProfileScore   int                  `json:"profile_score"`
-	Fields         FlexibleFields       `json:"fields"`
-	Skills         LangStringSlice      `json:"skills"`
-	Certifications LangStringSlice      `json:"certifications"`
-	Languages      []ParsedLanguageItem `json:"languages"`
+	SourceLang     string                 `json:"source_lang"`
+	ProfileScore   int                    `json:"profile_score"`
+	Fields         FlexibleFields         `json:"fields"`
+	Skills         LangStringSlice        `json:"skills"`
+	Certifications LangStringSlice        `json:"certifications"`
+	Languages      []ParsedLanguageItem   `json:"languages"`
 	Experience     []ParsedExperienceItem `json:"experience"`
 	Education      []ParsedEducationItem  `json:"education"`
 }
@@ -285,20 +343,20 @@ type ParsedVacancy struct {
 
 // ParsedVacancyFull is the result from Gemini when parsing a full job posting text.
 type ParsedVacancyFull struct {
-	SourceLang    string                       `json:"source_lang"`
-	Fields        map[string]map[string]string `json:"fields"`
-	SalaryMin     int32                        `json:"salary_min"`
-	SalaryMax     int32                        `json:"salary_max"`
-	SalaryCurrency string                      `json:"salary_currency"`
-	ExperienceMin int32                        `json:"experience_min"`
-	ExperienceMax int32                        `json:"experience_max"`
-	Format        string                       `json:"format"`
-	Schedule      string                       `json:"schedule"`
-	Phone         string                       `json:"phone"`
-	Telegram      string                       `json:"telegram"`
-	Email         string                       `json:"email"`
-	Address       string                       `json:"address"`
-	Skills        []string                     `json:"skills"`
+	SourceLang     string                       `json:"source_lang"`
+	Fields         map[string]map[string]string `json:"fields"`
+	SalaryMin      int32                        `json:"salary_min"`
+	SalaryMax      int32                        `json:"salary_max"`
+	SalaryCurrency string                       `json:"salary_currency"`
+	ExperienceMin  int32                        `json:"experience_min"`
+	ExperienceMax  int32                        `json:"experience_max"`
+	Format         string                       `json:"format"`
+	Schedule       string                       `json:"schedule"`
+	Phone          string                       `json:"phone"`
+	Telegram       string                       `json:"telegram"`
+	Email          string                       `json:"email"`
+	Address        string                       `json:"address"`
+	Skills         []string                     `json:"skills"`
 }
 
 func (c *Client) TranslateVacancy(ctx context.Context, input string) (*ParsedVacancy, error) {
@@ -382,7 +440,7 @@ func (c *Client) EmbedText(ctx context.Context, text string) ([]float32, error) 
 		return nil, fmt.Errorf("marshal embedding request: %w", err)
 	}
 
-	body, err := c.doRequest(ctx, embeddingURL+"?key="+c.apiKey, jsonBody)
+	body, err := c.doRequest(ctx, embeddingURL, jsonBody)
 	if err != nil {
 		return nil, err
 	}
@@ -478,17 +536,40 @@ func (c *Client) callGemini(ctx context.Context, parts []part) (*ParsedProfile, 
 	return &profile, nil
 }
 
-// Gemini API request types
+// Claude (Anthropic) API types
 
-type generateRequest struct {
-	Contents         []content        `json:"contents"`
-	GenerationConfig generationConfig `json:"generation_config"`
+type anthropicRequest struct {
+	Model     string             `json:"model"`
+	MaxTokens int                `json:"max_tokens"`
+	System    string             `json:"system,omitempty"`
+	Messages  []anthropicMessage `json:"messages"`
 }
 
-type content struct {
-	Parts []part `json:"parts"`
+type anthropicMessage struct {
+	Role    string             `json:"role"`
+	Content []anthropicContent `json:"content"`
 }
 
+type anthropicContent struct {
+	Type   string           `json:"type"`
+	Text   string           `json:"text,omitempty"`
+	Source *anthropicSource `json:"source,omitempty"`
+}
+
+type anthropicSource struct {
+	Type      string `json:"type"`
+	MediaType string `json:"media_type"`
+	Data      string `json:"data"`
+}
+
+type anthropicResponse struct {
+	Content []struct {
+		Text string `json:"text"`
+		Type string `json:"type"`
+	} `json:"content"`
+}
+
+// Internal part structure (kept for compatibility with existing code)
 type part struct {
 	Text       string      `json:"text,omitempty"`
 	InlineData *inlineData `json:"inline_data,omitempty"`
@@ -497,26 +578,4 @@ type part struct {
 type inlineData struct {
 	MimeType string `json:"mime_type"`
 	Data     string `json:"data"`
-}
-
-type generationConfig struct {
-	ResponseMimeType string `json:"response_mime_type"`
-}
-
-// Gemini API response types
-
-type generateResponse struct {
-	Candidates []candidate `json:"candidates"`
-}
-
-type candidate struct {
-	Content contentResponse `json:"content"`
-}
-
-type contentResponse struct {
-	Parts []partResponse `json:"parts"`
-}
-
-type partResponse struct {
-	Text string `json:"text"`
 }

@@ -11,6 +11,7 @@ type Config struct {
 	DatabaseURL      string
 	ServerPort       string
 	GeminiAPIKey     string
+	AnthropicAPIKey  string
 	JWTSecret        string
 	QdrantURL        string
 	QdrantAPIKey     string
@@ -89,10 +90,13 @@ func Load() (*Config, error) {
 	webAppURL := os.Getenv("WEBAPP_URL")
 	hrWebAppURL := os.Getenv("HR_WEBAPP_URL")
 
+	anthropicKey := os.Getenv("ANTHROPIC_API_KEY")
+
 	return &Config{
 		DatabaseURL:      dbURL,
 		ServerPort:       port,
 		GeminiAPIKey:     geminiKey,
+		AnthropicAPIKey:  anthropicKey,
 		JWTSecret:        jwtSecret,
 		QdrantURL:        qdrantURL,
 		QdrantAPIKey:     qdrantAPIKey,
