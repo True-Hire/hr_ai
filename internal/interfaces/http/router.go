@@ -188,7 +188,7 @@ func NewRouter(svc *app.Services) *gin.Engine {
 		}
 
 		miniapp := v1.Group("/miniapp")
-		miniapp.Use(TelegramAuthMiddleware(svc.TelegramBotToken, svc.User))
+		miniapp.Use(TelegramAuthMiddleware(svc.TelegramBotToken, svc.User, svc.CompanyHR))
 		{
 			miniapp.GET("/me", miniAppHandler.GetProfile)
 			miniapp.GET("/vacancies", miniAppHandler.ListForUser)

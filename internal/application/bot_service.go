@@ -293,12 +293,25 @@ func (s *BotService) ProcessCollectedResume(ctx context.Context, telegramID int6
 			// Try finding in HR table
 			hr, hrErr := s.hrSvc.GetByTelegramID(ctx, tgID)
 			if hrErr == nil {
-				user = &domain.User{
+				// User is an HR, but not in 'users' table yet.
+				// We MUST create a user record because profile parsing needs a valid foreign key in 'users' table.
+				user, err = s.userSvc.CreateUser(ctx, &domain.User{
 					ID:         hr.ID,
 					FirstName:  hr.FirstName,
 					LastName:   hr.LastName,
 					TelegramID: hr.TelegramID,
 					Language:   hr.Language,
+				})
+				if err != nil {
+					// If CreateUser fails (maybe ID conflict), try EnsureUser pattern or fallback
+					log.Printf("failed to auto-create user for HR %s: %v", hr.ID, err)
+					user = &domain.User{
+						ID:         hr.ID,
+						FirstName:  hr.FirstName,
+						LastName:   hr.LastName,
+						TelegramID: hr.TelegramID,
+						Language:   hr.Language,
+					}
 				}
 			} else {
 				return nil, fmt.Errorf("get user or hr: %w", hrErr)

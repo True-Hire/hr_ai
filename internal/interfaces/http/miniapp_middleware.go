@@ -17,12 +17,13 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/ruziba3vich/hr-ai/internal/application"
+	"github.com/ruziba3vich/hr-ai/internal/domain"
 )
 
 // TelegramAuthMiddleware validates Telegram Mini App initData.
 // The Authorization header should contain: "tma <initData>"
 // See https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app
-func TelegramAuthMiddleware(botToken string, userSvc *application.UserService) gin.HandlerFunc {
+func TelegramAuthMiddleware(botToken string, userSvc *application.UserService, hrSvc *application.CompanyHRService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		header := c.GetHeader("Authorization")
 		if header == "" {
@@ -48,8 +49,26 @@ func TelegramAuthMiddleware(botToken string, userSvc *application.UserService) g
 		tgIDStr := strconv.FormatInt(telegramID, 10)
 		user, err := userSvc.GetByTelegramID(c.Request.Context(), tgIDStr)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, ErrorResponse{Error: "user not found"})
-			return
+			// Fallback: check if they are an HR
+			hr, hrErr := hrSvc.GetByTelegramID(c.Request.Context(), tgIDStr)
+			if hrErr == nil {
+				// User is an HR, auto-create a candidate profile for them
+				user, err = userSvc.CreateUser(c.Request.Context(), &domain.User{
+					ID:         hr.ID,
+					FirstName:  hr.FirstName,
+					LastName:   hr.LastName,
+					TelegramID: hr.TelegramID,
+					Language:   hr.Language,
+				})
+				if err != nil {
+					log.Printf("failed to auto-create user for HR %s in middleware: %v", hr.ID, err)
+					c.AbortWithStatusJSON(http.StatusUnauthorized, ErrorResponse{Error: "failed to initialize user profile"})
+					return
+				}
+			} else {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, ErrorResponse{Error: "user not found"})
+				return
+			}
 		}
 
 		c.Set("user_id", user.ID.String())
