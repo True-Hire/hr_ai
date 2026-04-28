@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ruziba3vich/hr-ai/internal/application"
@@ -380,17 +381,20 @@ func (tb *Bot) registerHandlers() {
 		}
 
 		var lang, firstName string
+		var hasResume bool
 		if result.User != nil {
 			lang = langOrDefault(result.User.Language)
 			firstName = result.User.FirstName
+			hasResume = result.User.ProfileScore > 0
 		} else if result.IsHR && result.HR != nil {
 			lang = langOrDefault(result.HR.Language)
 			firstName = result.HR.FirstName
+			hasResume = false
 		} else {
 			return c.Send(msgError["en"])
 		}
 
-		return c.Send(fmt.Sprintf(msgWelcomeBackUser[lang], firstName), userMenu(lang, result.User != nil && result.User.ProfileScore > 0))
+		return c.Send(fmt.Sprintf(msgWelcomeBackUser[lang], firstName), userMenu(lang, hasResume))
 	})
 
 	// Language selection callback — creates user and asks for phone
@@ -537,36 +541,50 @@ func (tb *Bot) registerHandlers() {
 	// Text message handler
 	bot.Handle(tele.OnText, func(c tele.Context) error {
 		sender := c.Sender()
-		lang := getStateLang(ctx, botSvc, sender.ID)
+		text := c.Text()
 
-		state, _ := botSvc.GetBotState(ctx, sender.ID)
-		if state != nil {
-			switch state.State {
-			case domain.BotStateChoosingLanguage:
-				return c.Send(msgChooseLangReminder["en"] + "\n" + msgChooseLangReminder["ru"] + "\n" + msgChooseLangReminder["uz"])
-			case domain.BotStateChoosingRole:
-				return c.Send(msgChooseRoleReminder[langOrDefault(state.Data["language"])])
-			case domain.BotStateSharingPhone:
-				return c.Send(msgPhoneReminder[langOrDefault(state.Data["language"])])
-			case domain.BotStateCollectingResume:
-				lang = langOrDefault(state.Data["language"])
-				if err := botSvc.AddResumeText(ctx, sender.ID, c.Text()); err != nil {
-					log.Printf("add resume text error for %d: %v", sender.ID, err)
-					return c.Send(msgError[lang])
+		// 1. Check if the text is a menu button first
+		isMenu := isMenuButton(text, menuBtnViewProfile) ||
+			isMenuButton(text, menuBtnUpdateResume) ||
+			isMenuButton(text, menuBtnCreateResume) ||
+			isMenuButton(text, menuBtnSearchVacancies) ||
+			isMenuButton(text, menuBtnChangeLang) ||
+			isMenuButton(text, menuBtnSalaryTips)
+
+		if isMenu {
+			// If it's a menu button, clear any active state and handle the command
+			_ = botSvc.ClearBotState(ctx, sender.ID)
+		} else {
+			// 2. If it's not a menu button, handle active states
+			state, _ := botSvc.GetBotState(ctx, sender.ID)
+			if state != nil {
+				switch state.State {
+				case domain.BotStateChoosingLanguage:
+					return c.Send(msgChooseLangReminder["en"] + "\n" + msgChooseLangReminder["ru"] + "\n" + msgChooseLangReminder["uz"])
+				case domain.BotStateChoosingRole:
+					return c.Send(msgChooseRoleReminder[langOrDefault(state.Data["language"])])
+				case domain.BotStateSharingPhone:
+					return c.Send(msgPhoneReminder[langOrDefault(state.Data["language"])])
+				case domain.BotStateCollectingResume:
+					lang := langOrDefault(state.Data["language"])
+					if err := botSvc.AddResumeText(ctx, sender.ID, text); err != nil {
+						log.Printf("add resume text error for %d: %v", sender.ID, err)
+						return c.Send(msgError[lang])
+					}
+					_ = c.Send(msgCollectedText[lang])
+					return c.Send(msgAnythingElse[lang], anythingElseMarkup(lang))
 				}
-				_ = c.Send(msgCollectedText[lang])
-				return c.Send(msgAnythingElse[lang], anythingElseMarkup(lang))
 			}
 		}
 
+		// 3. Ensure user exists (or HR exists)
 		user, err := ensureUser(ctx, botSvc, sender)
 		if err != nil {
-			return c.Send(msgStartFirst[lang])
+			return c.Send(msgStartFirst["en"])
 		}
-		lang = langOrDefault(user.Language)
+		lang := langOrDefault(user.Language)
 
-		// Handle menu button taps
-		text := c.Text()
+		// 4. Handle menu button commands
 		if isMenuButton(text, menuBtnViewProfile) {
 			if tb.webAppURL != "" {
 				return c.Send(msgOpenProfile[lang], profileViewInline(lang, tb.webAppURL))
@@ -816,6 +834,16 @@ func ensureUser(ctx context.Context, botSvc *application.BotService, sender *tel
 	if result.User != nil {
 		return result.User, nil
 	}
+	if result.HR != nil {
+		return &domain.User{
+			ID:         result.HR.ID,
+			FirstName:  result.HR.FirstName,
+			LastName:   result.HR.LastName,
+			TelegramID: result.HR.TelegramID,
+			Language:   result.HR.Language,
+			Phone:      result.HR.Phone,
+		}, nil
+	}
 	return nil, fmt.Errorf("user not found")
 }
 
@@ -836,8 +864,9 @@ func langOrDefault(lang string) string {
 }
 
 func isMenuButton(text string, btnTexts map[string]string) bool {
+	trimmedText := strings.TrimSpace(text)
 	for _, v := range btnTexts {
-		if text == v {
+		if trimmedText == strings.TrimSpace(v) {
 			return true
 		}
 	}

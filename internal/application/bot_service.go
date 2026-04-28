@@ -44,28 +44,31 @@ type StartResult struct {
 
 func (s *BotService) HandleStart(ctx context.Context, telegramID int64) (*StartResult, error) {
 	tgID := strconv.FormatInt(telegramID, 10)
+	res := &StartResult{}
 
 	existingUser, err := s.userSvc.GetByTelegramID(ctx, tgID)
 	if err == nil {
-		return &StartResult{User: existingUser, IsNew: false, IsHR: false}, nil
-	}
-	if !errors.Is(err, domain.ErrUserNotFound) {
+		res.User = existingUser
+	} else if !errors.Is(err, domain.ErrUserNotFound) {
 		return nil, fmt.Errorf("check existing user: %w", err)
 	}
 
 	existingHR, err := s.hrSvc.GetByTelegramID(ctx, tgID)
 	if err == nil {
-		return &StartResult{HR: existingHR, IsNew: false, IsHR: true}, nil
-	}
-	if !errors.Is(err, domain.ErrCompanyHRNotFound) {
+		res.HR = existingHR
+		res.IsHR = true
+	} else if !errors.Is(err, domain.ErrCompanyHRNotFound) {
 		return nil, fmt.Errorf("check existing hr: %w", err)
 	}
 
-	if err := s.stateSvc.SetState(ctx, tgID, domain.BotStateChoosingLanguage); err != nil {
-		return nil, fmt.Errorf("set language selection state: %w", err)
+	if res.User == nil && res.HR == nil {
+		res.IsNew = true
+		if err := s.stateSvc.SetState(ctx, tgID, domain.BotStateChoosingLanguage); err != nil {
+			return nil, fmt.Errorf("set language selection state: %w", err)
+		}
 	}
 
-	return &StartResult{IsNew: true}, nil
+	return res, nil
 }
 
 // UpdateProfilePicIfMissing uploads the photo and updates the user's profile_pic_url if empty.
@@ -175,7 +178,27 @@ func (s *BotService) ClearBotState(ctx context.Context, telegramID int64) error 
 }
 
 func (s *BotService) UpdateLanguage(ctx context.Context, userID uuid.UUID, language string) (*domain.User, error) {
-	return s.userSvc.UpdateLanguage(ctx, userID, language)
+	// Try updating in users table first
+	user, err := s.userSvc.UpdateLanguage(ctx, userID, language)
+	if err == nil {
+		return user, nil
+	}
+
+	// If not found in users, try updating in company_hrs table
+	hr, err := s.hrSvc.UpdateLanguage(ctx, userID, language)
+	if err == nil {
+		// Return mapped user object for compatibility
+		return &domain.User{
+			ID:         hr.ID,
+			FirstName:  hr.FirstName,
+			LastName:   hr.LastName,
+			TelegramID: hr.TelegramID,
+			Language:   hr.Language,
+			Phone:      hr.Phone,
+		}, nil
+	}
+
+	return nil, err
 }
 
 // ListAllUsers pages through all users in the database.
@@ -266,7 +289,23 @@ func (s *BotService) ProcessCollectedResume(ctx context.Context, telegramID int6
 
 	user, err := s.userSvc.GetByTelegramID(ctx, tgID)
 	if err != nil {
-		return nil, fmt.Errorf("get user: %w", err)
+		if errors.Is(err, domain.ErrUserNotFound) {
+			// Try finding in HR table
+			hr, hrErr := s.hrSvc.GetByTelegramID(ctx, tgID)
+			if hrErr == nil {
+				user = &domain.User{
+					ID:         hr.ID,
+					FirstName:  hr.FirstName,
+					LastName:   hr.LastName,
+					TelegramID: hr.TelegramID,
+					Language:   hr.Language,
+				}
+			} else {
+				return nil, fmt.Errorf("get user or hr: %w", hrErr)
+			}
+		} else {
+			return nil, fmt.Errorf("get user: %w", err)
+		}
 	}
 
 	entries, err := s.stateSvc.GetResumeEntries(ctx, tgID)
@@ -432,40 +471,40 @@ func countryFromPhone(phone string) string {
 		{"9987", "UZ"},
 		{"9971", "UZ"},
 		// 3-digit
-		{"998", "UZ"},  // Uzbekistan
-		{"996", "KG"},  // Kyrgyzstan
-		{"995", "GE"},  // Georgia
-		{"994", "AZ"},  // Azerbaijan
-		{"993", "TM"},  // Turkmenistan
-		{"992", "TJ"},  // Tajikistan
-		{"971", "AE"},  // UAE
-		{"966", "SA"},  // Saudi Arabia
-		{"420", "CZ"},  // Czech Republic
-		{"380", "UA"},  // Ukraine
-		{"375", "BY"},  // Belarus
-		{"374", "AM"},  // Armenia
-		{"373", "MD"},  // Moldova
-		{"372", "EE"},  // Estonia
-		{"371", "LV"},  // Latvia
-		{"370", "LT"},  // Lithuania
+		{"998", "UZ"}, // Uzbekistan
+		{"996", "KG"}, // Kyrgyzstan
+		{"995", "GE"}, // Georgia
+		{"994", "AZ"}, // Azerbaijan
+		{"993", "TM"}, // Turkmenistan
+		{"992", "TJ"}, // Tajikistan
+		{"971", "AE"}, // UAE
+		{"966", "SA"}, // Saudi Arabia
+		{"420", "CZ"}, // Czech Republic
+		{"380", "UA"}, // Ukraine
+		{"375", "BY"}, // Belarus
+		{"374", "AM"}, // Armenia
+		{"373", "MD"}, // Moldova
+		{"372", "EE"}, // Estonia
+		{"371", "LV"}, // Latvia
+		{"370", "LT"}, // Lithuania
 		// 2-digit
-		{"77", "KZ"},  // Kazakhstan
-		{"79", "RU"},  // Russia mobile
-		{"78", "RU"},  // Russia
-		{"74", "RU"},  // Russia
-		{"73", "RU"},  // Russia
-		{"91", "IN"},  // India
-		{"90", "TR"},  // Turkey
-		{"86", "CN"},  // China
-		{"82", "KR"},  // South Korea
-		{"81", "JP"},  // Japan
-		{"49", "DE"},  // Germany
-		{"48", "PL"},  // Poland
-		{"44", "GB"},  // UK
-		{"33", "FR"},  // France
+		{"77", "KZ"}, // Kazakhstan
+		{"79", "RU"}, // Russia mobile
+		{"78", "RU"}, // Russia
+		{"74", "RU"}, // Russia
+		{"73", "RU"}, // Russia
+		{"91", "IN"}, // India
+		{"90", "TR"}, // Turkey
+		{"86", "CN"}, // China
+		{"82", "KR"}, // South Korea
+		{"81", "JP"}, // Japan
+		{"49", "DE"}, // Germany
+		{"48", "PL"}, // Poland
+		{"44", "GB"}, // UK
+		{"33", "FR"}, // France
 		// 1-digit
-		{"7", "RU"},   // Russia/KZ fallback
-		{"1", "US"},   // USA/Canada
+		{"7", "RU"}, // Russia/KZ fallback
+		{"1", "US"}, // USA/Canada
 	}
 
 	for _, entry := range prefixes {

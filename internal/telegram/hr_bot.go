@@ -911,34 +911,47 @@ func (hb *HRBot) registerHandlers() {
 	// Text message handler
 	bot.Handle(tele.OnText, func(c tele.Context) error {
 		sender := c.Sender()
+		text := strings.TrimSpace(c.Text())
 
-		state, _ := hrBotSvc.GetBotState(ctx, sender.ID)
-		if state != nil {
-			switch state.State {
-			case domain.HRBotStateSharingPhone:
-				lang := langOrDefault(state.Data["language"])
-				return c.Send(hrMsgPhoneReminder[lang])
-			case domain.HRBotStateCollectingCompanyData:
-				return hb.handleCompanyDataInput(ctx, c, state, "text", c.Text(), nil, "")
-			case domain.HRBotStatePostingVacancy:
-				return hb.handleVacancyInput(ctx, c, state, "text", c.Text(), nil, "")
-			case domain.HRBotStateAddingVacancyInfo:
-				return hb.handleVacancyInput(ctx, c, state, "text", c.Text(), nil, "")
-			case domain.HRBotStateEditingPublishedVacancy:
-				return hb.handleEditPublishedVacancy(ctx, c, state, "text", c.Text(), nil, "")
-			case "hr_searching":
-				return hb.handleSearchQuery(ctx, c, state)
+		// 1. Check if the text is a menu button first
+		isMenu := isMenuButton(text, hrMenuBtnCreateVacancy) ||
+			isMenuButton(text, hrMenuBtnActiveVacancies) ||
+			isMenuButton(text, hrMenuBtnFindCandidates) ||
+			isMenuButton(text, hrMenuBtnChangeLang)
+
+		if isMenu {
+			// If it's a menu button, clear any active state
+			_ = hrBotSvc.ClearState(ctx, sender.ID)
+			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
+		} else {
+			// 2. If it's not a menu button, handle active states
+			state, _ := hrBotSvc.GetBotState(ctx, sender.ID)
+			if state != nil {
+				switch state.State {
+				case domain.HRBotStateSharingPhone:
+					lang := langOrDefault(state.Data["language"])
+					return c.Send(hrMsgPhoneReminder[lang])
+				case domain.HRBotStateCollectingCompanyData:
+					return hb.handleCompanyDataInput(ctx, c, state, "text", text, nil, "")
+				case domain.HRBotStatePostingVacancy:
+					return hb.handleVacancyInput(ctx, c, state, "text", text, nil, "")
+				case domain.HRBotStateAddingVacancyInfo:
+					return hb.handleVacancyInput(ctx, c, state, "text", text, nil, "")
+				case domain.HRBotStateEditingPublishedVacancy:
+					return hb.handleEditPublishedVacancy(ctx, c, state, "text", text, nil, "")
+				case "hr_searching":
+					return hb.handleSearchQuery(ctx, c, state)
+				}
 			}
 		}
 
+		// 3. Process menu command (or handle unknown text)
 		tgID := strconv.FormatInt(sender.ID, 10)
 		hr, err := hrBotSvc.GetHRByTelegramID(ctx, tgID)
 		if err != nil {
 			return c.Send(hrMsgError["en"])
 		}
 		lang := langOrDefault(hr.Language)
-
-		text := c.Text()
 
 		if isMenuButton(text, hrMenuBtnCreateVacancy) {
 			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
@@ -961,13 +974,9 @@ func (hb *HRBot) registerHandlers() {
 			return c.Send(hrMsgPostVacancy[lang])
 		}
 		if isMenuButton(text, hrMenuBtnActiveVacancies) {
-			_ = hrBotSvc.ClearState(ctx, sender.ID)
-			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 			return hb.handleMyVacancies(ctx, c, hr)
 		}
 		if isMenuButton(text, hrMenuBtnFindCandidates) {
-			_ = hrBotSvc.ClearState(ctx, sender.ID)
-			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 			if hb.webAppURL != "" {
 				markup := &tele.ReplyMarkup{}
 				markup.Inline(
@@ -978,8 +987,6 @@ func (hb *HRBot) registerHandlers() {
 			return hb.handleFindCandidatesStart(ctx, c, hr)
 		}
 		if isMenuButton(text, hrMenuBtnChangeLang) {
-			_ = hrBotSvc.ClearState(ctx, sender.ID)
-			_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 			markup := &tele.ReplyMarkup{}
 			markup.Inline(
 				markup.Row(
