@@ -26,6 +26,7 @@ import (
 func TelegramAuthMiddleware(botToken string, userSvc *application.UserService, hrSvc *application.CompanyHRService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		header := c.GetHeader("Authorization")
+		log.Printf("DEBUG [UserBot]: Hit middleware. Authorization: '%s'", header)
 		if header == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, ErrorResponse{Error: "missing authorization header"})
 			return
@@ -176,11 +177,12 @@ func TelegramHRAuthMiddleware(hrBotToken string, hrSvc *application.CompanyHRSer
 				header = "tma " + header
 			}
 		}
+		log.Printf("DEBUG [HRBot]: Hit middleware. Authorization: '%s'", header)
+
 		if header == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, ErrorResponse{Error: "missing authorization header"})
 			return
 		}
-
 		parts := strings.SplitN(header, " ", 2)
 		if len(parts) != 2 || parts[0] != "tma" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, ErrorResponse{Error: "invalid authorization header"})
