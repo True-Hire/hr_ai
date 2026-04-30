@@ -53,6 +53,18 @@ func NewMiniAppHandler(
 }
 
 // ListForUser returns vacancies matching the authenticated user's profile.
+// @Summary List vacancies for user
+// @Description Get a list of vacancies that match the worker's profile skills and preferences
+// @Tags miniapp
+// @Accept json
+// @Produce json
+// @Security TelegramAuth
+// @Param page query int false "Page number"
+// @Param page_size query int false "Items per page"
+// @Param lang query string false "Language code"
+// @Success 200 {object} PaginatedVacanciesResponse
+// @Failure 401 {object} ErrorResponse
+// @Router /miniapp/vacancies [get]
 func (h *MiniAppHandler) ListForUser(c *gin.Context) {
 	userIDStr := c.GetString("user_id")
 	userID, err := uuid.Parse(userIDStr)
@@ -85,6 +97,19 @@ func (h *MiniAppHandler) ListForUser(c *gin.Context) {
 }
 
 // Search searches vacancies by a user-typed query using vector similarity.
+// @Summary Search vacancies
+// @Description Search for vacancies using text query (vector similarity search)
+// @Tags miniapp
+// @Accept json
+// @Produce json
+// @Security TelegramAuth
+// @Param q query string false "Search query"
+// @Param page query int false "Page number"
+// @Param page_size query int false "Items per page"
+// @Param lang query string false "Language code"
+// @Success 200 {object} PaginatedVacanciesResponse
+// @Failure 401 {object} ErrorResponse
+// @Router /miniapp/vacancies/search [get]
 func (h *MiniAppHandler) Search(c *gin.Context) {
 	query := c.Query("q")
 	page := parseQueryInt32(c, "page", 1)
@@ -126,6 +151,18 @@ func (h *MiniAppHandler) Search(c *gin.Context) {
 }
 
 // GetByID returns a single vacancy by ID.
+// @Summary Get vacancy by ID
+// @Description Get detailed information about a specific vacancy
+// @Tags miniapp
+// @Accept json
+// @Produce json
+// @Security TelegramAuth
+// @Param id path string true "Vacancy UUID"
+// @Param lang query string false "Language code"
+// @Success 200 {object} VacancyResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Router /miniapp/vacancies/{id} [get]
 func (h *MiniAppHandler) GetByID(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -144,6 +181,17 @@ func (h *MiniAppHandler) GetByID(c *gin.Context) {
 }
 
 // GetProfile returns the authenticated user's profile.
+// @Summary Get current user profile
+// @Description Get detailed profile for the authenticated worker/user from Telegram Mini App
+// @Tags miniapp
+// @Accept json
+// @Produce json
+// @Security TelegramAuth
+// @Param lang query string false "Language (uz, ru, en)"
+// @Success 200 {object} UserResponseWithProfileDTO
+// @Failure 401 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Router /miniapp/me [get]
 func (h *MiniAppHandler) GetProfile(c *gin.Context) {
 	userIDStr := c.GetString("user_id")
 	userID, err := uuid.Parse(userIDStr)
@@ -294,6 +342,19 @@ func (h *MiniAppHandler) buildUserProfile(c *gin.Context, userID uuid.UUID, lang
 }
 
 // Apply creates a vacancy application for the authenticated user.
+// @Summary Apply for a vacancy
+// @Description Submit an application for a specific vacancy
+// @Tags miniapp
+// @Accept json
+// @Produce json
+// @Security TelegramAuth
+// @Param id path string true "Vacancy UUID"
+// @Param request body object true "Application details"
+// @Success 201 {object} vacancyApplicationResponseDTO
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 409 {object} ErrorResponse
+// @Router /miniapp/vacancies/{id}/apply [post]
 func (h *MiniAppHandler) Apply(c *gin.Context) {
 	userIDStr := c.GetString("user_id")
 	userID, err := uuid.Parse(userIDStr)
@@ -327,6 +388,17 @@ func (h *MiniAppHandler) Apply(c *gin.Context) {
 }
 
 // GetApplicationStatus checks if the authenticated user has applied to a vacancy.
+// @Summary Check application status
+// @Description Check if the user has already applied for this vacancy and get status
+// @Tags miniapp
+// @Accept json
+// @Produce json
+// @Security TelegramAuth
+// @Param id path string true "Vacancy UUID"
+// @Success 200 {object} vacancyApplicationResponseDTO
+// @Failure 401 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Router /miniapp/vacancies/{id}/application [get]
 func (h *MiniAppHandler) GetApplicationStatus(c *gin.Context) {
 	userIDStr := c.GetString("user_id")
 	userID, err := uuid.Parse(userIDStr)
@@ -355,6 +427,17 @@ func (h *MiniAppHandler) GetApplicationStatus(c *gin.Context) {
 }
 
 // ListMyApplications returns the authenticated user's vacancy applications.
+// @Summary List my applications
+// @Description Get a list of all vacancies the current user has applied for
+// @Tags miniapp
+// @Accept json
+// @Produce json
+// @Security TelegramAuth
+// @Param page query int false "Page number"
+// @Param page_size query int false "Items per page"
+// @Success 200 {object} object
+// @Failure 401 {object} ErrorResponse
+// @Router /miniapp/applications [get]
 func (h *MiniAppHandler) ListMyApplications(c *gin.Context) {
 	userIDStr := c.GetString("user_id")
 	userID, err := uuid.Parse(userIDStr)
