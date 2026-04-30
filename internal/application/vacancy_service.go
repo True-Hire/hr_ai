@@ -186,8 +186,12 @@ func (s *VacancyService) ParseVacancy(ctx context.Context, hrID uuid.UUID, compa
 	}
 
 	var skills []domain.Skill
-	if len(parsed.Skills) > 0 {
-		skills, err = s.skillSvc.SetVacancySkills(ctx, created.ID, parsed.Skills)
+	draftSkills := parsed.Skills["en"]
+	if len(draftSkills) == 0 {
+		draftSkills = parsed.Skills[parsed.SourceLang]
+	}
+	if len(draftSkills) > 0 {
+		skills, err = s.skillSvc.SetVacancySkills(ctx, created.ID, draftSkills)
 		if err != nil {
 			return nil, fmt.Errorf("set vacancy skills: %w", err)
 		}
@@ -248,8 +252,12 @@ func (s *VacancyService) CreateVacancyFromParsed(ctx context.Context, hrID uuid.
 	}
 
 	var skills []domain.Skill
-	if len(parsed.Skills) > 0 {
-		skills, err = s.skillSvc.SetVacancySkills(ctx, created.ID, parsed.Skills)
+	draftSkills := parsed.Skills["en"]
+	if len(draftSkills) == 0 {
+		draftSkills = parsed.Skills[parsed.SourceLang]
+	}
+	if len(draftSkills) > 0 {
+		skills, err = s.skillSvc.SetVacancySkills(ctx, created.ID, draftSkills)
 		if err != nil {
 			return nil, fmt.Errorf("set vacancy skills: %w", err)
 		}
@@ -599,8 +607,12 @@ func (s *VacancyService) UpdateVacancyFromParsed(ctx context.Context, vacancyID 
 
 	// Update skills
 	var skills []domain.Skill
-	if len(parsed.Skills) > 0 {
-		skills, err = s.skillSvc.SetVacancySkills(ctx, updated.ID, parsed.Skills)
+	draftSkills := parsed.Skills["en"]
+	if len(draftSkills) == 0 {
+		draftSkills = parsed.Skills[parsed.SourceLang]
+	}
+	if len(draftSkills) > 0 {
+		skills, err = s.skillSvc.SetVacancySkills(ctx, updated.ID, draftSkills)
 		if err != nil {
 			return nil, fmt.Errorf("set vacancy skills: %w", err)
 		}

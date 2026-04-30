@@ -55,6 +55,7 @@ type SearchFilters struct {
 	Skills          []string
 	MinExperience   int // months
 	MaxExperience   int // months
+	MinScore        float64
 }
 
 type SearchSessionPage struct {
@@ -231,6 +232,9 @@ func (s *CandidateSearchService) Search(ctx context.Context, hrID uuid.UUID, par
 			"location_match":  isLocationMatch,
 			"location_city":   c.LocationCity,
 			"final_score":     finalScore,
+		}
+		if filters.MinScore > 0 && finalScore < filters.MinScore {
+			continue
 		}
 
 		scored = append(scored, scoredEntry{
@@ -455,6 +459,7 @@ func (s *CandidateSearchService) SearchByVacancy(ctx context.Context, vacancyID 
 	filters := SearchFilters{
 		MinExperience: int(vacancy.Vacancy.ExperienceMin) * 12, // years to months
 		MaxExperience: int(vacancy.Vacancy.ExperienceMax) * 12,
+		MinScore:      0.30, // Default threshold for matching: 30%
 	}
 
 	// Extract location from vacancy address

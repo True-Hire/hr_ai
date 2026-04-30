@@ -18,11 +18,11 @@ type VacancyHandler struct {
 	companyHRSvc     *application.CompanyHRService
 	vacancySearchSvc *application.VacancySearchService
 	vacancyAppSvc    *application.VacancyApplicationService
-	searchSvc        *application.SearchService
+	candidateSearch  *application.CandidateSearchService
 }
 
-func NewVacancyHandler(service *application.VacancyService, companyHRSvc *application.CompanyHRService, vacancySearchSvc *application.VacancySearchService, vacancyAppSvc *application.VacancyApplicationService, searchSvc *application.SearchService) *VacancyHandler {
-	return &VacancyHandler{service: service, companyHRSvc: companyHRSvc, vacancySearchSvc: vacancySearchSvc, vacancyAppSvc: vacancyAppSvc, searchSvc: searchSvc}
+func NewVacancyHandler(service *application.VacancyService, companyHRSvc *application.CompanyHRService, vacancySearchSvc *application.VacancySearchService, vacancyAppSvc *application.VacancyApplicationService, candidateSearch *application.CandidateSearchService) *VacancyHandler {
+	return &VacancyHandler{service: service, companyHRSvc: companyHRSvc, vacancySearchSvc: vacancySearchSvc, vacancyAppSvc: vacancyAppSvc, candidateSearch: candidateSearch}
 }
 
 // Create godoc
@@ -251,9 +251,9 @@ func (h *VacancyHandler) List(c *gin.Context) {
 				}
 			}
 
-			// Matching candidates count (Qdrant vector search, no Gemini calls)
-			if h.searchSvc != nil {
-				count := h.searchSvc.CountMatchingCandidatesByVacancy(ctx, v.Vacancy.ID)
+			// Matching candidates count
+			if h.candidateSearch != nil {
+				count := h.candidateSearch.CountMatchingByVacancy(ctx, v.Vacancy.ID)
 				resp.Vacancies[idx].MatchingCandidatesCount = &count
 			}
 		}(i, vwd)

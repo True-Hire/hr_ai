@@ -37,6 +37,7 @@ type CandidateSearchFilters struct {
 	Skills          []string `json:"skills"`
 	MinExperience   int      `json:"min_experience_months"`
 	MaxExperience   int      `json:"max_experience_months"`
+	MinScore        float64  `json:"min_score"`
 }
 
 type CandidateSearchResponseItem struct {
@@ -100,6 +101,7 @@ func (h *CandidateSearchHandler) Search(c *gin.Context) {
 		Skills:          req.Filters.Skills,
 		MinExperience:   req.Filters.MinExperience,
 		MaxExperience:   req.Filters.MaxExperience,
+		MinScore:        req.Filters.MinScore,
 	}
 
 	page, err := h.searchSvc.Search(c.Request.Context(), hrUUID, parsedQuery, filters, req.PageSize)

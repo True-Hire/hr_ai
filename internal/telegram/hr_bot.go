@@ -1613,8 +1613,10 @@ func (hb *HRBot) sendVacancyReview(c tele.Context, draft *gemini.ParsedVacancyFu
 		}
 	}
 
-	if len(draft.Skills) > 0 {
-		sb.WriteString(fmt.Sprintf("\n🛠 %s\n", strings.Join(draft.Skills, ", ")))
+	if skillsArr, ok := draft.Skills[lang]; ok && len(skillsArr) > 0 {
+		sb.WriteString(fmt.Sprintf("\n🛠 %s\n", strings.Join(skillsArr, ", ")))
+	} else if skillsArr, ok := draft.Skills["en"]; ok && len(skillsArr) > 0 {
+		sb.WriteString(fmt.Sprintf("\n🛠 %s\n", strings.Join(skillsArr, ", ")))
 	}
 
 	// Contacts
@@ -1736,8 +1738,10 @@ func (hb *HRBot) sendVacancyConfirmation(c tele.Context, draft *gemini.ParsedVac
 	}
 
 	// Skills
-	if len(draft.Skills) > 0 {
-		sb.WriteString(fmt.Sprintf("\n🛠 %s\n", strings.Join(draft.Skills, ", ")))
+	if skillsArr, ok := draft.Skills[lang]; ok && len(skillsArr) > 0 {
+		sb.WriteString(fmt.Sprintf("\n🛠 %s\n", strings.Join(skillsArr, ", ")))
+	} else if skillsArr, ok := draft.Skills["en"]; ok && len(skillsArr) > 0 {
+		sb.WriteString(fmt.Sprintf("\n🛠 %s\n", strings.Join(skillsArr, ", ")))
 	}
 
 	// Contacts
@@ -1802,8 +1806,10 @@ func (hb *HRBot) buildAddInfoMessage(draft *gemini.ParsedVacancyFull, lang strin
 			sb.WriteString(fmt.Sprintf("💼 %d+ %s\n", draft.ExperienceMin, expYears[lang]))
 		}
 	}
-	if len(draft.Skills) > 0 {
-		sb.WriteString(fmt.Sprintf("🛠 %s\n", strings.Join(draft.Skills, ", ")))
+	if skillsArr, ok := draft.Skills[lang]; ok && len(skillsArr) > 0 {
+		sb.WriteString(fmt.Sprintf("🛠 %s\n", strings.Join(skillsArr, ", ")))
+	} else if skillsArr, ok := draft.Skills["en"]; ok && len(skillsArr) > 0 {
+		sb.WriteString(fmt.Sprintf("🛠 %s\n", strings.Join(skillsArr, ", ")))
 	}
 	sb.WriteString("\n")
 

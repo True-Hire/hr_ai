@@ -290,14 +290,16 @@ NON-TEXT FIELDS (extract as-is, do not translate):
 - email: Email contact if mentioned (empty string if not)
 - address: Office address if mentioned (empty string if not)
 
-SKILLS (extract as array of strings):
-- skills: Array of key skills, technologies, hashtags, tools mentioned in the text. Extract everything that looks like a skill, technology, framework, tool, or hashtag. Examples: "Go", "Python", "Docker", "PostgreSQL", "REST API", "Git", "Agile", "Leadership", etc.
+SKILLS (translated into 3 languages):
+- skills: Array of key skills, technologies, hashtags, tools mentioned in the text. Extract everything that looks like a skill, technology, framework, tool, or hashtag. Examples: "Furniture Assembly", "Go", "Python", "Docker", "PostgreSQL", "REST API", "Git", "Agile", "Leadership", etc.
+- Provide the full array translated for each language (uz, ru, en).
+- skills format: {"uz": ["...", "..."], "ru": ["...", "..."], "en": ["...", "..."]}
 
 IMPORTANT RULES:
 - Extract as much information as possible from the text
 - For text fields, translate accurately and naturally into all 3 languages
-- For skills, normalize to standard names (e.g. "#golang" → "Go", "#python" → "Python")
-- Keep skills in English where possible (technology names are universal)
+- Normalize skills to standard names (e.g. "#golang" → "Go", "#python" → "Python")
+- Translate non-technical skills (like "Furniture Assembly") into the target languages naturally. Keep technical names (like "Docker") in English if appropriate.
 - If salary is given as a range like "1000-2000$", extract min and max separately
 - Do NOT include fields with empty or placeholder content for text fields
 
@@ -322,7 +324,11 @@ Return ONLY valid JSON in this exact format:
   "telegram": "@company",
   "email": "hr@company.com",
   "address": "Tashkent, Amir Temur 1",
-  "skills": ["Go", "PostgreSQL", "Docker", "REST API", "Git"]
+  "skills": {
+    "uz": ["Mebel yig'ish", "Git"],
+    "ru": ["Сборка мебели", "Git"],
+    "en": ["Furniture Assembly", "Git"]
+  }
 }
 
 HR's job posting text:

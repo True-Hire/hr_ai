@@ -378,7 +378,7 @@ type ParsedVacancyFull struct {
 	Telegram       string                       `json:"telegram"`
 	Email          string                       `json:"email"`
 	Address        string                       `json:"address"`
-	Skills         []string                     `json:"skills"`
+	Skills         LangStringSlice              `json:"skills"`
 }
 
 func (c *Client) TranslateVacancy(ctx context.Context, input string) (*ParsedVacancy, error) {
