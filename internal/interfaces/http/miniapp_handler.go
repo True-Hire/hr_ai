@@ -188,7 +188,7 @@ func (h *MiniAppHandler) GetByID(c *gin.Context) {
 // @Produce json
 // @Security TelegramAuth
 // @Param lang query string false "Language (uz, ru, en)"
-// @Success 200 {object} UserResponseWithProfileDTO
+// @Success 200 {object} UserResponse
 // @Failure 401 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Router /miniapp/me [get]
@@ -350,7 +350,7 @@ func (h *MiniAppHandler) buildUserProfile(c *gin.Context, userID uuid.UUID, lang
 // @Security TelegramAuth
 // @Param id path string true "Vacancy UUID"
 // @Param request body object true "Application details"
-// @Success 201 {object} vacancyApplicationResponseDTO
+// @Success 201 {object} VacancyApplicationResponseDTO
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
 // @Failure 409 {object} ErrorResponse
@@ -395,7 +395,7 @@ func (h *MiniAppHandler) Apply(c *gin.Context) {
 // @Produce json
 // @Security TelegramAuth
 // @Param id path string true "Vacancy UUID"
-// @Success 200 {object} vacancyApplicationResponseDTO
+// @Success 200 {object} VacancyApplicationResponseDTO
 // @Failure 401 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Router /miniapp/vacancies/{id}/application [get]
@@ -458,9 +458,9 @@ func (h *MiniAppHandler) ListMyApplications(c *gin.Context) {
 
 	total, _ := h.vacancyAppSvc.CountByUser(c.Request.Context(), userID)
 
-	resp := make([]vacancyApplicationResponseDTO, 0, len(apps))
+	resp := make([]VacancyApplicationResponseDTO, 0, len(apps))
 	for _, a := range apps {
-		resp = append(resp, vacancyApplicationResponse(&a))
+		resp = append(resp, VacancyApplicationResponse(&a))
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -471,7 +471,7 @@ func (h *MiniAppHandler) ListMyApplications(c *gin.Context) {
 	})
 }
 
-type vacancyApplicationResponseDTO struct {
+type VacancyApplicationResponseDTO struct {
 	ID          string `json:"id"`
 	UserID      string `json:"user_id"`
 	VacancyID   string `json:"vacancy_id"`
@@ -481,8 +481,8 @@ type vacancyApplicationResponseDTO struct {
 	UpdatedAt   string `json:"updated_at"`
 }
 
-func vacancyApplicationResponse(va *domain.VacancyApplication) vacancyApplicationResponseDTO {
-	return vacancyApplicationResponseDTO{
+func VacancyApplicationResponse(va *domain.VacancyApplication) VacancyApplicationResponseDTO {
+	return VacancyApplicationResponseDTO{
 		ID:          va.ID.String(),
 		UserID:      va.UserID.String(),
 		VacancyID:   va.VacancyID.String(),

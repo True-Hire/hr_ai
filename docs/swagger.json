@@ -1690,6 +1690,384 @@
                 }
             }
         },
+        "/miniapp/applications": {
+            "get": {
+                "security": [
+                    {
+                        "TelegramAuth": []
+                    }
+                ],
+                "description": "Get a list of all vacancies the current user has applied for",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "miniapp"
+                ],
+                "summary": "List my applications",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/miniapp/me": {
+            "get": {
+                "security": [
+                    {
+                        "TelegramAuth": []
+                    }
+                ],
+                "description": "Get detailed profile for the authenticated worker/user from Telegram Mini App",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "miniapp"
+                ],
+                "summary": "Get current user profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Language (uz, ru, en)",
+                        "name": "lang",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.UserResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/miniapp/vacancies": {
+            "get": {
+                "security": [
+                    {
+                        "TelegramAuth": []
+                    }
+                ],
+                "description": "Get a list of vacancies that match the worker's profile skills and preferences",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "miniapp"
+                ],
+                "summary": "List vacancies for user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language code",
+                        "name": "lang",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.PaginatedVacanciesResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/miniapp/vacancies/search": {
+            "get": {
+                "security": [
+                    {
+                        "TelegramAuth": []
+                    }
+                ],
+                "description": "Search for vacancies using text query (vector similarity search)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "miniapp"
+                ],
+                "summary": "Search vacancies",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search query",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language code",
+                        "name": "lang",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.PaginatedVacanciesResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/miniapp/vacancies/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "TelegramAuth": []
+                    }
+                ],
+                "description": "Get detailed information about a specific vacancy",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "miniapp"
+                ],
+                "summary": "Get vacancy by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vacancy UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language code",
+                        "name": "lang",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.VacancyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/miniapp/vacancies/{id}/application": {
+            "get": {
+                "security": [
+                    {
+                        "TelegramAuth": []
+                    }
+                ],
+                "description": "Check if the user has already applied for this vacancy and get status",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "miniapp"
+                ],
+                "summary": "Check application status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vacancy UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.VacancyApplicationResponseDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/miniapp/vacancies/{id}/apply": {
+            "post": {
+                "security": [
+                    {
+                        "TelegramAuth": []
+                    }
+                ],
+                "description": "Submit an application for a specific vacancy",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "miniapp"
+                ],
+                "summary": "Apply for a vacancy",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vacancy UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Application details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/http.VacancyApplicationResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/profile-fields/{id}": {
             "get": {
                 "produces": [
@@ -4550,6 +4928,32 @@
                 }
             }
         },
+        "http.VacancyApplicationResponseDTO": {
+            "type": "object",
+            "properties": {
+                "cover_letter": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "vacancy_id": {
+                    "type": "string"
+                }
+            }
+        },
         "http.VacancyCompanyResponse": {
             "type": "object",
             "properties": {
@@ -4597,6 +5001,9 @@
                 "address": {
                     "type": "string"
                 },
+                "application_count": {
+                    "type": "integer"
+                },
                 "company": {
                     "$ref": "#/definitions/http.VacancyCompanyResponse"
                 },
@@ -4623,6 +5030,9 @@
                 },
                 "id": {
                     "type": "string"
+                },
+                "matching_candidates_count": {
+                    "type": "integer"
                 },
                 "phone": {
                     "type": "string"

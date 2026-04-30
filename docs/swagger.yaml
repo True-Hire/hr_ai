@@ -1034,6 +1034,23 @@ definitions:
       total_experience_years:
         type: number
     type: object
+  http.VacancyApplicationResponseDTO:
+    properties:
+      cover_letter:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      vacancy_id:
+        type: string
+    type: object
   http.VacancyCompanyResponse:
     properties:
       about:
@@ -1065,6 +1082,8 @@ definitions:
     properties:
       address:
         type: string
+      application_count:
+        type: integer
       company:
         $ref: '#/definitions/http.VacancyCompanyResponse'
       country_id:
@@ -1083,6 +1102,8 @@ definitions:
         type: string
       id:
         type: string
+      matching_candidates_count:
+        type: integer
       phone:
         type: string
       salary_currency:
@@ -2221,6 +2242,248 @@ paths:
       summary: Get current authenticated HR with full details
       tags:
       - hrs
+  /miniapp/applications:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of all vacancies the current user has applied for
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: List my applications
+      tags:
+      - miniapp
+  /miniapp/me:
+    get:
+      consumes:
+      - application/json
+      description: Get detailed profile for the authenticated worker/user from Telegram
+        Mini App
+      parameters:
+      - description: Language (uz, ru, en)
+        in: query
+        name: lang
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: Get current user profile
+      tags:
+      - miniapp
+  /miniapp/vacancies:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of vacancies that match the worker's profile skills
+        and preferences
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: page_size
+        type: integer
+      - description: Language code
+        in: query
+        name: lang
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.PaginatedVacanciesResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: List vacancies for user
+      tags:
+      - miniapp
+  /miniapp/vacancies/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get detailed information about a specific vacancy
+      parameters:
+      - description: Vacancy UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Language code
+        in: query
+        name: lang
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.VacancyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: Get vacancy by ID
+      tags:
+      - miniapp
+  /miniapp/vacancies/{id}/application:
+    get:
+      consumes:
+      - application/json
+      description: Check if the user has already applied for this vacancy and get
+        status
+      parameters:
+      - description: Vacancy UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.VacancyApplicationResponseDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: Check application status
+      tags:
+      - miniapp
+  /miniapp/vacancies/{id}/apply:
+    post:
+      consumes:
+      - application/json
+      description: Submit an application for a specific vacancy
+      parameters:
+      - description: Vacancy UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Application details
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.VacancyApplicationResponseDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: Apply for a vacancy
+      tags:
+      - miniapp
+  /miniapp/vacancies/search:
+    get:
+      consumes:
+      - application/json
+      description: Search for vacancies using text query (vector similarity search)
+      parameters:
+      - description: Search query
+        in: query
+        name: q
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: page_size
+        type: integer
+      - description: Language code
+        in: query
+        name: lang
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.PaginatedVacanciesResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - TelegramAuth: []
+      summary: Search vacancies
+      tags:
+      - miniapp
   /profile-fields/{id}:
     delete:
       parameters:
