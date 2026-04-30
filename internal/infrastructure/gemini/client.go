@@ -32,7 +32,7 @@ func NewClient(googleKey, anthropicKey string) *Client {
 		googleKey:    googleKey,
 		anthropicKey: anthropicKey,
 		httpClient: &http.Client{
-			Timeout: 60 * time.Second,
+			Timeout: 180 * time.Second,
 		},
 	}
 }
@@ -152,7 +152,7 @@ func (c *Client) generateJSON(ctx context.Context, parts []part) (string, error)
 
 	reqBody := anthropicRequest{
 		Model:     modelVersion,
-		MaxTokens: 4096,
+		MaxTokens: 8192,
 		Messages:  messages,
 	}
 	jsonBody, err := json.Marshal(reqBody)
@@ -170,7 +170,13 @@ func (c *Client) generateJSON(ctx context.Context, parts []part) (string, error)
 		return "", fmt.Errorf("unmarshal Claude response: %w", err)
 	}
 
-	content := genResp.Content[0].Text
+	var fullContent strings.Builder
+	for _, c := range genResp.Content {
+		if c.Type == "text" {
+			fullContent.WriteString(c.Text)
+		}
+	}
+	content := fullContent.String()
 	log.Printf("[Claude] Model: %s, Response Content: %s", modelVersion, content)
 
 	return stripMarkdown(content), nil
