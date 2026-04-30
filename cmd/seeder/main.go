@@ -100,5 +100,31 @@ func main() {
 		}
 	}
 
+	log.Println("--- Seeding Skills ---")
+	for _, s := range Skills {
+		skillID := generateID("skill:" + s.Name)
+		var subIDs []uuid.UUID
+		for _, key := range s.SubCategoryKeys {
+			if id, ok := subCatMap[key]; ok {
+				subIDs = append(subIDs, id)
+			}
+		}
+		now := time.Now()
+
+		_, err = pool.Exec(ctx, `
+			INSERT INTO skills (id, name, sub_category_ids, created_at, updated_at)
+			VALUES ($1, $2, $3, $4, $5)
+			ON CONFLICT (id) DO UPDATE SET 
+				name = EXCLUDED.name, 
+				sub_category_ids = EXCLUDED.sub_category_ids, 
+				updated_at = EXCLUDED.updated_at`,
+			skillID, s.Name, subIDs, now, now)
+		if err != nil {
+			log.Printf("Failed skill %s: %v", s.Name, err)
+		} else {
+			log.Printf("Seeded Skill: %s", s.Name)
+		}
+	}
+
 	log.Println("Seeding completed successfully!")
 }
