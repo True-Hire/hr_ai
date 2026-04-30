@@ -384,7 +384,7 @@ func (h *MiniAppHandler) Apply(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, vacancyApplicationResponse(va))
+	c.JSON(http.StatusCreated, VacancyApplicationResponse(va))
 }
 
 // GetApplicationStatus checks if the authenticated user has applied to a vacancy.
@@ -423,7 +423,7 @@ func (h *MiniAppHandler) GetApplicationStatus(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, vacancyApplicationResponse(va))
+	c.JSON(http.StatusOK, VacancyApplicationResponse(va))
 }
 
 // ListMyApplications returns the authenticated user's vacancy applications.
