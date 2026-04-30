@@ -11,24 +11,24 @@ import (
 var ErrUserNotFound = errors.New("user not found")
 
 type User struct {
-	ID              uuid.UUID
-	FirstName       string
-	LastName        string
-	Patronymic      string
-	Phone           string
-	Telegram        string
-	TelegramID      string
-	Email           string
-	Gender          string
-	Country         string
-	Region          string
-	Nationality     string
-	ProfilePicURL   string
-	Status          string
-	TariffType      string
-	JobStatus       string
-	ActivityType    string
-	Specializations []string
+	ID                      uuid.UUID
+	FirstName               string
+	LastName                string
+	Patronymic              string
+	Phone                   string
+	Telegram                string
+	TelegramID              string
+	Email                   string
+	Gender                  string
+	Country                 string
+	Region                  string
+	Nationality             string
+	ProfilePicURL           string
+	Status                  string
+	TariffType              string
+	JobStatus               string
+	ActivityType            string
+	Specializations         []string
 	PasswordHash            string
 	Language                string
 	ProfileScore            int32

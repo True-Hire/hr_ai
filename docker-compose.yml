@@ -15,4 +15,4 @@ services:
       - ./db/migrations:/migrations:ro
     env_file:
       - .env
-    entrypoint: [ "sh", "-c", "for f in /migrations/*.sql; do echo \"Running $$f...\"; psql \"$$DATABASE_URL\" -f \"$$f\"; done" ]
+    entrypoint: [ "sh", "-c", "psql \"$$DATABASE_URL\" -c \"CREATE TABLE IF NOT EXISTS schema_migrations (version TEXT PRIMARY KEY);\"; for f in /migrations/*.up.sql; do filename=$$(basename $$f); if [ -z \"$$(psql \"$$DATABASE_URL\" -tAc \"SELECT 1 FROM schema_migrations WHERE version = '$$filename'\")\" ]; then echo \"Applying $$filename...\"; psql \"$$DATABASE_URL\" -f \"$$f\" && psql \"$$DATABASE_URL\" -c \"INSERT INTO schema_migrations (version) VALUES ('$$filename');\"; else echo \"Skipping $$filename (already applied)\"; fi; done" ]
