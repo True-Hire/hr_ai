@@ -139,7 +139,7 @@ func (h *ProfileParseHandler) handleMultipart(c *gin.Context, userID uuid.UUID) 
 		return
 	}
 
-	result, err := h.service.ParseFromFile(c.Request.Context(), userID, fileData, mimeType)
+	result, err := h.service.ParseFromFile(c.Request.Context(), userID, fileData, mimeType, "")
 	if err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) {
 			c.JSON(http.StatusNotFound, ErrorResponse{Error: "user not found"})

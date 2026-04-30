@@ -90,12 +90,12 @@ func (s *ProfileParseService) ParseFromText(ctx context.Context, userID uuid.UUI
 	return result, nil
 }
 
-func (s *ProfileParseService) ParseFromFile(ctx context.Context, userID uuid.UUID, fileData []byte, mimeType string) (*ParseResult, error) {
+func (s *ProfileParseService) ParseFromFile(ctx context.Context, userID uuid.UUID, fileData []byte, mimeType string, contextText string) (*ParseResult, error) {
 	if _, err := s.userSvc.GetUser(ctx, userID); err != nil {
 		return nil, fmt.Errorf("verify user: %w", err)
 	}
 
-	parsed, err := s.geminiClient.ParseProfileFromFile(ctx, fileData, mimeType)
+	parsed, err := s.geminiClient.ParseProfileFromFile(ctx, fileData, mimeType, contextText)
 	if err != nil {
 		return nil, fmt.Errorf("gemini parse file: %w", err)
 	}

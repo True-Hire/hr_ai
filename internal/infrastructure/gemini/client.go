@@ -170,26 +170,35 @@ func (c *Client) generateJSON(ctx context.Context, parts []part) (string, error)
 		return "", fmt.Errorf("unmarshal Claude response: %w", err)
 	}
 
-	if len(genResp.Content) == 0 {
-		return "", fmt.Errorf("Claude returned no content")
-	}
+	content := genResp.Content[0].Text
+	log.Printf("[Claude] Model: %s, Response Content: %s", modelVersion, content)
 
-	return stripMarkdown(genResp.Content[0].Text), nil
+	return stripMarkdown(content), nil
 }
 
 func stripMarkdown(text string) string {
 	text = strings.TrimSpace(text)
-	if strings.HasPrefix(text, "```") {
-		// Find the first newline
-		if firstNewline := strings.Index(text, "\n"); firstNewline != -1 {
-			text = text[firstNewline+1:]
-		}
-		// Find the last ```
-		if lastBackticks := strings.LastIndex(text, "```"); lastBackticks != -1 {
-			text = text[:lastBackticks]
+	// Try to find a code block starting with ```json or just ```
+	startIdx := strings.Index(text, "```json")
+	if startIdx == -1 {
+		startIdx = strings.Index(text, "```")
+	}
+
+	if startIdx != -1 {
+		// Find the first newline after the opening backticks
+		contentStart := strings.Index(text[startIdx:], "\n")
+		if contentStart != -1 {
+			contentStart += startIdx + 1
+			// Find the closing backticks
+			endIdx := strings.LastIndex(text, "```")
+			if endIdx > contentStart {
+				return strings.TrimSpace(text[contentStart:endIdx])
+			}
+			return strings.TrimSpace(text[contentStart:])
 		}
 	}
-	return strings.TrimSpace(text)
+
+	return text
 }
 
 func parseRetryDelay(body []byte) time.Duration {
@@ -518,12 +527,15 @@ func (c *Client) ParseProfileFromText(ctx context.Context, userInput string) (*P
 	return c.callGemini(ctx, parts)
 }
 
-func (c *Client) ParseProfileFromFile(ctx context.Context, fileData []byte, mimeType string) (*ParsedProfile, error) {
+func (c *Client) ParseProfileFromFile(ctx context.Context, fileData []byte, mimeType string, contextText string) (*ParsedProfile, error) {
 	encoded := base64.StdEncoding.EncodeToString(fileData)
 	parts := []part{
 		{Text: buildFilePrompt()},
-		{InlineData: &inlineData{MimeType: mimeType, Data: encoded}},
 	}
+	if contextText != "" {
+		parts = append(parts, part{Text: "Additional context:\n" + contextText})
+	}
+	parts = append(parts, part{InlineData: &inlineData{MimeType: mimeType, Data: encoded}})
 	return c.callGemini(ctx, parts)
 }
 

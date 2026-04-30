@@ -354,25 +354,12 @@ func (s *BotService) ProcessCollectedResume(ctx context.Context, telegramID int6
 
 	var result *ParseResult
 
-	if fileData != nil && len(texts) > 0 {
-		combinedText := strings.Join(texts, "\n\n") + "\n\n[Additional context from user messages above. The file below is the main resume.]"
-		result, err = s.profileParse.ParseFromText(ctx, user.ID, combinedText)
-		if err != nil {
-			result, err = s.profileParse.ParseFromFile(ctx, user.ID, fileData, fileMime)
-		}
-	} else if fileData != nil {
-		if existingSummary != "" {
-			// Prepend existing profile as text context for the file parse
-			combinedText := strings.Join(texts, "\n\n")
-			result, err = s.profileParse.ParseFromText(ctx, user.ID, combinedText)
-			if err != nil {
-				result, err = s.profileParse.ParseFromFile(ctx, user.ID, fileData, fileMime)
-			}
-		} else {
-			result, err = s.profileParse.ParseFromFile(ctx, user.ID, fileData, fileMime)
-		}
-	} else if len(texts) > 0 {
-		combinedText := strings.Join(texts, "\n\n")
+	combinedText := strings.Join(texts, "\n\n")
+	if fileData != nil {
+		// If there is a file, we MUST use ParseFromFile and pass any texts as context
+		result, err = s.profileParse.ParseFromFile(ctx, user.ID, fileData, fileMime, combinedText)
+	} else if combinedText != "" {
+		// No file, only text
 		result, err = s.profileParse.ParseFromText(ctx, user.ID, combinedText)
 	} else {
 		return nil, fmt.Errorf("no resume data to process")
@@ -468,7 +455,7 @@ func (s *BotService) HandleResumeText(ctx context.Context, userID uuid.UUID, tex
 }
 
 func (s *BotService) HandleResumeFile(ctx context.Context, userID uuid.UUID, fileData []byte, mimeType string) (*ParseResult, error) {
-	return s.profileParse.ParseFromFile(ctx, userID, fileData, mimeType)
+	return s.profileParse.ParseFromFile(ctx, userID, fileData, mimeType, "")
 }
 
 // countryFromPhone returns an ISO 3166-1 alpha-2 country code based on phone number prefix.
