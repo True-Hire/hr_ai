@@ -118,7 +118,8 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, anthropicAPIKey, jwtSecret, d
 		return nil, fmt.Errorf("init casbin enforcer: %w", err)
 	}
 
-	profileParseSvc := application.NewProfileParseService(geminiClient, pfSvc, pftSvc, expSvc, eduSvc, itSvc, skillSvc, userSvc, vectorIndexSvc)
+	vacancyAIRepo := repository.NewVacancyAIRepository(pool)
+	profileParseSvc := application.NewProfileParseService(geminiClient, pfSvc, pftSvc, expSvc, eduSvc, itSvc, skillSvc, userSvc, vectorIndexSvc, vacancyAIRepo)
 
 	vacancySvc := application.NewVacancyService(vacancyRepo, vacancyTextRepo, skillSvc, geminiClient, vectorIndexSvc)
 	vacancySearchSvc := application.NewVacancySearchService(qdrantClient, geminiClient, vacancySvc, pfSvc, pftSvc, skillSvc)
@@ -164,7 +165,6 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, anthropicAPIKey, jwtSecret, d
 	candidateSearchSvc.SetVectorSearchService(searchSvc)
 	profileParseSvc.SetCandidateIndexingService(candidateIndexingSvc)
 
-	vacancyAIRepo := repository.NewVacancyAIRepository(pool)
 	vacancyAISvc := application.NewVacancyAIService(geminiClient, vacancyAIRepo)
 	hrBotSvc := application.NewHRBotService(companyHRSvc, vacancySvc, vacancyAppSvc, botStateSvc, searchSvc, userSvc, geminiClient)
 	hrBotSvc.SetAIServices(vacancyAISvc, vacancyAIRepo)

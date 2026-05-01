@@ -4,8 +4,17 @@ import (
 	"fmt"
 )
 
-func buildPrompt(userInput string) string {
+func buildPrompt(userInput string, taxonomyContext string) string {
 	return fmt.Sprintf(`You are an expert HR assistant. Parse the following candidate profile information and return a strictly valid JSON object.
+STRICT TAXONOMY RULES:
+1. **MAIN CATEGORY**: Identify the primary professional field (e.g., IT, Construction, Sales, Medicine).
+2. **SUB-CATEGORY**: Identify the specific specialization (e.g., Backend, Mobile, UI/UX, Sales, Management).
+3. **TECHNOLOGIES**: Extract tools, software, frameworks, and hardware used (e.g., Python, Docker, Figma, Perforator, Stethoscope).
+4. **SKILLS**: Extract conceptual methodologies and professional knowledge (e.g., Agile, Team Management, Tile Laying, Surgery).
+
+TAXONOMY CONTEXT (Use IDs if matched, otherwise suggest new names):
+%s
+
 The output must match this structure:
 {
   "source_lang": "uz/ru/en",
@@ -15,11 +24,14 @@ The output must match this structure:
     "title": {"uz": "...", "ru": "...", "en": "..."},
     "about": {"uz": "...", "ru": "...", "en": "..."}
   },
-  "skills": {
-    "uz": ["skill1", "skill2"],
-    "ru": ["skill1", "skill2"],
-    "en": ["skill1", "skill2"]
-  },
+  "matched_main_category_id": "UUID or empty",
+  "matched_sub_category_id": "UUID or empty",
+  "new_main_category": "Name if no match",
+  "new_sub_category": "Name if no match",
+  "matched_technology_ids": ["UUID", "UUID"],
+  "matched_skill_ids": ["UUID", "UUID"],
+  "new_technologies": ["name1", "name2"],
+  "new_skills": ["name1", "name2"],
   "certifications": {
     "uz": ["cert1"], "ru": ["cert1"], "en": ["cert1"]
   },
@@ -50,11 +62,20 @@ The output must match this structure:
 }
 
 If information is missing, use empty strings or arrays.
-User Input: %s`, userInput)
+User Input: %s`, taxonomyContext, userInput)
 }
 
-func buildFilePrompt() string {
-	return `You are an expert HR assistant. Analyze the attached file (CV/Resume) and extract the candidate profile information.
+func buildFilePrompt(taxonomyContext string) string {
+	return fmt.Sprintf(`You are an expert HR assistant. Analyze the attached file (CV/Resume) and extract the candidate profile information.
+STRICT TAXONOMY RULES:
+1. **MAIN CATEGORY**: Identify the primary professional field (e.g., IT, Construction, Sales, Medicine).
+2. **SUB-CATEGORY**: Identify the specific specialization (e.g., Backend, Mobile, UI/UX, Sales, Management).
+3. **TECHNOLOGIES**: Extract tools, software, frameworks, and hardware used (e.g., Python, Docker, Figma, Perforator, Stethoscope).
+4. **SKILLS**: Extract conceptual methodologies and professional knowledge (e.g., Agile, Team Management, Tile Laying, Surgery).
+
+TAXONOMY CONTEXT (Use IDs if matched, otherwise suggest new names):
+%s
+
 Return a strictly valid JSON object.
 The output must match this structure:
 {
@@ -65,11 +86,14 @@ The output must match this structure:
     "title": {"uz": "...", "ru": "...", "en": "..."},
     "about": {"uz": "...", "ru": "...", "en": "..."}
   },
-  "skills": {
-    "uz": ["skill1", "skill2"],
-    "ru": ["skill1", "skill2"],
-    "en": ["skill1", "skill2"]
-  },
+  "matched_main_category_id": "UUID or empty",
+  "matched_sub_category_id": "UUID or empty",
+  "new_main_category": "Name if no match",
+  "new_sub_category": "Name if no match",
+  "matched_technology_ids": ["UUID", "UUID"],
+  "matched_skill_ids": ["UUID", "UUID"],
+  "new_technologies": ["name1", "name2"],
+  "new_skills": ["name1", "name2"],
   "certifications": {
     "uz": ["cert1"], "ru": ["cert1"], "en": ["cert1"]
   },
@@ -99,7 +123,7 @@ The output must match this structure:
   ]
 }
 
-If information is missing, use empty strings or arrays. Do not include any explanation outside the JSON.`
+If information is missing, use empty strings or arrays. Do not include any explanation outside the JSON.`, taxonomyContext)
 }
 
 func buildCompanyParsePrompt(userInput string) string {

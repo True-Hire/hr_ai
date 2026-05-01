@@ -35,6 +35,8 @@ type User struct {
 	EstimatedSalaryMin      int32
 	EstimatedSalaryMax      int32
 	EstimatedSalaryCurrency string
+	MainCategoryID          uuid.UUID
+	SubCategoryID           uuid.UUID
 	CreatedAt               time.Time
 }
 

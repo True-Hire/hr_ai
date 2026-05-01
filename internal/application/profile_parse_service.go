@@ -10,6 +10,7 @@ import (
 
 	"github.com/ruziba3vich/hr-ai/internal/domain"
 	"github.com/ruziba3vich/hr-ai/internal/infrastructure/gemini"
+	"github.com/ruziba3vich/hr-ai/internal/infrastructure/repository"
 )
 
 type ProfileParseService struct {
@@ -23,6 +24,7 @@ type ProfileParseService struct {
 	userSvc              *UserService
 	vectorIndexSvc       *VectorIndexService
 	candidateIndexingSvc *CandidateIndexingService
+	vacancyAIRepo        *repository.VacancyAIRepository
 }
 
 func NewProfileParseService(
@@ -35,6 +37,7 @@ func NewProfileParseService(
 	skillSvc *SkillService,
 	userSvc *UserService,
 	vectorIndexSvc *VectorIndexService,
+	vacancyAIRepo *repository.VacancyAIRepository,
 ) *ProfileParseService {
 	return &ProfileParseService{
 		geminiClient:    geminiClient,
@@ -46,6 +49,7 @@ func NewProfileParseService(
 		skillSvc:        skillSvc,
 		userSvc:         userSvc,
 		vectorIndexSvc:  vectorIndexSvc,
+		vacancyAIRepo:   vacancyAIRepo,
 	}
 }
 
@@ -76,7 +80,8 @@ func (s *ProfileParseService) ParseFromText(ctx context.Context, userID uuid.UUI
 		return nil, fmt.Errorf("verify user: %w", err)
 	}
 
-	parsed, err := s.geminiClient.ParseProfileFromText(ctx, userInput)
+	taxonomyContext, _ := s.vacancyAIRepo.GetAllReferencesForAI(ctx)
+	parsed, err := s.geminiClient.ParseProfileFromText(ctx, userInput, taxonomyContext)
 	if err != nil {
 		return nil, fmt.Errorf("gemini parse text: %w", err)
 	}
@@ -95,7 +100,8 @@ func (s *ProfileParseService) ParseFromFile(ctx context.Context, userID uuid.UUI
 		return nil, fmt.Errorf("verify user: %w", err)
 	}
 
-	parsed, err := s.geminiClient.ParseProfileFromFile(ctx, fileData, mimeType, contextText)
+	taxonomyContext, _ := s.vacancyAIRepo.GetAllReferencesForAI(ctx)
+	parsed, err := s.geminiClient.ParseProfileFromFile(ctx, fileData, mimeType, contextText, taxonomyContext)
 	if err != nil {
 		return nil, fmt.Errorf("gemini parse file: %w", err)
 	}
@@ -184,11 +190,24 @@ func (s *ProfileParseService) storeResults(ctx context.Context, userID uuid.UUID
 		result.Fields = append(result.Fields, fieldResult)
 	}
 
-	// Store skills as unique set in skills/user_skills tables
-	if skillNames, ok := parsed.Skills["en"]; ok && len(skillNames) > 0 {
-		if _, err := s.skillSvc.SetUserSkills(ctx, userID, skillNames); err != nil {
-			return nil, fmt.Errorf("set user skills: %w", err)
-		}
+	// Store taxonomy (Main Cat, Sub Cat, Tech, Skills) using universal logic
+	aiParsed := &domain.AIParsedVacancy{
+		MatchedMainCatID: parsed.MatchedMainCatID,
+		MatchedSubCatID:  parsed.MatchedSubCatID,
+		NewMainCategory:  parsed.NewMainCategory,
+		NewSubCategory:   parsed.NewSubCategory,
+		MatchedTechIDs:   parsed.MatchedTechIDs,
+		MatchedSkillIDs:  parsed.MatchedSkillIDs,
+		NewTechnologies:  parsed.NewTechnologies,
+		NewSkills:        parsed.NewSkills,
+	}
+	if err := s.vacancyAIRepo.SaveParsedProfile(ctx, userID, aiParsed); err != nil {
+		return nil, fmt.Errorf("save parsed profile taxonomy: %w", err)
+	}
+
+	// Update user's profile score
+	if err := s.userSvc.SetProfileScore(ctx, userID, int32(parsed.ProfileScore)); err != nil {
+		log.Printf("failed to set profile score for user %s: %v", userID, err)
 	}
 
 	// Store certifications as JSON array per language

@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	// Database URL from .env
 	dbURL := "postgresql://hr_ai:kR9mXw4vJpL2nT7s@hr-ai-db.compile-me.uz:5455/hr_ai_db"
 	ctx := context.Background()
 	conn, err := pgx.Connect(ctx, dbURL)
@@ -15,6 +16,8 @@ func main() {
 		log.Fatalf("Unable to connect to database: %v", err)
 	}
 	defer conn.Close(ctx)
+
+	log.Println("Starting migration...")
 
 	_, err = conn.Exec(ctx, `
 		-- Add category columns to vacancies table

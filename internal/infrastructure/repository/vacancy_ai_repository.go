@@ -400,3 +400,137 @@ func (r *VacancyAIRepository) SaveParsedVacancy(ctx context.Context, v *domain.V
 
 	return tx.Commit(ctx)
 }
+
+func (r *VacancyAIRepository) SaveParsedProfile(ctx context.Context, userID uuid.UUID, parsed *domain.AIParsedVacancy) error {
+	// 1. Taxonomy Guard (Server-side)
+	techKeywords := []string{
+		"swift", "kotlin", "java", "flutter", "dart", "go", "golang", "python", "javascript", "typescript", "react", "vue", "angular", "node.js", "nodejs", "express", "django", "flask", "laravel", "php", "ruby", "rails", "c#", ".net", "dotnet", "c++", "rust", "elixir", "scala", "clojure", "objective-c", "unity", "unreal",
+		"html", "css", "scss", "sass", "less", "tailwind", "bootstrap", "material ui", "nextjs", "nuxtjs", "webpack", "vite", "babel", "jquery", "wordpress", "elementor",
+		"postgresql", "mysql", "mongodb", "redis", "firebase", "sqlite", "mariadb", "cassandra", "elasticsearch", "oracle", "sql server", "dynamodb", "supabase", "pocketbase",
+		"docker", "kubernetes", "git", "github", "gitlab", "bitbucket", "aws", "azure", "gcp", "cloud", "linux", "nginx", "apache", "terraform", "ansible", "jenkins", "ci/cd", "ci", "cd", "ubuntu", "centos", "debian", "grafana", "prometheus",
+		"rest", "api", "graphql", "grpc", "soap", "websocket", "http", "https", "tcp/ip", "udp",
+		"figma", "photoshop", "illustrator", "adobe", "sketch", "zeplin", "invision", "canva", "indesign", "xd", "coreldraw", "affinity", "procreate", "framer", "principle", "blender", "maya", "3ds max", "cinema 4d", "vray", "lumion", "premiere", "after effects", "davinci", "final cut", "audition", "obs", "handbrake", "vlc", "ableton", "logic pro", "fl studio",
+		"camera", "lens", "microphone", "drone", "lighting", "rig", "stabilizer", "router", "switch", "server", "workstation", "monitor", "laptop", "printer", "scanner", "pos",
+		"perforator", "drill", "shurupovert", "bolgarka", "welder", "welding", "laser level", "leveler", "saw", "hammer", "screwdriver", "pliers", "wrench", "measuring tape", "mixer", "generator", "compressor", "jackhammer", "tile cutter", "kafel", "gipsokarton", "malyarka",
+		"stethoscope", "ultrasound", "uzi", "mri", "mrt", "x-ray", "rentgen", "ecg", "eeg", "scalpel", "forceps", "thermometer", "tonometer", "ventilator", "syringe", "microscope", "dental drill", "implants",
+		"ios", "android", "windows", "macos", "unix", "ubuntu", "redhat", "store", "app store", "google play", "steam", "playstation", "xbox", "nintendo", "esports", "gaming pc",
+		"excel", "word", "powerpoint", "outlook", "google workspace", "sheets", "docs", "bitrix24", "amocrm", "salesforce", "jira", "trello", "asana", "slack", "zoom", "teams", "confluence", "notion", "clickup", "monday.com", "electronic signature", "eds", "e-imzo", "crm", "erp",
+		"bot", "plugin", "extension", "addon",
+	}
+	isTech := func(name string) bool {
+		lower := strings.ToLower(name)
+		for _, kw := range techKeywords {
+			if strings.Contains(lower, kw) {
+				return true
+			}
+		}
+		return false
+	}
+
+	finalMatchedSkillIDs := make([]string, 0)
+	for _, idStr := range parsed.MatchedSkillIDs {
+		id, err := uuid.Parse(idStr)
+		if err != nil {
+			continue
+		}
+		var name string
+		err = r.pool.QueryRow(ctx, "SELECT name FROM skills WHERE id = $1", id).Scan(&name)
+		if err == nil && isTech(name) {
+			var techID uuid.UUID
+			err = r.pool.QueryRow(ctx, "SELECT id FROM technologies WHERE LOWER(name) = LOWER($1)", name).Scan(&techID)
+			if err == nil {
+				parsed.MatchedTechIDs = append(parsed.MatchedTechIDs, techID.String())
+			} else {
+				parsed.NewTechnologies = append(parsed.NewTechnologies, name)
+			}
+		} else {
+			finalMatchedSkillIDs = append(finalMatchedSkillIDs, idStr)
+		}
+	}
+	parsed.MatchedSkillIDs = finalMatchedSkillIDs
+
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	var mainCatID uuid.UUID
+	var subCatID uuid.UUID
+
+	if parsed.MatchedMainCatID != "" {
+		mainCatID, _ = uuid.Parse(parsed.MatchedMainCatID)
+	}
+	if mainCatID == uuid.Nil && parsed.NewMainCategory != "" {
+		mainCatID = uuid.New()
+		_, _ = tx.Exec(ctx, "INSERT INTO main_category (id, name, created_at, updated_at) VALUES ($1, $2, NOW(), NOW()) ON CONFLICT (name) DO UPDATE SET updated_at = NOW() RETURNING id", mainCatID, parsed.NewMainCategory)
+		_ = tx.QueryRow(ctx, "SELECT id FROM main_category WHERE LOWER(name) = LOWER($1)", parsed.NewMainCategory).Scan(&mainCatID)
+	}
+
+	if parsed.MatchedSubCatID != "" {
+		subCatID, _ = uuid.Parse(parsed.MatchedSubCatID)
+	}
+	if subCatID == uuid.Nil && parsed.NewSubCategory != "" {
+		subCatID = uuid.New()
+		_, _ = tx.Exec(ctx, "INSERT INTO sub_category (id, name, main_category_id, created_at, updated_at) VALUES ($1, $2, $3, NOW(), NOW()) ON CONFLICT (name) DO UPDATE SET updated_at = NOW() RETURNING id", subCatID, parsed.NewSubCategory, mainCatID)
+		_ = tx.QueryRow(ctx, "SELECT id FROM sub_category WHERE LOWER(name) = LOWER($1)", parsed.NewSubCategory).Scan(&subCatID)
+	}
+
+	// Update user categories
+	_, err = tx.Exec(ctx, "UPDATE users SET main_category_id = $1, sub_category_id = $2 WHERE id = $3", mainCatID, subCatID, userID)
+	if err != nil {
+		return fmt.Errorf("update user categories: %w", err)
+	}
+
+	allTechIDs := make([]uuid.UUID, 0)
+	for _, oldTech := range parsed.MatchedTechIDs {
+		if id, err := uuid.Parse(oldTech); err == nil {
+			allTechIDs = append(allTechIDs, id)
+			if subCatID != uuid.Nil {
+				_, _ = tx.Exec(ctx, `UPDATE technologies SET sub_category_ids = CASE WHEN $1 = ANY(sub_category_ids) THEN sub_category_ids ELSE array_append(COALESCE(sub_category_ids, ARRAY[]::uuid[]), $1) END, updated_at = NOW() WHERE id = $2`, subCatID, id)
+			}
+		}
+	}
+	for _, newTechName := range parsed.NewTechnologies {
+		var finalID uuid.UUID
+		if subCatID != uuid.Nil {
+			err = tx.QueryRow(ctx, `INSERT INTO technologies (id, name, sub_category_ids, created_at, updated_at) VALUES ($1, $2, ARRAY[$3]::uuid[], NOW(), NOW()) ON CONFLICT (name) DO UPDATE SET sub_category_ids = CASE WHEN $3 = ANY(technologies.sub_category_ids) THEN technologies.sub_category_ids ELSE array_append(COALESCE(technologies.sub_category_ids, ARRAY[]::uuid[]), $3) END, updated_at = NOW() RETURNING id`, uuid.New(), newTechName, subCatID).Scan(&finalID)
+		} else {
+			err = tx.QueryRow(ctx, `INSERT INTO technologies (id, name, sub_category_ids, created_at, updated_at) VALUES ($1, $2, ARRAY[]::uuid[], NOW(), NOW()) ON CONFLICT (name) DO UPDATE SET sub_category_ids = COALESCE(technologies.sub_category_ids, ARRAY[]::uuid[]), updated_at = NOW() RETURNING id`, uuid.New(), newTechName).Scan(&finalID)
+		}
+		if err == nil {
+			allTechIDs = append(allTechIDs, finalID)
+		}
+	}
+
+	allSkillIDs := make([]uuid.UUID, 0)
+	for _, oldSkill := range parsed.MatchedSkillIDs {
+		if id, err := uuid.Parse(oldSkill); err == nil {
+			allSkillIDs = append(allSkillIDs, id)
+			if subCatID != uuid.Nil {
+				_, _ = tx.Exec(ctx, `UPDATE skills SET sub_category_ids = CASE WHEN $1 = ANY(sub_category_ids) THEN sub_category_ids ELSE array_append(COALESCE(sub_category_ids, ARRAY[]::uuid[]), $1) END, updated_at = NOW() WHERE id = $2`, subCatID, id)
+			}
+		}
+	}
+	for _, newSkillName := range parsed.NewSkills {
+		var finalID uuid.UUID
+		if subCatID != uuid.Nil {
+			err = tx.QueryRow(ctx, `INSERT INTO skills (id, name, sub_category_ids, created_at, updated_at) VALUES ($1, $2, ARRAY[$3]::uuid[], NOW(), NOW()) ON CONFLICT (name) DO UPDATE SET sub_category_ids = CASE WHEN $3 = ANY(skills.sub_category_ids) THEN skills.sub_category_ids ELSE array_append(COALESCE(skills.sub_category_ids, ARRAY[]::uuid[]), $3) END, updated_at = NOW() RETURNING id`, uuid.New(), newSkillName, subCatID).Scan(&finalID)
+		} else {
+			err = tx.QueryRow(ctx, `INSERT INTO skills (id, name, sub_category_ids, created_at, updated_at) VALUES ($1, $2, ARRAY[]::uuid[], NOW(), NOW()) ON CONFLICT (name) DO UPDATE SET sub_category_ids = COALESCE(skills.sub_category_ids, ARRAY[]::uuid[]), updated_at = NOW() RETURNING id`, uuid.New(), newSkillName).Scan(&finalID)
+		}
+		if err == nil {
+			allSkillIDs = append(allSkillIDs, finalID)
+		}
+	}
+
+	// Connect Junctions
+	for _, techID := range allTechIDs {
+		_, _ = tx.Exec(ctx, `INSERT INTO user_technologies (user_id, technology_id, created_at, updated_at) VALUES ($1, $2, NOW(), NOW()) ON CONFLICT DO NOTHING`, userID, techID)
+	}
+	for _, skillID := range allSkillIDs {
+		_, _ = tx.Exec(ctx, `INSERT INTO user_skills (user_id, skill_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`, userID, skillID)
+	}
+
+	return tx.Commit(ctx)
+}

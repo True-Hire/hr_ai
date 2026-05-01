@@ -325,14 +325,22 @@ func (f *FlexibleFields) UnmarshalJSON(data []byte) error {
 
 // ParsedProfile is the structured result from Gemini profile parsing.
 type ParsedProfile struct {
-	SourceLang     string                 `json:"source_lang"`
-	ProfileScore   int                    `json:"profile_score"`
-	Fields         FlexibleFields         `json:"fields"`
-	Skills         LangStringSlice        `json:"skills"`
-	Certifications LangStringSlice        `json:"certifications"`
-	Languages      []ParsedLanguageItem   `json:"languages"`
-	Experience     []ParsedExperienceItem `json:"experience"`
-	Education      []ParsedEducationItem  `json:"education"`
+	SourceLang       string                 `json:"source_lang"`
+	ProfileScore     int                    `json:"profile_score"`
+	Fields           FlexibleFields         `json:"fields"`
+	MatchedMainCatID string                 `json:"matched_main_category_id"`
+	MatchedSubCatID  string                 `json:"matched_sub_category_id"`
+	NewMainCategory  string                 `json:"new_main_category"`
+	NewSubCategory   string                 `json:"new_sub_category"`
+	MatchedTechIDs   []string               `json:"matched_technology_ids"`
+	MatchedSkillIDs  []string               `json:"matched_skill_ids"`
+	NewTechnologies  []string               `json:"new_technologies"`
+	NewSkills        []string               `json:"new_skills"`
+	Skills           LangStringSlice        `json:"skills"` // Deprecated in favor of NewSkills/MatchedSkillIDs but kept for now
+	Certifications   LangStringSlice        `json:"certifications"`
+	Languages        []ParsedLanguageItem   `json:"languages"`
+	Experience       []ParsedExperienceItem `json:"experience"`
+	Education        []ParsedEducationItem  `json:"education"`
 }
 
 type ParsedLanguageItem struct {
@@ -581,17 +589,17 @@ func (c *Client) TranslateText(ctx context.Context, text string) (*TranslatedTex
 	return &parsed, nil
 }
 
-func (c *Client) ParseProfileFromText(ctx context.Context, userInput string) (*ParsedProfile, error) {
+func (c *Client) ParseProfileFromText(ctx context.Context, userInput string, taxonomyContext string) (*ParsedProfile, error) {
 	parts := []part{
-		{Text: buildPrompt(userInput)},
+		{Text: buildPrompt(userInput, taxonomyContext)},
 	}
 	return c.callGemini(ctx, parts)
 }
 
-func (c *Client) ParseProfileFromFile(ctx context.Context, fileData []byte, mimeType string, contextText string) (*ParsedProfile, error) {
+func (c *Client) ParseProfileFromFile(ctx context.Context, fileData []byte, mimeType string, contextText string, taxonomyContext string) (*ParsedProfile, error) {
 	encoded := base64.StdEncoding.EncodeToString(fileData)
 	parts := []part{
-		{Text: buildFilePrompt()},
+		{Text: buildFilePrompt(taxonomyContext)},
 	}
 	if contextText != "" {
 		parts = append(parts, part{Text: "Additional context:\n" + contextText})
