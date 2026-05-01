@@ -18,38 +18,39 @@ import (
 )
 
 type Services struct {
-	User             *application.UserService
-	ProfileField     *application.ProfileFieldService
-	ProfileFieldText *application.ProfileFieldTextService
-	ExperienceItem   *application.ExperienceItemService
-	EducationItem    *application.EducationItemService
-	ItemText         *application.ItemTextService
-	Skill            *application.SkillService
-	ProfileParse     *application.ProfileParseService
-	Auth             *application.AuthService
-	CompanyHR        *application.CompanyHRService
-	HRAuth           *application.HRAuthService
-	Company          *application.CompanyService
-	CompanyText      *application.CompanyTextService
-	Country          *application.CountryService
-	Vacancy          *application.VacancyService
-	VacancyText      *application.VacancyTextService
-	VectorIndex      *application.VectorIndexService
-	Search           *application.SearchService
-	VacancySearch       *application.VacancySearchService
-	VacancyApplication  *application.VacancyApplicationService
-	Bot                 *application.BotService
-	HRBot               *application.HRBotService
-	AccountDeletion     *application.AccountDeletionService
-	HRSavedUser         *application.HRSavedUserService
-	CandidateIndexing   *application.CandidateIndexingService
-	CandidateSearch     *application.CandidateSearchService
-	NormalizationRule   *application.NormalizationService
-	Storage          *application.StorageService
-	GeminiClient     *gemini.Client
-	CasbinEnforcer   *casbinlib.Enforcer
-	RedisClient      *redisclient.Client
-	JWTSecret        string
+	User               *application.UserService
+	ProfileField       *application.ProfileFieldService
+	ProfileFieldText   *application.ProfileFieldTextService
+	ExperienceItem     *application.ExperienceItemService
+	EducationItem      *application.EducationItemService
+	ItemText           *application.ItemTextService
+	Skill              *application.SkillService
+	ProfileParse       *application.ProfileParseService
+	Auth               *application.AuthService
+	CompanyHR          *application.CompanyHRService
+	HRAuth             *application.HRAuthService
+	Company            *application.CompanyService
+	CompanyText        *application.CompanyTextService
+	Country            *application.CountryService
+	Vacancy            *application.VacancyService
+	VacancyText        *application.VacancyTextService
+	VectorIndex        *application.VectorIndexService
+	Search             *application.SearchService
+	VacancySearch      *application.VacancySearchService
+	VacancyApplication *application.VacancyApplicationService
+	Bot                *application.BotService
+	HRBot              *application.HRBotService
+	AccountDeletion    *application.AccountDeletionService
+	HRSavedUser        *application.HRSavedUserService
+	CandidateIndexing  *application.CandidateIndexingService
+	CandidateSearch    *application.CandidateSearchService
+	NormalizationRule  *application.NormalizationService
+	VacancyAI          *application.VacancyAIService
+	Storage            *application.StorageService
+	GeminiClient       *gemini.Client
+	CasbinEnforcer     *casbinlib.Enforcer
+	RedisClient        *redisclient.Client
+	JWTSecret          string
 	TelegramBotToken   string
 	TelegramHRBotToken string
 }
@@ -163,27 +164,30 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, anthropicAPIKey, jwtSecret, d
 	candidateSearchSvc.SetVectorSearchService(searchSvc)
 	profileParseSvc.SetCandidateIndexingService(candidateIndexingSvc)
 
+	vacancyAIRepo := repository.NewVacancyAIRepository(pool)
+	vacancyAISvc := application.NewVacancyAIService(geminiClient, vacancyAIRepo)
 	hrBotSvc := application.NewHRBotService(companyHRSvc, vacancySvc, vacancyAppSvc, botStateSvc, searchSvc, userSvc, geminiClient)
+	hrBotSvc.SetAIServices(vacancyAISvc, vacancyAIRepo)
 
 	return &Services{
-		User:             userSvc,
-		ProfileField:     pfSvc,
-		ProfileFieldText: pftSvc,
-		ExperienceItem:   expSvc,
-		EducationItem:    eduSvc,
-		ItemText:         itSvc,
-		Skill:            skillSvc,
-		ProfileParse:     profileParseSvc,
-		Auth:             application.NewAuthService(userRepo, sessionRepo, jwtSecret),
-		CompanyHR:        companyHRSvc,
-		HRAuth:           application.NewHRAuthService(companyHRRepo, hrSessionRepo, jwtSecret),
-		Country:          application.NewCountryService(countryRepo, countryTextRepo, geminiClient, cacheSvc),
-		Company:          companySvc,
-		CompanyText:      application.NewCompanyTextService(companyTextRepo),
-		Vacancy:          vacancySvc,
-		VacancyText:      application.NewVacancyTextService(vacancyTextRepo),
-		VectorIndex:      vectorIndexSvc,
-		Search:           searchSvc,
+		User:               userSvc,
+		ProfileField:       pfSvc,
+		ProfileFieldText:   pftSvc,
+		ExperienceItem:     expSvc,
+		EducationItem:      eduSvc,
+		ItemText:           itSvc,
+		Skill:              skillSvc,
+		ProfileParse:       profileParseSvc,
+		Auth:               application.NewAuthService(userRepo, sessionRepo, jwtSecret),
+		CompanyHR:          companyHRSvc,
+		HRAuth:             application.NewHRAuthService(companyHRRepo, hrSessionRepo, jwtSecret),
+		Country:            application.NewCountryService(countryRepo, countryTextRepo, geminiClient, cacheSvc),
+		Company:            companySvc,
+		CompanyText:        application.NewCompanyTextService(companyTextRepo),
+		Vacancy:            vacancySvc,
+		VacancyText:        application.NewVacancyTextService(vacancyTextRepo),
+		VectorIndex:        vectorIndexSvc,
+		Search:             searchSvc,
 		VacancySearch:      vacancySearchSvc,
 		VacancyApplication: vacancyAppSvc,
 		Bot:                application.NewBotService(userSvc, companyHRSvc, profileParseSvc, storageSvc, botStateSvc, geminiClient),
@@ -193,11 +197,12 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, anthropicAPIKey, jwtSecret, d
 		CandidateIndexing:  candidateIndexingSvc,
 		CandidateSearch:    candidateSearchSvc,
 		NormalizationRule:  normRuleSvc,
-		Storage:          storageSvc,
-		GeminiClient:     geminiClient,
-		CasbinEnforcer:   enforcer,
-		RedisClient:      rc,
-		JWTSecret:        jwtSecret,
+		VacancyAI:          vacancyAISvc,
+		Storage:            storageSvc,
+		GeminiClient:       geminiClient,
+		CasbinEnforcer:     enforcer,
+		RedisClient:        rc,
+		JWTSecret:          jwtSecret,
 		TelegramBotToken:   telegramBotToken,
 		TelegramHRBotToken: telegramHRBotToken,
 	}, nil

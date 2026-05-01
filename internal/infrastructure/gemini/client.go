@@ -182,6 +182,61 @@ func (c *Client) generateJSON(ctx context.Context, parts []part) (string, error)
 	return stripMarkdown(content), nil
 }
 
+// GenerateJSONWithSystemCache sends a request to Claude with a cached system prompt.
+// This is used to pass massive databases (categories/techs) cheaply.
+func (c *Client) GenerateJSONWithSystemCache(ctx context.Context, systemPrompt string, userText string) (string, error) {
+	reqBody := anthropicRequest{
+		Model:     modelVersion,
+		MaxTokens: 8192,
+		System: []anthropicContent{
+			{
+				Type: "text",
+				Text: systemPrompt,
+				CacheControl: &anthropicCacheControl{
+					Type: "ephemeral", // Kesh qo'shildi!
+				},
+			},
+		},
+		Messages: []anthropicMessage{
+			{
+				Role: "user",
+				Content: []anthropicContent{
+					{
+						Type: "text",
+						Text: userText,
+					},
+				},
+			},
+		},
+	}
+
+	jsonBody, err := json.Marshal(reqBody)
+	if err != nil {
+		return "", fmt.Errorf("marshal Claude cache request: %w", err)
+	}
+
+	body, err := c.doRequest(ctx, baseURL, jsonBody)
+	if err != nil {
+		return "", err
+	}
+
+	var genResp anthropicResponse
+	if err := json.Unmarshal(body, &genResp); err != nil {
+		return "", fmt.Errorf("unmarshal Claude cache response: %w", err)
+	}
+
+	var fullContent strings.Builder
+	for _, cnt := range genResp.Content {
+		if cnt.Type == "text" {
+			fullContent.WriteString(cnt.Text)
+		}
+	}
+	content := fullContent.String()
+	log.Printf("[Claude Cache] Model: %s, Response Content: %s", modelVersion, content)
+
+	return stripMarkdown(content), nil
+}
+
 func stripMarkdown(text string) string {
 	text = strings.TrimSpace(text)
 	// Try to find a code block starting with ```json or just ```
@@ -581,7 +636,7 @@ func (c *Client) callGemini(ctx context.Context, parts []part) (*ParsedProfile, 
 type anthropicRequest struct {
 	Model     string             `json:"model"`
 	MaxTokens int                `json:"max_tokens"`
-	System    string             `json:"system,omitempty"`
+	System    []anthropicContent `json:"system,omitempty"` // O'zgartirildi: Kesh qo'shish uchun Array of objects
 	Messages  []anthropicMessage `json:"messages"`
 }
 
@@ -590,10 +645,15 @@ type anthropicMessage struct {
 	Content []anthropicContent `json:"content"`
 }
 
+type anthropicCacheControl struct {
+	Type string `json:"type"`
+}
+
 type anthropicContent struct {
-	Type   string           `json:"type"`
-	Text   string           `json:"text,omitempty"`
-	Source *anthropicSource `json:"source,omitempty"`
+	Type         string                 `json:"type"`
+	Text         string                 `json:"text,omitempty"`
+	Source       *anthropicSource       `json:"source,omitempty"`
+	CacheControl *anthropicCacheControl `json:"cache_control,omitempty"` // YAngi qo'shildi! Kesh uchun.
 }
 
 type anthropicSource struct {

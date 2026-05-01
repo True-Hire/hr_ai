@@ -13,6 +13,7 @@ import (
 
 	"github.com/ruziba3vich/hr-ai/internal/domain"
 	"github.com/ruziba3vich/hr-ai/internal/infrastructure/gemini"
+	"github.com/ruziba3vich/hr-ai/internal/infrastructure/repository"
 )
 
 type HRBotService struct {
@@ -23,6 +24,8 @@ type HRBotService struct {
 	searchSvc     *SearchService
 	userSvc       *UserService
 	geminiClient  *gemini.Client
+	VacancyAISvc  *VacancyAIService
+	VacancyRepo   *repository.VacancyAIRepository
 }
 
 func NewHRBotService(hrSvc *CompanyHRService, vacancySvc *VacancyService, vacancyAppSvc *VacancyApplicationService, stateSvc *BotStateService, searchSvc *SearchService, userSvc *UserService, geminiClient *gemini.Client) *HRBotService {
@@ -35,6 +38,11 @@ func NewHRBotService(hrSvc *CompanyHRService, vacancySvc *VacancyService, vacanc
 		userSvc:       userSvc,
 		geminiClient:  geminiClient,
 	}
+}
+
+func (s *HRBotService) SetAIServices(aiSvc *VacancyAIService, repo *repository.VacancyAIRepository) {
+	s.VacancyAISvc = aiSvc
+	s.VacancyRepo = repo
 }
 
 type HRStartResult struct {
@@ -392,6 +400,29 @@ func (s *HRBotService) GetVacancyDraft(ctx context.Context, telegramID int64) (*
 
 func (s *HRBotService) ClearVacancyDraft(ctx context.Context, telegramID int64) error {
 	key := fmt.Sprintf("hr_bot:vacancy_draft:%d", telegramID)
+	return s.stateSvc.redis.Delete(ctx, key)
+}
+
+func (s *HRBotService) SaveAIVacancyDraft(ctx context.Context, telegramID int64, draft *domain.AIParsedVacancy) error {
+	key := fmt.Sprintf("hr_bot:ai_vacancy_draft:%d", telegramID)
+	return s.stateSvc.redis.Set(ctx, key, draft, s.stateSvc.ttl)
+}
+
+func (s *HRBotService) GetAIVacancyDraft(ctx context.Context, telegramID int64) (*domain.AIParsedVacancy, error) {
+	key := fmt.Sprintf("hr_bot:ai_vacancy_draft:%d", telegramID)
+	var draft domain.AIParsedVacancy
+	found, err := s.stateSvc.redis.Get(ctx, key, &draft)
+	if err != nil {
+		return nil, fmt.Errorf("get ai vacancy draft: %w", err)
+	}
+	if !found {
+		return nil, nil
+	}
+	return &draft, nil
+}
+
+func (s *HRBotService) ClearAIVacancyDraft(ctx context.Context, telegramID int64) error {
+	key := fmt.Sprintf("hr_bot:ai_vacancy_draft:%d", telegramID)
 	return s.stateSvc.redis.Delete(ctx, key)
 }
 

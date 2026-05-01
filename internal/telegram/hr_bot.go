@@ -353,6 +353,7 @@ type HRBot struct {
 	bot        *tele.Bot
 	hrBotSvc   *application.HRBotService
 	storageSvc *application.StorageService
+	aiHandlers *VacancyAIHandlers
 	webAppURL  string
 }
 
@@ -366,6 +367,12 @@ func NewHRBot(token string, hrBotSvc *application.HRBotService, storageSvc *appl
 	}
 
 	hb := &HRBot{bot: b, hrBotSvc: hrBotSvc, storageSvc: storageSvc, webAppURL: webAppURL}
+	
+	// Initialize and register AI handlers
+	aiHandlers := NewVacancyAIHandlers(b, hrBotSvc.VacancyAISvc, hrBotSvc, hrBotSvc.VacancyRepo)
+	hb.aiHandlers = aiHandlers
+	aiHandlers.Register()
+
 	_ = b.RemoveWebhook()
 	hb.registerHandlers()
 
@@ -764,6 +771,20 @@ func (hb *HRBot) registerHandlers() {
 
 		_ = hrBotSvc.ClearVacancyDraft(ctx, sender.ID)
 		_ = hrBotSvc.ClearState(ctx, sender.ID)
+
+		// Orqa fonda 4 ta bo'limga bo'lib saqlash (Taxonomy update)
+		// Tavsif va ko'nikmalarni birlashtirib yuboramiz, shunda AI texnologiyalarni yaxshiroq ajratadi
+		fullText := ""
+		if draft.Fields["description"] != nil {
+			fullText = draft.Fields["description"]["uz"]
+		}
+		if draft.Skills != nil && len(draft.Skills["en"]) > 0 {
+			fullText += "\nSkills/Techs: " + strings.Join(draft.Skills["en"], ", ")
+		}
+		
+		if fullText != "" {
+			go hb.aiHandlers.HandleAIInput(context.Background(), sender.ID, result.Vacancy.ID, fullText)
+		}
 
 		// Count matching candidates
 		var skills []string
