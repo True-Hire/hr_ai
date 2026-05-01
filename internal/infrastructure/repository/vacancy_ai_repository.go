@@ -252,6 +252,18 @@ func (r *VacancyAIRepository) SaveParsedVacancy(ctx context.Context, v *domain.V
 	for _, oldTech := range parsed.MatchedTechIDs {
 		if id, err := uuid.Parse(oldTech); err == nil {
 			allTechIDs = append(allTechIDs, id)
+			// Update existing tech to link with current sub-category
+			if subCatID != uuid.Nil {
+				_, _ = tx.Exec(ctx, `
+					UPDATE technologies 
+					SET sub_category_ids = CASE 
+						WHEN $1 = ANY(sub_category_ids) THEN sub_category_ids 
+						ELSE array_append(COALESCE(sub_category_ids, ARRAY[]::uuid[]), $1) 
+					END,
+					updated_at = NOW()
+					WHERE id = $2
+				`, subCatID, id)
+			}
 		}
 	}
 	for _, newTechName := range parsed.NewTechnologies {
@@ -273,7 +285,10 @@ func (r *VacancyAIRepository) SaveParsedVacancy(ctx context.Context, v *domain.V
 			err = tx.QueryRow(ctx, `
 				INSERT INTO technologies (id, name, sub_category_ids, created_at, updated_at) 
 				VALUES ($1, $2, ARRAY[]::uuid[], NOW(), NOW())
-				ON CONFLICT (name) DO UPDATE SET updated_at = NOW()
+				ON CONFLICT (name) 
+				DO UPDATE SET 
+					sub_category_ids = COALESCE(technologies.sub_category_ids, ARRAY[]::uuid[]),
+					updated_at = NOW()
 				RETURNING id
 			`, uuid.New(), newTechName).Scan(&finalID)
 		}
@@ -288,6 +303,18 @@ func (r *VacancyAIRepository) SaveParsedVacancy(ctx context.Context, v *domain.V
 	for _, oldSkill := range parsed.MatchedSkillIDs {
 		if id, err := uuid.Parse(oldSkill); err == nil {
 			allSkillIDs = append(allSkillIDs, id)
+			// Update existing skill to link with current sub-category
+			if subCatID != uuid.Nil {
+				_, _ = tx.Exec(ctx, `
+					UPDATE skills 
+					SET sub_category_ids = CASE 
+						WHEN $1 = ANY(sub_category_ids) THEN sub_category_ids 
+						ELSE array_append(COALESCE(sub_category_ids, ARRAY[]::uuid[]), $1) 
+					END,
+					updated_at = NOW()
+					WHERE id = $2
+				`, subCatID, id)
+			}
 		}
 	}
 	for _, newSkillName := range parsed.NewSkills {
@@ -309,7 +336,10 @@ func (r *VacancyAIRepository) SaveParsedVacancy(ctx context.Context, v *domain.V
 			err = tx.QueryRow(ctx, `
 				INSERT INTO skills (id, name, sub_category_ids, created_at, updated_at) 
 				VALUES ($1, $2, ARRAY[]::uuid[], NOW(), NOW())
-				ON CONFLICT (name) DO UPDATE SET updated_at = NOW()
+				ON CONFLICT (name) 
+				DO UPDATE SET 
+					sub_category_ids = COALESCE(skills.sub_category_ids, ARRAY[]::uuid[]),
+					updated_at = NOW()
 				RETURNING id
 			`, uuid.New(), newSkillName).Scan(&finalID)
 		}
