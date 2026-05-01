@@ -90,12 +90,18 @@ JSON formati:
 
 func (s *VacancyAIService) fixCategorization(p *domain.AIParsedVacancy) {
 	techKeywords := []string{
-		"swift", "kotlin", "java", "flutter", "dart", "go", "golang", "python", "javascript", "react", "vue", "angular", "docker", "kubernetes", "git",
-		"postgresql", "mysql", "mongodb", "redis", "firebase", "rest", "api", "ci/cd", "ci", "cd", "aws", "azure", "gcp", "cloud", "linux", "nginx",
-		"figma", "photoshop", "illustrator", "adobe", "sketch", "zeplin", "invision", "canva", "indesign", "xd", "coreldraw",
-		"premiere", "after effects", "davinci", "final cut", "audition", "obs", "vray", "blender", "3ds max", "maya", "cinema 4d",
-		"camera", "lens", "microphone", "drone", "lighting", "rig", "stabilizer",
-		"ios", "android", "deployment", "publishing", "store",
+		"swift", "kotlin", "java", "flutter", "dart", "go", "golang", "python", "javascript", "typescript", "react", "vue", "angular", "node.js", "nodejs", "express", "django", "flask", "laravel", "php", "ruby", "rails", "c#", ".net", "dotnet", "c++", "rust", "elixir", "scala", "clojure", "objective-c", "unity", "unreal",
+		"html", "css", "scss", "sass", "less", "tailwind", "bootstrap", "material ui", "nextjs", "nuxtjs", "webpack", "vite", "babel", "jquery", "wordpress", "elementor",
+		"postgresql", "mysql", "mongodb", "redis", "firebase", "sqlite", "mariadb", "cassandra", "elasticsearch", "oracle", "sql server", "dynamodb", "supabase", "pocketbase",
+		"docker", "kubernetes", "git", "github", "gitlab", "bitbucket", "aws", "azure", "gcp", "cloud", "linux", "nginx", "apache", "terraform", "ansible", "jenkins", "ci/cd", "ci", "cd", "ubuntu", "centos", "debian", "grafana", "prometheus",
+		"rest", "api", "graphql", "grpc", "soap", "websocket", "http", "https", "tcp/ip", "udp",
+		"figma", "photoshop", "illustrator", "adobe", "sketch", "zeplin", "invision", "canva", "indesign", "xd", "coreldraw", "affinity", "procreate", "framer", "principle", "blender", "maya", "3ds max", "cinema 4d", "vray", "lumion", "premiere", "after effects", "davinci", "final cut", "audition", "obs", "handbrake", "vlc", "ableton", "logic pro", "fl studio",
+		"camera", "lens", "microphone", "drone", "lighting", "rig", "stabilizer", "router", "switch", "server", "workstation", "monitor", "laptop", "printer", "scanner", "pos",
+		"perforator", "drill", "shurupovert", "bolgarka", "welder", "welding", "laser level", "leveler", "saw", "hammer", "screwdriver", "pliers", "wrench", "measuring tape", "mixer", "generator", "compressor", "jackhammer", "tile cutter", "kafel", "gipsokarton", "malyarka",
+		"stethoscope", "ultrasound", "uzi", "mri", "mrt", "x-ray", "rentgen", "ecg", "eeg", "scalpel", "forceps", "thermometer", "tonometer", "ventilator", "syringe", "microscope", "dental drill", "implants",
+		"ios", "android", "windows", "macos", "unix", "ubuntu", "redhat", "store", "app store", "google play", "steam", "playstation", "xbox", "nintendo", "esports", "gaming pc",
+		"excel", "word", "powerpoint", "outlook", "google workspace", "sheets", "docs", "bitrix24", "amocrm", "salesforce", "jira", "trello", "asana", "slack", "zoom", "teams", "confluence", "notion", "clickup", "monday.com", "electronic signature", "eds", "e-imzo", "crm", "erp",
+		"bot", "plugin", "extension", "addon",
 	}
 
 	finalSkills := []string{}

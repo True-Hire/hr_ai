@@ -80,10 +80,30 @@ func (r *VacancyAIRepository) GetAllReferencesForAI(ctx context.Context) (string
 	rows, err = r.pool.Query(ctx, "SELECT id, name FROM skills")
 	if err == nil {
 		forbiddenKeywords := []string{
-			"swift", "kotlin", "java", "flutter", "dart", "figma", "photoshop", "illustrator", "adobe",
-			"go", "golang", "python", "javascript", "react", "vue", "angular", "docker", "kubernetes", "git",
-			"postgresql", "mysql", "mongodb", "redis", "firebase", "rest", "api", "ci/cd", "ci", "cd",
-			"deployment", "publishing", "store", "ios", "android", "aws", "azure", "gcp", "cloud", "linux", "nginx",
+			// IT & Development
+			"swift", "kotlin", "java", "flutter", "dart", "go", "golang", "python", "javascript", "typescript", "react", "vue", "angular", "node.js", "nodejs", "express", "django", "flask", "laravel", "php", "ruby", "rails", "c#", ".net", "dotnet", "c++", "rust", "elixir", "scala", "clojure", "objective-c", "unity", "unreal",
+			// Web & Frontend
+			"html", "css", "scss", "sass", "less", "tailwind", "bootstrap", "material ui", "nextjs", "nuxtjs", "webpack", "vite", "babel", "jquery", "wordpress", "elementor",
+			// Databases & Storage
+			"postgresql", "mysql", "mongodb", "redis", "firebase", "sqlite", "mariadb", "cassandra", "elasticsearch", "oracle", "sql server", "dynamodb", "supabase", "pocketbase",
+			// Infrastructure & DevOps
+			"docker", "kubernetes", "git", "github", "gitlab", "bitbucket", "aws", "azure", "gcp", "cloud", "linux", "nginx", "apache", "terraform", "ansible", "jenkins", "ci/cd", "ci", "cd", "ubuntu", "centos", "debian", "grafana", "prometheus",
+			// APIs & Protocols
+			"rest", "api", "graphql", "grpc", "soap", "websocket", "http", "https", "tcp/ip", "udp",
+			// Design & UI/UX & Media
+			"figma", "photoshop", "illustrator", "adobe", "sketch", "zeplin", "invision", "canva", "indesign", "xd", "coreldraw", "affinity", "procreate", "framer", "principle", "blender", "maya", "3ds max", "cinema 4d", "vray", "lumion", "premiere", "after effects", "davinci", "final cut", "audition", "obs", "handbrake", "vlc", "ableton", "logic pro", "fl studio",
+			// Hardware & General Equipment
+			"camera", "lens", "microphone", "drone", "lighting", "rig", "stabilizer", "router", "switch", "server", "workstation", "monitor", "laptop", "printer", "scanner", "pos",
+			// Construction & Craftsmanship
+			"perforator", "drill", "shurupovert", "bolgarka", "welder", "welding", "laser level", "leveler", "saw", "hammer", "screwdriver", "pliers", "wrench", "measuring tape", "mixer", "generator", "compressor", "jackhammer", "tile cutter", "kafel", "gipsokarton", "malyarka",
+			// Medical & Healthcare
+			"stethoscope", "ultrasound", "uzi", "mri", "mrt", "x-ray", "rentgen", "ecg", "eeg", "scalpel", "forceps", "thermometer", "tonometer", "ventilator", "syringe", "microscope", "dental drill", "implants",
+			// Platforms & OS & E-sports
+			"ios", "android", "windows", "macos", "unix", "ubuntu", "redhat", "store", "app store", "google play", "steam", "playstation", "xbox", "nintendo", "esports", "gaming pc",
+			// Office & CRM & Business & Law
+			"excel", "word", "powerpoint", "outlook", "google workspace", "sheets", "docs", "bitrix24", "amocrm", "salesforce", "jira", "trello", "asana", "slack", "zoom", "teams", "confluence", "notion", "clickup", "monday.com", "electronic signature", "eds", "e-imzo", "crm", "erp",
+			// General Technical Tools
+			"bot", "plugin", "extension", "addon",
 		}
 
 		for rows.Next() {
@@ -115,16 +135,29 @@ func (r *VacancyAIRepository) SaveParsedVacancy(ctx context.Context, v *domain.V
 	// 1. Prepare Taxonomy Guard Keywords
 	techKeywords := []string{
 		// IT & Development
-		"swift", "kotlin", "java", "flutter", "dart", "go", "golang", "python", "javascript", "react", "vue", "angular", "docker", "kubernetes", "git",
-		"postgresql", "mysql", "mongodb", "redis", "firebase", "rest", "api", "ci/cd", "ci", "cd", "aws", "azure", "gcp", "cloud", "linux", "nginx",
-		// Design & UI/UX
-		"figma", "photoshop", "illustrator", "adobe", "sketch", "zeplin", "invision", "canva", "indesign", "xd", "coreldraw",
-		// Video & Audio Editing
-		"premiere", "after effects", "davinci", "final cut", "audition", "obs", "vray", "blender", "3ds max", "maya", "cinema 4d",
-		// Hardware & Equipment
-		"camera", "lens", "microphone", "drone", "lighting", "rig", "stabilizer",
-		// General Platforms
-		"ios", "android", "deployment", "publishing", "store",
+		"swift", "kotlin", "java", "flutter", "dart", "go", "golang", "python", "javascript", "typescript", "react", "vue", "angular", "node.js", "nodejs", "express", "django", "flask", "laravel", "php", "ruby", "rails", "c#", ".net", "dotnet", "c++", "rust", "elixir", "scala", "clojure", "objective-c", "unity", "unreal",
+		// Web & Frontend
+		"html", "css", "scss", "sass", "less", "tailwind", "bootstrap", "material ui", "nextjs", "nuxtjs", "webpack", "vite", "babel", "jquery", "wordpress", "elementor",
+		// Databases & Storage
+		"postgresql", "mysql", "mongodb", "redis", "firebase", "sqlite", "mariadb", "cassandra", "elasticsearch", "oracle", "sql server", "dynamodb", "supabase", "pocketbase",
+		// Infrastructure & DevOps
+		"docker", "kubernetes", "git", "github", "gitlab", "bitbucket", "aws", "azure", "gcp", "cloud", "linux", "nginx", "apache", "terraform", "ansible", "jenkins", "ci/cd", "ci", "cd", "ubuntu", "centos", "debian", "grafana", "prometheus",
+		// APIs & Protocols
+		"rest", "api", "graphql", "grpc", "soap", "websocket", "http", "https", "tcp/ip", "udp",
+		// Design & UI/UX & Media
+		"figma", "photoshop", "illustrator", "adobe", "sketch", "zeplin", "invision", "canva", "indesign", "xd", "coreldraw", "affinity", "procreate", "framer", "principle", "blender", "maya", "3ds max", "cinema 4d", "vray", "lumion", "premiere", "after effects", "davinci", "final cut", "audition", "obs", "handbrake", "vlc", "ableton", "logic pro", "fl studio",
+		// Hardware & General Equipment
+		"camera", "lens", "microphone", "drone", "lighting", "rig", "stabilizer", "router", "switch", "server", "workstation", "monitor", "laptop", "printer", "scanner", "pos",
+		// Construction & Craftsmanship (Ustachilik)
+		"perforator", "drill", "shurupovert", "bolgarka", "welder", "welding", "laser level", "leveler", "saw", "hammer", "screwdriver", "pliers", "wrench", "measuring tape", "mixer", "generator", "compressor", "jackhammer", "tile cutter", "kafel", "gipsokarton", "malyarka",
+		// Medical & Healthcare (Tibbiyot)
+		"stethoscope", "ultrasound", "uzi", "mri", "mrt", "x-ray", "rentgen", "ecg", "eeg", "scalpel", "forceps", "thermometer", "tonometer", "ventilator", "syringe", "microscope", "dental drill", "implants",
+		// Platforms & OS & E-sports
+		"ios", "android", "windows", "macos", "unix", "ubuntu", "redhat", "store", "app store", "google play", "steam", "playstation", "xbox", "nintendo", "esports", "gaming pc",
+		// Office & CRM & Business & Law
+		"excel", "word", "powerpoint", "outlook", "google workspace", "sheets", "docs", "bitrix24", "amocrm", "salesforce", "jira", "trello", "asana", "slack", "zoom", "teams", "confluence", "notion", "clickup", "monday.com", "electronic signature", "eds", "e-imzo", "crm", "erp",
+		// General Technical Tools
+		"bot", "plugin", "extension", "addon",
 	}
 	isTech := func(name string) bool {
 		lower := strings.ToLower(name)
@@ -179,7 +212,7 @@ func (r *VacancyAIRepository) SaveParsedVacancy(ctx context.Context, v *domain.V
 	// 1. Process Main Category and Sub Category Dynamic Creation
 	var mainCatID uuid.UUID
 	var subCatID uuid.UUID
-	
+
 	if parsed.MatchedMainCatID != "" {
 		if id, err := uuid.Parse(parsed.MatchedMainCatID); err == nil {
 			mainCatID = id
@@ -227,7 +260,13 @@ func (r *VacancyAIRepository) SaveParsedVacancy(ctx context.Context, v *domain.V
 			err = tx.QueryRow(ctx, `
 				INSERT INTO technologies (id, name, sub_category_ids, created_at, updated_at) 
 				VALUES ($1, $2, ARRAY[$3]::uuid[], NOW(), NOW())
-				ON CONFLICT (name) DO UPDATE SET updated_at = NOW()
+				ON CONFLICT (name) 
+				DO UPDATE SET 
+					sub_category_ids = CASE 
+						WHEN $3 = ANY(technologies.sub_category_ids) THEN technologies.sub_category_ids 
+						ELSE array_append(COALESCE(technologies.sub_category_ids, ARRAY[]::uuid[]), $3) 
+					END,
+					updated_at = NOW()
 				RETURNING id
 			`, uuid.New(), newTechName, subCatID).Scan(&finalID)
 		} else {
@@ -257,7 +296,13 @@ func (r *VacancyAIRepository) SaveParsedVacancy(ctx context.Context, v *domain.V
 			err = tx.QueryRow(ctx, `
 				INSERT INTO skills (id, name, sub_category_ids, created_at, updated_at) 
 				VALUES ($1, $2, ARRAY[$3]::uuid[], NOW(), NOW())
-				ON CONFLICT (name) DO UPDATE SET updated_at = NOW()
+				ON CONFLICT (name) 
+				DO UPDATE SET 
+					sub_category_ids = CASE 
+						WHEN $3 = ANY(skills.sub_category_ids) THEN skills.sub_category_ids 
+						ELSE array_append(COALESCE(skills.sub_category_ids, ARRAY[]::uuid[]), $3) 
+					END,
+					updated_at = NOW()
 				RETURNING id
 			`, uuid.New(), newSkillName, subCatID).Scan(&finalID)
 		} else {
