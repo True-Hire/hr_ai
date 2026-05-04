@@ -17,7 +17,7 @@ import (
 )
 
 func main() {
-	// 1. Load config
+	// 1. Load configfix
 	_ = godotenv.Load()
 	cfg, err := config.Load()
 	if err != nil {
@@ -47,7 +47,7 @@ func main() {
 	// Get API keys from env
 	geminiKey := os.Getenv("GEMINI_API_KEY")
 	anthropicKey := os.Getenv("ANTHROPIC_API_KEY")
-	
+
 	aiClient := gemini.NewClient(geminiKey, anthropicKey)
 	vacancyRepo := repository.NewVacancyRepository(pool)
 	aiService := application.NewVacancyAIService(aiClient, vacancyRepo)
