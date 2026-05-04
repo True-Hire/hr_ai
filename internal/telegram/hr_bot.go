@@ -787,11 +787,7 @@ func (hb *HRBot) registerHandlers() {
 		}
 
 		// Count matching candidates
-		var skills []string
-		for _, sk := range result.Skills {
-			skills = append(skills, sk.Name)
-		}
-		matchCount := hrBotSvc.CountMatchingCandidates(ctx, vacancyTitle(result, "en"), skills)
+		matchCount := hrBotSvc.CountMatchingCandidates(ctx, result.Vacancy.MainCategoryID, result.Vacancy.SubCategoryID)
 
 		msg := buildVacancyCreatedMessage(result, lang, matchCount)
 		return c.Send(msg, &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: vacancyPublishedMenu(lang, result.Vacancy.ID.String(), hb.webAppURL)})
@@ -919,11 +915,7 @@ func (hb *HRBot) registerHandlers() {
 			return c.Send(hrMsgError[lang], hrMenu(lang))
 		}
 
-		var skills []string
-		for _, sk := range result.Skills {
-			skills = append(skills, sk.Name)
-		}
-		matchCount := hrBotSvc.CountMatchingCandidates(ctx, vacancyTitle(result, "en"), skills)
+		matchCount := hrBotSvc.CountMatchingCandidates(ctx, result.Vacancy.MainCategoryID, result.Vacancy.SubCategoryID)
 
 		msg := buildVacancyCreatedMessage(result, lang, matchCount)
 		return c.Send(msg, &tele.SendOptions{ParseMode: tele.ModeMarkdown, ReplyMarkup: vacancyPublishedMenu(lang, vacancyID.String(), hb.webAppURL)})
@@ -1502,11 +1494,7 @@ func (hb *HRBot) handleEditPublishedVacancy(ctx context.Context, c tele.Context,
 	_ = hb.hrBotSvc.ClearState(ctx, sender.ID)
 
 	// Show published message with 4 buttons
-	var skills []string
-	for _, sk := range result.Skills {
-		skills = append(skills, sk.Name)
-	}
-	matchCount := hb.hrBotSvc.CountMatchingCandidates(ctx, vacancyTitle(result, "en"), skills)
+	matchCount := hb.hrBotSvc.CountMatchingCandidates(ctx, result.Vacancy.MainCategoryID, result.Vacancy.SubCategoryID)
 
 	updatedMsg := map[string]string{
 		"en": "✅ Vacancy updated!\n\n",

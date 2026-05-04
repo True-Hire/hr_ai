@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/google/uuid"
 
@@ -187,23 +186,15 @@ func (s *HRBotService) GetVacancyStats(ctx context.Context, vacancyID uuid.UUID)
 	return total, unseen, nil
 }
 
-func (s *HRBotService) CountMatchingCandidates(ctx context.Context, vacancyTitle string, skills []string) int {
-	query := vacancyTitle
-	if len(skills) > 0 {
-		query += " " + strings.Join(skills, " ")
+func (s *HRBotService) CountMatchingCandidates(ctx context.Context, mainCatID, subCatID uuid.UUID) int {
+	if mainCatID == uuid.Nil || subCatID == uuid.Nil {
+		return 0
 	}
-	results, err := s.searchSvc.SearchUsers(ctx, query, 100)
+	count, err := s.userSvc.CountMatchingUsers(ctx, mainCatID, subCatID)
 	if err != nil {
 		return 0
 	}
-	// Count results with score above a threshold (rough match)
-	count := 0
-	for _, r := range results {
-		if r.Score > 0.3 {
-			count++
-		}
-	}
-	return count
+	return int(count)
 }
 
 // -- Company data parsing (Gemini) --

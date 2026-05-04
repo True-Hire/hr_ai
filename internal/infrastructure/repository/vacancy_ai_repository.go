@@ -20,15 +20,22 @@ func NewVacancyAIRepository(pool *pgxpool.Pool) *VacancyAIRepository {
 }
 
 func (r *VacancyAIRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Vacancy, error) {
-	row := r.pool.QueryRow(ctx, "SELECT id, hr_id, company_data, format, salary_currency, status FROM vacancies WHERE id = $1", id)
+	row := r.pool.QueryRow(ctx, "SELECT id, hr_id, company_data, format, salary_currency, status, main_category_id, sub_category_id FROM vacancies WHERE id = $1", id)
 	var v domain.Vacancy
 	var cdBytes []byte
-	err := row.Scan(&v.ID, &v.HRID, &cdBytes, &v.Format, &v.SalaryCurrency, &v.Status)
+	var mID, sID *uuid.UUID
+	err := row.Scan(&v.ID, &v.HRID, &cdBytes, &v.Format, &v.SalaryCurrency, &v.Status, &mID, &sID)
 	if err != nil {
 		return nil, err
 	}
 	if len(cdBytes) > 0 {
 		json.Unmarshal(cdBytes, &v.CompanyData)
+	}
+	if mID != nil {
+		v.MainCategoryID = *mID
+	}
+	if sID != nil {
+		v.SubCategoryID = *sID
 	}
 	return &v, nil
 }

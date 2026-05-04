@@ -56,6 +56,8 @@ type SearchFilters struct {
 	MinExperience   int // months
 	MaxExperience   int // months
 	MinScore        float64
+	MainCategoryID  uuid.UUID
+	SubCategoryID   uuid.UUID
 }
 
 type SearchSessionPage struct {
@@ -107,13 +109,18 @@ func (s *CandidateSearchService) Search(ctx context.Context, hrID uuid.UUID, par
 	var pool []domain.CandidateSearchProfile
 	var err error
 
-	if queryText != "" {
-		// Only use roleFamily for pool retrieval, not location/seniority (those affect scoring)
-		pool, err = s.searchProfileRepo.SearchPool(ctx, queryText, roleFamily, "", "", "", poolSize)
+	if filters.MainCategoryID != uuid.Nil {
+		// Priority 1: Category-based pool (STRICT MATCHING by category)
+		// We pass empty query to SearchPool to avoid filtering out candidates by keywords,
+		// but we still have parsedQuery for scoring/ranking later.
+		pool, err = s.searchProfileRepo.SearchPool(ctx, "", roleFamily, "", "", "", filters.MainCategoryID, filters.SubCategoryID, poolSize)
+	} else if queryText != "" {
+		// Priority 2: Keyword-based pool
+		pool, err = s.searchProfileRepo.SearchPool(ctx, queryText, roleFamily, "", "", "", uuid.Nil, uuid.Nil, poolSize)
 	} else if len(filters.Skills) > 0 {
-		pool, err = s.searchProfileRepo.SearchPoolBySkills(ctx, filters.Skills, roleFamily, "", poolSize)
+		pool, err = s.searchProfileRepo.SearchPoolBySkills(ctx, filters.Skills, roleFamily, "", uuid.Nil, uuid.Nil, poolSize)
 	} else if len(parsedQuery.Skills) > 0 {
-		pool, err = s.searchProfileRepo.SearchPoolBySkills(ctx, parsedQuery.Skills, roleFamily, "", poolSize)
+		pool, err = s.searchProfileRepo.SearchPoolBySkills(ctx, parsedQuery.Skills, roleFamily, "", uuid.Nil, uuid.Nil, poolSize)
 	} else {
 		return &SearchSessionPage{
 			SearchID:   uuid.Nil,
@@ -457,9 +464,11 @@ func (s *CandidateSearchService) SearchByVacancy(ctx context.Context, vacancyID 
 
 	// Build SearchFilters from vacancy data
 	filters := SearchFilters{
-		MinExperience: int(vacancy.Vacancy.ExperienceMin) * 12, // years to months
-		MaxExperience: int(vacancy.Vacancy.ExperienceMax) * 12,
-		MinScore:      0.30, // Default threshold for matching: 30%
+		MinExperience:  int(vacancy.Vacancy.ExperienceMin) * 12, // years to months
+		MaxExperience:  int(vacancy.Vacancy.ExperienceMax) * 12,
+		MinScore:       0.30, // Default threshold for matching: 30%
+		MainCategoryID: vacancy.Vacancy.MainCategoryID,
+		SubCategoryID:  vacancy.Vacancy.SubCategoryID,
 	}
 
 	// Extract location from vacancy address
@@ -478,7 +487,7 @@ func (s *CandidateSearchService) CountMatchingByVacancy(ctx context.Context, vac
 		return 0
 	}
 
-	// Use fast DB counting if categories are available
+	// STRICT MATCHING: Only use categories. No text fallback as per user instruction.
 	if vacancy.Vacancy.MainCategoryID != uuid.Nil && vacancy.Vacancy.SubCategoryID != uuid.Nil {
 		count, err := s.userSvc.CountMatchingUsers(ctx, vacancy.Vacancy.MainCategoryID, vacancy.Vacancy.SubCategoryID)
 		if err == nil {
@@ -486,60 +495,7 @@ func (s *CandidateSearchService) CountMatchingByVacancy(ctx context.Context, vac
 		}
 	}
 
-	// Fallback to text search if categories are missing or error occurred
-	var parts []string
-	for _, t := range vacancy.Texts {
-		if t.Lang == "en" && t.Title != "" {
-			parts = append(parts, t.Title)
-			break
-		}
-	}
-	if len(parts) == 0 {
-		for _, t := range vacancy.Texts {
-			if t.Title != "" {
-				parts = append(parts, t.Title)
-				break
-			}
-		}
-	}
-
-	skillNames := make([]string, 0, len(vacancy.Skills))
-	for _, sk := range vacancy.Skills {
-		skillNames = append(skillNames, sk.Name)
-	}
-	if len(skillNames) > 0 {
-		parts = append(parts, strings.Join(skillNames, " "))
-	}
-
-	searchText := strings.Join(parts, " ")
-	if searchText == "" && len(skillNames) == 0 {
-		return 0
-	}
-
-	const poolSize = 100
-	var pool []domain.CandidateSearchProfile
-
-	if searchText != "" {
-		pool, err = s.searchProfileRepo.SearchPool(ctx, searchText, "", "", "", "", poolSize)
-	} else {
-		pool, err = s.searchProfileRepo.SearchPoolBySkills(ctx, skillNames, "", "", poolSize)
-	}
-	if err != nil {
-		return 0
-	}
-
-	parsedQuery := buildParsedQueryFromVacancy(vacancy)
-	count := 0
-	for _, c := range pool {
-		roleMatch := scoring.CalcRoleMatchScore(parsedQuery.PrimaryRole, parsedQuery.RoleFamily, c.PrimaryRole, c.RoleFamily)
-		skillMatch := scoring.CalcSkillMatchScore(parsedQuery.Skills, c.Skills)
-		avgScore := (roleMatch + skillMatch) / 2.0
-		if avgScore > 0.3 {
-			count++
-		}
-	}
-
-	return count
+	return 0
 }
 
 // buildParsedQueryFromVacancy constructs a ParsedQuery from vacancy details.

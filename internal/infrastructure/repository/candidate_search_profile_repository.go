@@ -47,6 +47,7 @@ func (r *CandidateSearchProfileRepository) Upsert(ctx context.Context, profile *
 			overall_strength_score, backend_strength_score, frontend_strength_score,
 			data_strength_score,
 			search_text, search_tsv,
+			main_category_id, sub_category_id,
 			scoring_factors, parsed_entities,
 			updated_at
 		) VALUES (
@@ -65,6 +66,7 @@ func (r *CandidateSearchProfileRepository) Upsert(ctx context.Context, profile *
 			$43,
 			$44, to_tsvector('english', $44),
 			$45, $46,
+			$47, $48,
 			now()
 		)
 		ON CONFLICT (user_id) DO UPDATE SET
@@ -112,6 +114,8 @@ func (r *CandidateSearchProfileRepository) Upsert(ctx context.Context, profile *
 			data_strength_score = EXCLUDED.data_strength_score,
 			search_text = EXCLUDED.search_text,
 			search_tsv = EXCLUDED.search_tsv,
+			main_category_id = EXCLUDED.main_category_id,
+			sub_category_id = EXCLUDED.sub_category_id,
 			scoring_factors = EXCLUDED.scoring_factors,
 			parsed_entities = EXCLUDED.parsed_entities,
 			updated_at = now()
@@ -162,6 +166,8 @@ func (r *CandidateSearchProfileRepository) Upsert(ctx context.Context, profile *
 		profile.FrontendStrengthScore,
 		profile.DataStrengthScore,
 		profile.SearchText,
+		profile.MainCategoryID,
+		profile.SubCategoryID,
 		scoringJSON,
 		parsedJSON,
 	)
@@ -186,7 +192,7 @@ func (r *CandidateSearchProfileRepository) GetByUserID(ctx context.Context, user
 			growth_trajectory_score, project_complexity_score,
 			overall_strength_score, backend_strength_score, frontend_strength_score,
 			data_strength_score,
-			search_text, scoring_factors, parsed_entities, updated_at
+			search_text, main_category_id, sub_category_id, scoring_factors, parsed_entities, updated_at
 		FROM candidate_search_profiles
 		WHERE user_id = $1
 	`
@@ -210,6 +216,7 @@ func (r *CandidateSearchProfileRepository) SearchPool(
 	seniority string,
 	locationCity string,
 	locationCountry string,
+	mainCategoryID, subCategoryID uuid.UUID,
 	poolSize int,
 ) ([]domain.CandidateSearchProfile, error) {
 	var conditions []string
@@ -217,10 +224,12 @@ func (r *CandidateSearchProfileRepository) SearchPool(
 	argIdx := 1
 
 	// Use OR-based tsquery for broader matching (each word is optional)
-	conditions = append(conditions, fmt.Sprintf("search_tsv @@ to_tsquery('english', $%d)", argIdx))
 	orQuery := buildOrTsQuery(query)
-	args = append(args, orQuery)
-	argIdx++
+	if orQuery != "" {
+		conditions = append(conditions, fmt.Sprintf("search_tsv @@ to_tsquery('english', $%d)", argIdx))
+		args = append(args, orQuery)
+		argIdx++
+	}
 
 	if roleFamily != "" {
 		conditions = append(conditions, fmt.Sprintf("role_family = $%d", argIdx))
@@ -242,6 +251,21 @@ func (r *CandidateSearchProfileRepository) SearchPool(
 		args = append(args, locationCountry)
 		argIdx++
 	}
+	if mainCategoryID != uuid.Nil {
+		conditions = append(conditions, fmt.Sprintf("main_category_id = $%d", argIdx))
+		args = append(args, mainCategoryID)
+		argIdx++
+	}
+	if subCategoryID != uuid.Nil {
+		conditions = append(conditions, fmt.Sprintf("sub_category_id = $%d", argIdx))
+		args = append(args, subCategoryID)
+		argIdx++
+	}
+
+	orderBy := "overall_strength_score DESC"
+	if orQuery != "" {
+		orderBy = "ts_rank(search_tsv, to_tsquery('english', $1)) DESC"
+	}
 
 	sql := fmt.Sprintf(`
 		SELECT user_id, primary_role, role_family, seniority, total_experience_months,
@@ -257,12 +281,12 @@ func (r *CandidateSearchProfileRepository) SearchPool(
 			growth_trajectory_score, project_complexity_score,
 			overall_strength_score, backend_strength_score, frontend_strength_score,
 			data_strength_score,
-			search_text, scoring_factors, parsed_entities, updated_at
+			search_text, main_category_id, sub_category_id, scoring_factors, parsed_entities, updated_at
 		FROM candidate_search_profiles
 		WHERE %s
-		ORDER BY ts_rank(search_tsv, to_tsquery('english', $1)) DESC
+		ORDER BY %s
 		LIMIT $%d
-	`, strings.Join(conditions, " AND "), argIdx)
+	`, strings.Join(conditions, " AND "), orderBy, argIdx)
 	args = append(args, poolSize)
 
 	rows, err := r.pool.Query(ctx, sql, args...)
@@ -279,6 +303,7 @@ func (r *CandidateSearchProfileRepository) SearchPoolBySkills(
 	skills []string,
 	roleFamily string,
 	locationCity string,
+	mainCategoryID, subCategoryID uuid.UUID,
 	poolSize int,
 ) ([]domain.CandidateSearchProfile, error) {
 	var conditions []string
@@ -299,6 +324,16 @@ func (r *CandidateSearchProfileRepository) SearchPoolBySkills(
 		args = append(args, locationCity)
 		argIdx++
 	}
+	if mainCategoryID != uuid.Nil {
+		conditions = append(conditions, fmt.Sprintf("main_category_id = $%d", argIdx))
+		args = append(args, mainCategoryID)
+		argIdx++
+	}
+	if subCategoryID != uuid.Nil {
+		conditions = append(conditions, fmt.Sprintf("sub_category_id = $%d", argIdx))
+		args = append(args, subCategoryID)
+		argIdx++
+	}
 
 	sql := fmt.Sprintf(`
 		SELECT user_id, primary_role, role_family, seniority, total_experience_months,
@@ -314,7 +349,7 @@ func (r *CandidateSearchProfileRepository) SearchPoolBySkills(
 			growth_trajectory_score, project_complexity_score,
 			overall_strength_score, backend_strength_score, frontend_strength_score,
 			data_strength_score,
-			search_text, scoring_factors, parsed_entities, updated_at
+			search_text, main_category_id, sub_category_id, scoring_factors, parsed_entities, updated_at
 		FROM candidate_search_profiles
 		WHERE %s
 		ORDER BY overall_strength_score DESC
@@ -380,6 +415,8 @@ func scanCandidateSearchProfile(row pgx.Row) (*domain.CandidateSearchProfile, er
 		&p.FrontendStrengthScore,
 		&p.DataStrengthScore,
 		&p.SearchText,
+		&p.MainCategoryID,
+		&p.SubCategoryID,
 		&scoringJSON,
 		&parsedJSON,
 		&p.UpdatedAt,
@@ -456,6 +493,8 @@ func collectCandidateSearchProfiles(rows pgx.Rows) ([]domain.CandidateSearchProf
 			&p.FrontendStrengthScore,
 			&p.DataStrengthScore,
 			&p.SearchText,
+			&p.MainCategoryID,
+			&p.SubCategoryID,
 			&scoringJSON,
 			&parsedJSON,
 			&p.UpdatedAt,

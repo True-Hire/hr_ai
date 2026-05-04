@@ -64,6 +64,9 @@ type CandidateSearchProfile struct {
 
 	SearchText string
 
+	MainCategoryID uuid.UUID
+	SubCategoryID  uuid.UUID
+
 	ScoringFactors map[string]interface{}
 	ParsedEntities map[string]interface{}
 
@@ -74,6 +77,6 @@ type CandidateSearchProfileRepository interface {
 	Upsert(ctx context.Context, profile *CandidateSearchProfile) error
 	GetByUserID(ctx context.Context, userID uuid.UUID) (*CandidateSearchProfile, error)
 	Delete(ctx context.Context, userID uuid.UUID) error
-	SearchPool(ctx context.Context, query string, roleFamily string, seniority string, locationCity string, locationCountry string, poolSize int) ([]CandidateSearchProfile, error)
-	SearchPoolBySkills(ctx context.Context, skills []string, roleFamily string, locationCity string, poolSize int) ([]CandidateSearchProfile, error)
+	SearchPool(ctx context.Context, query string, roleFamily string, seniority string, locationCity string, locationCountry string, mainCategoryID, subCategoryID uuid.UUID, poolSize int) ([]CandidateSearchProfile, error)
+	SearchPoolBySkills(ctx context.Context, skills []string, roleFamily string, locationCity string, mainCategoryID, subCategoryID uuid.UUID, poolSize int) ([]CandidateSearchProfile, error)
 }

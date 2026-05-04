@@ -26,6 +26,8 @@ type CreateUserRequest struct {
 	JobStatus       string   `json:"job_status"`
 	ActivityType    string   `json:"activity_type"`
 	Specializations []string `json:"specializations"`
+	MainCategoryID  string   `json:"main_category_id"`
+	SubCategoryID   string   `json:"sub_category_id"`
 	Password        string   `json:"password" binding:"required,min=6"`
 }
 
@@ -46,9 +48,18 @@ type UpdateUserRequest struct {
 	JobStatus       string   `json:"job_status"`
 	ActivityType    string   `json:"activity_type"`
 	Specializations []string `json:"specializations"`
+	MainCategoryID  string   `json:"main_category_id"`
+	SubCategoryID   string   `json:"sub_category_id"`
 }
 
 func (r *CreateUserRequest) ToDomain() *domain.User {
+	var mainCatID, subCatID uuid.UUID
+	if r.MainCategoryID != "" {
+		mainCatID, _ = uuid.Parse(r.MainCategoryID)
+	}
+	if r.SubCategoryID != "" {
+		subCatID, _ = uuid.Parse(r.SubCategoryID)
+	}
 	return &domain.User{
 		FirstName:       r.FirstName,
 		LastName:        r.LastName,
@@ -67,6 +78,8 @@ func (r *CreateUserRequest) ToDomain() *domain.User {
 		JobStatus:       r.JobStatus,
 		ActivityType:    r.ActivityType,
 		Specializations: r.Specializations,
+		MainCategoryID:  mainCatID,
+		SubCategoryID:   subCatID,
 	}
 }
 
@@ -120,6 +133,8 @@ type UserResponse struct {
 	JobStatus       string               `json:"job_status,omitempty"`
 	ActivityType    string               `json:"activity_type,omitempty"`
 	Specializations []string             `json:"specializations"`
+	MainCategoryID  string               `json:"main_category_id,omitempty"`
+	SubCategoryID   string               `json:"sub_category_id,omitempty"`
 	ProfileScore            int32                `json:"profile_score"`
 	EstimatedSalaryMin      int32                `json:"estimated_salary_min"`
 	EstimatedSalaryMax      int32                `json:"estimated_salary_max"`

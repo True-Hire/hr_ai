@@ -439,6 +439,9 @@ func (s *CandidateIndexingService) IndexCandidate(ctx context.Context, userID uu
 
 		SearchText: searchText,
 
+		MainCategoryID: user.MainCategoryID,
+		SubCategoryID:  user.SubCategoryID,
+
 		ScoringFactors: map[string]interface{}{
 			"title":            title,
 			"normalized_role":  role,
