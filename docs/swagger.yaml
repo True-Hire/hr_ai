@@ -57,6 +57,61 @@ definitions:
       refresh_token:
         type: string
     type: object
+  http.CandidateSearchFilters:
+    properties:
+      location_city:
+        type: string
+      location_country:
+        type: string
+      max_experience_months:
+        type: integer
+      min_experience_months:
+        type: integer
+      min_score:
+        type: number
+      role_family:
+        type: string
+      seniority:
+        type: string
+      skills:
+        items:
+          type: string
+        type: array
+    type: object
+  http.CandidateSearchRequest:
+    properties:
+      filters:
+        $ref: '#/definitions/http.CandidateSearchFilters'
+      page_size:
+        type: integer
+      query_text:
+        type: string
+    type: object
+  http.CandidateSearchResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/http.CandidateSearchResponseItem'
+        type: array
+      next_rank:
+        type: integer
+      search_id:
+        type: string
+      total_count:
+        type: integer
+    type: object
+  http.CandidateSearchResponseItem:
+    properties:
+      final_score:
+        type: number
+      match_percentage:
+        type: integer
+      score_breakdown:
+        additionalProperties: true
+        type: object
+      user:
+        $ref: '#/definitions/http.UserResponse'
+    type: object
   http.CompanyHRResponse:
     properties:
       company_data:
@@ -250,6 +305,8 @@ definitions:
         type: string
       last_name:
         type: string
+      main_category_id:
+        type: string
       nationality:
         type: string
       password:
@@ -268,6 +325,8 @@ definitions:
           type: string
         type: array
       status:
+        type: string
+      sub_category_id:
         type: string
       tariff_type:
         type: string
@@ -300,6 +359,8 @@ definitions:
         type: string
       hr_id:
         type: string
+      main_category_id:
+        type: string
       phone:
         type: string
       requirements:
@@ -318,6 +379,8 @@ definitions:
         items:
           type: string
         type: array
+      sub_category_id:
+        type: string
       telegram:
         type: string
       title:
@@ -873,6 +936,8 @@ definitions:
         type: string
       last_name:
         type: string
+      main_category_id:
+        type: string
       nationality:
         type: string
       patronymic:
@@ -888,6 +953,8 @@ definitions:
           type: string
         type: array
       status:
+        type: string
+      sub_category_id:
         type: string
       tariff_type:
         type: string
@@ -914,6 +981,8 @@ definitions:
         type: integer
       format:
         type: string
+      main_category_id:
+        type: string
       phone:
         type: string
       requirements:
@@ -933,6 +1002,8 @@ definitions:
           type: string
         type: array
       status:
+        type: string
+      sub_category_id:
         type: string
       telegram:
         type: string
@@ -1001,6 +1072,8 @@ definitions:
         type: string
       last_name:
         type: string
+      main_category_id:
+        type: string
       match_percentage:
         type: integer
       nationality:
@@ -1024,6 +1097,8 @@ definitions:
           type: string
         type: array
       status:
+        type: string
+      sub_category_id:
         type: string
       tariff_type:
         type: string
@@ -1102,6 +1177,8 @@ definitions:
         type: string
       id:
         type: string
+      main_category_id:
+        type: string
       matching_candidates_count:
         type: integer
       phone:
@@ -1121,6 +1198,8 @@ definitions:
       source_lang:
         type: string
       status:
+        type: string
+      sub_category_id:
         type: string
       telegram:
         type: string
@@ -1279,6 +1358,119 @@ paths:
       summary: Set password for an existing user
       tags:
       - auth
+  /candidate-search:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Search request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.CandidateSearchRequest'
+      - default: en
+        description: Language code
+        in: query
+        name: lang
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.CandidateSearchResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Search candidates using parsed query and filters
+      tags:
+      - candidate-search
+  /candidate-search/{search_id}:
+    get:
+      parameters:
+      - description: Search Session ID (UUID)
+        in: path
+        name: search_id
+        required: true
+        type: string
+      - default: 0
+        description: After rank (pagination)
+        in: query
+        name: after_rank
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - default: en
+        description: Language code
+        in: query
+        name: lang
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.CandidateSearchResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Get a page of results from an existing search session
+      tags:
+      - candidate-search
+  /candidate-search/by-vacancy/{vacancy_id}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Vacancy ID (UUID)
+        in: path
+        name: vacancy_id
+        required: true
+        type: string
+      - default: 20
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - default: en
+        description: Language code
+        in: query
+        name: lang
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.CandidateSearchResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Search candidates matching a specific vacancy
+      tags:
+      - candidate-search
   /companies:
     get:
       parameters:

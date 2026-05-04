@@ -54,7 +54,17 @@ type CandidateSearchResponse struct {
 	TotalCount int                           `json:"total_count"`
 }
 
-// Search handles POST /candidate-search
+// Search godoc
+// @Summary Search candidates using parsed query and filters
+// @Tags candidate-search
+// @Accept json
+// @Produce json
+// @Param request body CandidateSearchRequest true "Search request"
+// @Param lang query string false "Language code" default(en)
+// @Success 200 {object} CandidateSearchResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /candidate-search [post]
 func (h *CandidateSearchHandler) Search(c *gin.Context) {
 	var req CandidateSearchRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -115,7 +125,18 @@ func (h *CandidateSearchHandler) Search(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// SearchByVacancy handles POST /candidate-search/by-vacancy/:vacancy_id
+// SearchByVacancy godoc
+// @Summary Search candidates matching a specific vacancy
+// @Tags candidate-search
+// @Accept json
+// @Produce json
+// @Param vacancy_id path string true "Vacancy ID (UUID)"
+// @Param page_size query int false "Page size" default(20)
+// @Param lang query string false "Language code" default(en)
+// @Success 200 {object} CandidateSearchResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /candidate-search/by-vacancy/{vacancy_id} [post]
 func (h *CandidateSearchHandler) SearchByVacancy(c *gin.Context) {
 	vacancyID, err := uuid.Parse(c.Param("vacancy_id"))
 	if err != nil {
@@ -148,7 +169,18 @@ func (h *CandidateSearchHandler) SearchByVacancy(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// GetPage handles GET /candidate-search/:search_id
+// GetPage godoc
+// @Summary Get a page of results from an existing search session
+// @Tags candidate-search
+// @Produce json
+// @Param search_id path string true "Search Session ID (UUID)"
+// @Param after_rank query int false "After rank (pagination)" default(0)
+// @Param page_size query int false "Page size" default(20)
+// @Param lang query string false "Language code" default(en)
+// @Success 200 {object} CandidateSearchResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /candidate-search/{search_id} [get]
 func (h *CandidateSearchHandler) GetPage(c *gin.Context) {
 	searchID, err := uuid.Parse(c.Param("search_id"))
 	if err != nil {

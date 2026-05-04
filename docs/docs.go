@@ -208,6 +208,176 @@ const docTemplate = `{
                 }
             }
         },
+        "/candidate-search": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "candidate-search"
+                ],
+                "summary": "Search candidates using parsed query and filters",
+                "parameters": [
+                    {
+                        "description": "Search request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.CandidateSearchRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "default": "en",
+                        "description": "Language code",
+                        "name": "lang",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.CandidateSearchResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/candidate-search/by-vacancy/{vacancy_id}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "candidate-search"
+                ],
+                "summary": "Search candidates matching a specific vacancy",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vacancy ID (UUID)",
+                        "name": "vacancy_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Page size",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "en",
+                        "description": "Language code",
+                        "name": "lang",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.CandidateSearchResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/candidate-search/{search_id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "candidate-search"
+                ],
+                "summary": "Get a page of results from an existing search session",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search Session ID (UUID)",
+                        "name": "search_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "After rank (pagination)",
+                        "name": "after_rank",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Page size",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "en",
+                        "description": "Language code",
+                        "name": "lang",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.CandidateSearchResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/companies": {
             "get": {
                 "produces": [
@@ -3449,6 +3619,90 @@ const docTemplate = `{
                 }
             }
         },
+        "http.CandidateSearchFilters": {
+            "type": "object",
+            "properties": {
+                "location_city": {
+                    "type": "string"
+                },
+                "location_country": {
+                    "type": "string"
+                },
+                "max_experience_months": {
+                    "type": "integer"
+                },
+                "min_experience_months": {
+                    "type": "integer"
+                },
+                "min_score": {
+                    "type": "number"
+                },
+                "role_family": {
+                    "type": "string"
+                },
+                "seniority": {
+                    "type": "string"
+                },
+                "skills": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "http.CandidateSearchRequest": {
+            "type": "object",
+            "properties": {
+                "filters": {
+                    "$ref": "#/definitions/http.CandidateSearchFilters"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "query_text": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.CandidateSearchResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.CandidateSearchResponseItem"
+                    }
+                },
+                "next_rank": {
+                    "type": "integer"
+                },
+                "search_id": {
+                    "type": "string"
+                },
+                "total_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "http.CandidateSearchResponseItem": {
+            "type": "object",
+            "properties": {
+                "final_score": {
+                    "type": "number"
+                },
+                "match_percentage": {
+                    "type": "integer"
+                },
+                "score_breakdown": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "user": {
+                    "$ref": "#/definitions/http.UserResponse"
+                }
+            }
+        },
         "http.CompanyHRResponse": {
             "type": "object",
             "properties": {
@@ -3745,6 +3999,9 @@ const docTemplate = `{
                 "last_name": {
                     "type": "string"
                 },
+                "main_category_id": {
+                    "type": "string"
+                },
                 "nationality": {
                     "type": "string"
                 },
@@ -3771,6 +4028,9 @@ const docTemplate = `{
                     }
                 },
                 "status": {
+                    "type": "string"
+                },
+                "sub_category_id": {
                     "type": "string"
                 },
                 "tariff_type": {
@@ -3818,6 +4078,9 @@ const docTemplate = `{
                 "hr_id": {
                     "type": "string"
                 },
+                "main_category_id": {
+                    "type": "string"
+                },
                 "phone": {
                     "type": "string"
                 },
@@ -3844,6 +4107,9 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "sub_category_id": {
+                    "type": "string"
                 },
                 "telegram": {
                     "type": "string"
@@ -4691,6 +4957,9 @@ const docTemplate = `{
                 "last_name": {
                     "type": "string"
                 },
+                "main_category_id": {
+                    "type": "string"
+                },
                 "nationality": {
                     "type": "string"
                 },
@@ -4713,6 +4982,9 @@ const docTemplate = `{
                     }
                 },
                 "status": {
+                    "type": "string"
+                },
+                "sub_category_id": {
                     "type": "string"
                 },
                 "tariff_type": {
@@ -4753,6 +5025,9 @@ const docTemplate = `{
                 "format": {
                     "type": "string"
                 },
+                "main_category_id": {
+                    "type": "string"
+                },
                 "phone": {
                     "type": "string"
                 },
@@ -4781,6 +5056,9 @@ const docTemplate = `{
                     }
                 },
                 "status": {
+                    "type": "string"
+                },
+                "sub_category_id": {
                     "type": "string"
                 },
                 "telegram": {
@@ -4885,6 +5163,9 @@ const docTemplate = `{
                 "last_name": {
                     "type": "string"
                 },
+                "main_category_id": {
+                    "type": "string"
+                },
                 "match_percentage": {
                     "type": "integer"
                 },
@@ -4919,6 +5200,9 @@ const docTemplate = `{
                     }
                 },
                 "status": {
+                    "type": "string"
+                },
+                "sub_category_id": {
                     "type": "string"
                 },
                 "tariff_type": {
@@ -5038,6 +5322,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "main_category_id": {
+                    "type": "string"
+                },
                 "matching_candidates_count": {
                     "type": "integer"
                 },
@@ -5066,6 +5353,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
+                    "type": "string"
+                },
+                "sub_category_id": {
                     "type": "string"
                 },
                 "telegram": {
