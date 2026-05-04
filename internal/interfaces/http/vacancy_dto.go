@@ -11,6 +11,8 @@ import (
 type CreateVacancyRequest struct {
 	HRID             string   `json:"hr_id" binding:"required"`
 	CountryID        string   `json:"country_id"`
+	MainCategoryID   string   `json:"main_category_id"`
+	SubCategoryID    string   `json:"sub_category_id"`
 	Title            string   `json:"title" binding:"required"`
 	Description      string   `json:"description"`
 	Responsibilities string   `json:"responsibilities"`
@@ -37,6 +39,8 @@ type VacancyParseRequest struct {
 
 type UpdateVacancyRequest struct {
 	CountryID        string   `json:"country_id"`
+	MainCategoryID   string   `json:"main_category_id"`
+	SubCategoryID    string   `json:"sub_category_id"`
 	SalaryMin        int32    `json:"salary_min"`
 	SalaryMax        int32    `json:"salary_max"`
 	SalaryCurrency   string   `json:"salary_currency"`
@@ -80,20 +84,22 @@ type VacancyCompanyResponse struct {
 }
 
 type VacancyResponse struct {
-	ID             string                  `json:"id"`
-	HRID           string                  `json:"hr_id"`
-	CountryID      string                  `json:"country_id,omitempty"`
-	SalaryMin      int32                   `json:"salary_min,omitempty"`
-	SalaryMax      int32                   `json:"salary_max,omitempty"`
-	SalaryCurrency string                  `json:"salary_currency"`
-	ExperienceMin  int32                   `json:"experience_min,omitempty"`
-	ExperienceMax  int32                   `json:"experience_max,omitempty"`
-	Format         string                  `json:"format"`
-	Schedule       string                  `json:"schedule"`
-	Phone          string                  `json:"phone,omitempty"`
-	Telegram       string                  `json:"telegram,omitempty"`
-	Email          string                  `json:"email,omitempty"`
-	Address        string                  `json:"address,omitempty"`
+	ID                      string                  `json:"id"`
+	HRID                    string                  `json:"hr_id"`
+	CountryID               string                  `json:"country_id,omitempty"`
+	MainCategoryID          string                  `json:"main_category_id,omitempty"`
+	SubCategoryID           string                  `json:"sub_category_id,omitempty"`
+	SalaryMin               int32                   `json:"salary_min,omitempty"`
+	SalaryMax               int32                   `json:"salary_max,omitempty"`
+	SalaryCurrency          string                  `json:"salary_currency"`
+	ExperienceMin           int32                   `json:"experience_min,omitempty"`
+	ExperienceMax           int32                   `json:"experience_max,omitempty"`
+	Format                  string                  `json:"format"`
+	Schedule                string                  `json:"schedule"`
+	Phone                   string                  `json:"phone,omitempty"`
+	Telegram                string                  `json:"telegram,omitempty"`
+	Email                   string                  `json:"email,omitempty"`
+	Address                 string                  `json:"address,omitempty"`
 	Status                  string                  `json:"status"`
 	SourceLang              string                  `json:"source_lang"`
 	CreatedAt               string                  `json:"created_at"`
@@ -112,15 +118,23 @@ type PaginatedVacanciesResponse struct {
 }
 
 func toVacancyResponse(vwd *application.VacancyWithDetails, lang string) VacancyResponse {
-	var countryID string
+	var countryID, mainCatID, subCatID string
 	if vwd.Vacancy.CountryID != uuid.Nil {
 		countryID = vwd.Vacancy.CountryID.String()
+	}
+	if vwd.Vacancy.MainCategoryID != uuid.Nil {
+		mainCatID = vwd.Vacancy.MainCategoryID.String()
+	}
+	if vwd.Vacancy.SubCategoryID != uuid.Nil {
+		subCatID = vwd.Vacancy.SubCategoryID.String()
 	}
 
 	resp := VacancyResponse{
 		ID:             vwd.Vacancy.ID.String(),
 		HRID:           vwd.Vacancy.HRID.String(),
 		CountryID:      countryID,
+		MainCategoryID: mainCatID,
+		SubCategoryID:  subCatID,
 		SalaryMin:      vwd.Vacancy.SalaryMin,
 		SalaryMax:      vwd.Vacancy.SalaryMax,
 		SalaryCurrency: vwd.Vacancy.SalaryCurrency,

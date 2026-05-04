@@ -478,7 +478,15 @@ func (s *CandidateSearchService) CountMatchingByVacancy(ctx context.Context, vac
 		return 0
 	}
 
-	// Build search text from title + skills
+	// Use fast DB counting if categories are available
+	if vacancy.Vacancy.MainCategoryID != uuid.Nil && vacancy.Vacancy.SubCategoryID != uuid.Nil {
+		count, err := s.userSvc.CountMatchingUsers(ctx, vacancy.Vacancy.MainCategoryID, vacancy.Vacancy.SubCategoryID)
+		if err == nil {
+			return int(count)
+		}
+	}
+
+	// Fallback to text search if categories are missing or error occurred
 	var parts []string
 	for _, t := range vacancy.Texts {
 		if t.Lang == "en" && t.Title != "" {
@@ -520,7 +528,6 @@ func (s *CandidateSearchService) CountMatchingByVacancy(ctx context.Context, vac
 		return 0
 	}
 
-	// Count candidates with a reasonable score
 	parsedQuery := buildParsedQueryFromVacancy(vacancy)
 	count := 0
 	for _, c := range pool {

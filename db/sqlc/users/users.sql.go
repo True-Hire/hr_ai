@@ -11,6 +11,18 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const countMatchingUsers = `-- name: CountMatchingUsers :one
+SELECT count(*) FROM users
+WHERE main_category_id = $1 AND sub_category_id = $2
+`
+
+func (q *Queries) CountMatchingUsers(ctx context.Context, mainCategoryID pgtype.UUID, subCategoryID pgtype.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, countMatchingUsers, mainCategoryID, subCategoryID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countUsers = `-- name: CountUsers :one
 SELECT count(*) FROM users
 `
@@ -26,15 +38,18 @@ const createUser = `-- name: CreateUser :one
 INSERT INTO users (
     id, first_name, last_name, patronymic, phone, telegram, telegram_id, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, language, profile_score, created_at
+    status, tariff_type, job_status, activity_type, specializations, language, profile_score, 
+    main_category_id, sub_category_id, created_at
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8,
     $9, $10, $11, $12, $13,
-    $14, $15, $16, $17, $18, $19, $20, now()
+    $14, $15, $16, $17, $18, $19, $20,
+    $21, $22, now()
 )
 RETURNING id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score, estimated_salary_min, estimated_salary_max, estimated_salary_currency
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score, estimated_salary_min, estimated_salary_max, estimated_salary_currency,
+    main_category_id, sub_category_id
 `
 
 type CreateUserParams struct {
@@ -58,9 +73,41 @@ type CreateUserParams struct {
 	Specializations []string
 	Language        string
 	ProfileScore    int32
+	MainCategoryID  pgtype.UUID
+	SubCategoryID   pgtype.UUID
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+type CreateUserRow struct {
+	ID                      pgtype.UUID
+	FirstName               string
+	LastName                string
+	Patronymic              pgtype.Text
+	Phone                   pgtype.Text
+	Telegram                pgtype.Text
+	Email                   pgtype.Text
+	Gender                  pgtype.Text
+	Country                 pgtype.Text
+	Region                  pgtype.Text
+	Nationality             pgtype.Text
+	ProfilePicUrl           pgtype.Text
+	Status                  string
+	TariffType              string
+	JobStatus               pgtype.Text
+	ActivityType            pgtype.Text
+	Specializations         []string
+	CreatedAt               pgtype.Timestamp
+	PasswordHash            pgtype.Text
+	TelegramID              pgtype.Text
+	Language                string
+	ProfileScore            int32
+	EstimatedSalaryMin      int32
+	EstimatedSalaryMax      int32
+	EstimatedSalaryCurrency string
+	MainCategoryID          pgtype.UUID
+	SubCategoryID           pgtype.UUID
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
 	row := q.db.QueryRow(ctx, createUser,
 		arg.ID,
 		arg.FirstName,
@@ -82,8 +129,10 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.Specializations,
 		arg.Language,
 		arg.ProfileScore,
+		arg.MainCategoryID,
+		arg.SubCategoryID,
 	)
-	var i User
+	var i CreateUserRow
 	err := row.Scan(
 		&i.ID,
 		&i.FirstName,
@@ -110,6 +159,8 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.EstimatedSalaryMin,
 		&i.EstimatedSalaryMax,
 		&i.EstimatedSalaryCurrency,
+		&i.MainCategoryID,
+		&i.SubCategoryID,
 	)
 	return i, err
 }
@@ -127,14 +178,45 @@ func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score, estimated_salary_min, estimated_salary_max, estimated_salary_currency
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score, estimated_salary_min, estimated_salary_max, estimated_salary_currency,
+    main_category_id, sub_category_id
 FROM users
 WHERE email = $1
 `
 
-func (q *Queries) GetUserByEmail(ctx context.Context, email pgtype.Text) (User, error) {
+type GetUserByEmailRow struct {
+	ID                      pgtype.UUID
+	FirstName               string
+	LastName                string
+	Patronymic              pgtype.Text
+	Phone                   pgtype.Text
+	Telegram                pgtype.Text
+	Email                   pgtype.Text
+	Gender                  pgtype.Text
+	Country                 pgtype.Text
+	Region                  pgtype.Text
+	Nationality             pgtype.Text
+	ProfilePicUrl           pgtype.Text
+	Status                  string
+	TariffType              string
+	JobStatus               pgtype.Text
+	ActivityType            pgtype.Text
+	Specializations         []string
+	CreatedAt               pgtype.Timestamp
+	PasswordHash            pgtype.Text
+	TelegramID              pgtype.Text
+	Language                string
+	ProfileScore            int32
+	EstimatedSalaryMin      int32
+	EstimatedSalaryMax      int32
+	EstimatedSalaryCurrency string
+	MainCategoryID          pgtype.UUID
+	SubCategoryID           pgtype.UUID
+}
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email pgtype.Text) (GetUserByEmailRow, error) {
 	row := q.db.QueryRow(ctx, getUserByEmail, email)
-	var i User
+	var i GetUserByEmailRow
 	err := row.Scan(
 		&i.ID,
 		&i.FirstName,
@@ -161,6 +243,8 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email pgtype.Text) (User, 
 		&i.EstimatedSalaryMin,
 		&i.EstimatedSalaryMax,
 		&i.EstimatedSalaryCurrency,
+		&i.MainCategoryID,
+		&i.SubCategoryID,
 	)
 	return i, err
 }
@@ -168,14 +252,45 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email pgtype.Text) (User, 
 const getUserByID = `-- name: GetUserByID :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score, estimated_salary_min, estimated_salary_max, estimated_salary_currency
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score, estimated_salary_min, estimated_salary_max, estimated_salary_currency,
+    main_category_id, sub_category_id
 FROM users
 WHERE id = $1
 `
 
-func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error) {
+type GetUserByIDRow struct {
+	ID                      pgtype.UUID
+	FirstName               string
+	LastName                string
+	Patronymic              pgtype.Text
+	Phone                   pgtype.Text
+	Telegram                pgtype.Text
+	Email                   pgtype.Text
+	Gender                  pgtype.Text
+	Country                 pgtype.Text
+	Region                  pgtype.Text
+	Nationality             pgtype.Text
+	ProfilePicUrl           pgtype.Text
+	Status                  string
+	TariffType              string
+	JobStatus               pgtype.Text
+	ActivityType            pgtype.Text
+	Specializations         []string
+	CreatedAt               pgtype.Timestamp
+	PasswordHash            pgtype.Text
+	TelegramID              pgtype.Text
+	Language                string
+	ProfileScore            int32
+	EstimatedSalaryMin      int32
+	EstimatedSalaryMax      int32
+	EstimatedSalaryCurrency string
+	MainCategoryID          pgtype.UUID
+	SubCategoryID           pgtype.UUID
+}
+
+func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (GetUserByIDRow, error) {
 	row := q.db.QueryRow(ctx, getUserByID, id)
-	var i User
+	var i GetUserByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.FirstName,
@@ -202,6 +317,8 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error)
 		&i.EstimatedSalaryMin,
 		&i.EstimatedSalaryMax,
 		&i.EstimatedSalaryCurrency,
+		&i.MainCategoryID,
+		&i.SubCategoryID,
 	)
 	return i, err
 }
@@ -209,14 +326,45 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error)
 const getUserByPhone = `-- name: GetUserByPhone :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score, estimated_salary_min, estimated_salary_max, estimated_salary_currency
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score, estimated_salary_min, estimated_salary_max, estimated_salary_currency,
+    main_category_id, sub_category_id
 FROM users
 WHERE phone = $1
 `
 
-func (q *Queries) GetUserByPhone(ctx context.Context, phone pgtype.Text) (User, error) {
+type GetUserByPhoneRow struct {
+	ID                      pgtype.UUID
+	FirstName               string
+	LastName                string
+	Patronymic              pgtype.Text
+	Phone                   pgtype.Text
+	Telegram                pgtype.Text
+	Email                   pgtype.Text
+	Gender                  pgtype.Text
+	Country                 pgtype.Text
+	Region                  pgtype.Text
+	Nationality             pgtype.Text
+	ProfilePicUrl           pgtype.Text
+	Status                  string
+	TariffType              string
+	JobStatus               pgtype.Text
+	ActivityType            pgtype.Text
+	Specializations         []string
+	CreatedAt               pgtype.Timestamp
+	PasswordHash            pgtype.Text
+	TelegramID              pgtype.Text
+	Language                string
+	ProfileScore            int32
+	EstimatedSalaryMin      int32
+	EstimatedSalaryMax      int32
+	EstimatedSalaryCurrency string
+	MainCategoryID          pgtype.UUID
+	SubCategoryID           pgtype.UUID
+}
+
+func (q *Queries) GetUserByPhone(ctx context.Context, phone pgtype.Text) (GetUserByPhoneRow, error) {
 	row := q.db.QueryRow(ctx, getUserByPhone, phone)
-	var i User
+	var i GetUserByPhoneRow
 	err := row.Scan(
 		&i.ID,
 		&i.FirstName,
@@ -243,6 +391,8 @@ func (q *Queries) GetUserByPhone(ctx context.Context, phone pgtype.Text) (User, 
 		&i.EstimatedSalaryMin,
 		&i.EstimatedSalaryMax,
 		&i.EstimatedSalaryCurrency,
+		&i.MainCategoryID,
+		&i.SubCategoryID,
 	)
 	return i, err
 }
@@ -250,14 +400,45 @@ func (q *Queries) GetUserByPhone(ctx context.Context, phone pgtype.Text) (User, 
 const getUserByTelegramID = `-- name: GetUserByTelegramID :one
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score, estimated_salary_min, estimated_salary_max, estimated_salary_currency
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score, estimated_salary_min, estimated_salary_max, estimated_salary_currency,
+    main_category_id, sub_category_id
 FROM users
 WHERE telegram_id = $1
 `
 
-func (q *Queries) GetUserByTelegramID(ctx context.Context, telegramID pgtype.Text) (User, error) {
+type GetUserByTelegramIDRow struct {
+	ID                      pgtype.UUID
+	FirstName               string
+	LastName                string
+	Patronymic              pgtype.Text
+	Phone                   pgtype.Text
+	Telegram                pgtype.Text
+	Email                   pgtype.Text
+	Gender                  pgtype.Text
+	Country                 pgtype.Text
+	Region                  pgtype.Text
+	Nationality             pgtype.Text
+	ProfilePicUrl           pgtype.Text
+	Status                  string
+	TariffType              string
+	JobStatus               pgtype.Text
+	ActivityType            pgtype.Text
+	Specializations         []string
+	CreatedAt               pgtype.Timestamp
+	PasswordHash            pgtype.Text
+	TelegramID              pgtype.Text
+	Language                string
+	ProfileScore            int32
+	EstimatedSalaryMin      int32
+	EstimatedSalaryMax      int32
+	EstimatedSalaryCurrency string
+	MainCategoryID          pgtype.UUID
+	SubCategoryID           pgtype.UUID
+}
+
+func (q *Queries) GetUserByTelegramID(ctx context.Context, telegramID pgtype.Text) (GetUserByTelegramIDRow, error) {
 	row := q.db.QueryRow(ctx, getUserByTelegramID, telegramID)
-	var i User
+	var i GetUserByTelegramIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.FirstName,
@@ -284,6 +465,8 @@ func (q *Queries) GetUserByTelegramID(ctx context.Context, telegramID pgtype.Tex
 		&i.EstimatedSalaryMin,
 		&i.EstimatedSalaryMax,
 		&i.EstimatedSalaryCurrency,
+		&i.MainCategoryID,
+		&i.SubCategoryID,
 	)
 	return i, err
 }
@@ -291,7 +474,8 @@ func (q *Queries) GetUserByTelegramID(ctx context.Context, telegramID pgtype.Tex
 const listUsers = `-- name: ListUsers :many
 SELECT id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score, estimated_salary_min, estimated_salary_max, estimated_salary_currency
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score, estimated_salary_min, estimated_salary_max, estimated_salary_currency,
+    main_category_id, sub_category_id
 FROM users
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2
@@ -302,15 +486,45 @@ type ListUsersParams struct {
 	Offset int32
 }
 
-func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error) {
+type ListUsersRow struct {
+	ID                      pgtype.UUID
+	FirstName               string
+	LastName                string
+	Patronymic              pgtype.Text
+	Phone                   pgtype.Text
+	Telegram                pgtype.Text
+	Email                   pgtype.Text
+	Gender                  pgtype.Text
+	Country                 pgtype.Text
+	Region                  pgtype.Text
+	Nationality             pgtype.Text
+	ProfilePicUrl           pgtype.Text
+	Status                  string
+	TariffType              string
+	JobStatus               pgtype.Text
+	ActivityType            pgtype.Text
+	Specializations         []string
+	CreatedAt               pgtype.Timestamp
+	PasswordHash            pgtype.Text
+	TelegramID              pgtype.Text
+	Language                string
+	ProfileScore            int32
+	EstimatedSalaryMin      int32
+	EstimatedSalaryMax      int32
+	EstimatedSalaryCurrency string
+	MainCategoryID          pgtype.UUID
+	SubCategoryID           pgtype.UUID
+}
+
+func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUsersRow, error) {
 	rows, err := q.db.Query(ctx, listUsers, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []User
+	var items []ListUsersRow
 	for rows.Next() {
-		var i User
+		var i ListUsersRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.FirstName,
@@ -337,6 +551,8 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 			&i.EstimatedSalaryMin,
 			&i.EstimatedSalaryMax,
 			&i.EstimatedSalaryCurrency,
+			&i.MainCategoryID,
+			&i.SubCategoryID,
 		); err != nil {
 			return nil, err
 		}
@@ -416,11 +632,14 @@ SET first_name = COALESCE(NULLIF($1, ''), first_name),
     job_status = COALESCE(NULLIF($15, ''), job_status),
     activity_type = COALESCE(NULLIF($16, ''), activity_type),
     specializations = CASE WHEN $17::TEXT[] = '{}' THEN specializations ELSE $17 END,
-    language = COALESCE(NULLIF($18, ''), language)
-WHERE id = $19
+    language = COALESCE(NULLIF($18, ''), language),
+    main_category_id = COALESCE($19, main_category_id),
+    sub_category_id = COALESCE($20, sub_category_id)
+WHERE id = $21
 RETURNING id, first_name, last_name, patronymic, phone, telegram, email,
     gender, country, region, nationality, profile_pic_url,
-    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score, estimated_salary_min, estimated_salary_max, estimated_salary_currency
+    status, tariff_type, job_status, activity_type, specializations, created_at, password_hash, telegram_id, language, profile_score, estimated_salary_min, estimated_salary_max, estimated_salary_currency,
+    main_category_id, sub_category_id
 `
 
 type UpdateUserParams struct {
@@ -442,10 +661,42 @@ type UpdateUserParams struct {
 	ActivityType    interface{}
 	Specializations []string
 	Language        interface{}
+	MainCategoryID  pgtype.UUID
+	SubCategoryID   pgtype.UUID
 	ID              pgtype.UUID
 }
 
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
+type UpdateUserRow struct {
+	ID                      pgtype.UUID
+	FirstName               string
+	LastName                string
+	Patronymic              pgtype.Text
+	Phone                   pgtype.Text
+	Telegram                pgtype.Text
+	Email                   pgtype.Text
+	Gender                  pgtype.Text
+	Country                 pgtype.Text
+	Region                  pgtype.Text
+	Nationality             pgtype.Text
+	ProfilePicUrl           pgtype.Text
+	Status                  string
+	TariffType              string
+	JobStatus               pgtype.Text
+	ActivityType            pgtype.Text
+	Specializations         []string
+	CreatedAt               pgtype.Timestamp
+	PasswordHash            pgtype.Text
+	TelegramID              pgtype.Text
+	Language                string
+	ProfileScore            int32
+	EstimatedSalaryMin      int32
+	EstimatedSalaryMax      int32
+	EstimatedSalaryCurrency string
+	MainCategoryID          pgtype.UUID
+	SubCategoryID           pgtype.UUID
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error) {
 	row := q.db.QueryRow(ctx, updateUser,
 		arg.FirstName,
 		arg.LastName,
@@ -465,9 +716,11 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		arg.ActivityType,
 		arg.Specializations,
 		arg.Language,
+		arg.MainCategoryID,
+		arg.SubCategoryID,
 		arg.ID,
 	)
-	var i User
+	var i UpdateUserRow
 	err := row.Scan(
 		&i.ID,
 		&i.FirstName,
@@ -494,6 +747,8 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.EstimatedSalaryMin,
 		&i.EstimatedSalaryMax,
 		&i.EstimatedSalaryCurrency,
+		&i.MainCategoryID,
+		&i.SubCategoryID,
 	)
 	return i, err
 }

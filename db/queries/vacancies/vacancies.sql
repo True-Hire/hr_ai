@@ -2,27 +2,32 @@
 INSERT INTO vacancies (
     id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
-    phone, telegram, email, address, status, source_lang, created_at
+    phone, telegram, email, address, status, source_lang,
+    main_category_id, sub_category_id, created_at
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7,
     $8, $9, $10, $11,
-    $12, $13, $14, $15, $16, $17, now()
+    $12, $13, $14, $15, $16, $17,
+    $18, $19, now()
 )
 RETURNING id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
-    phone, telegram, email, address, status, source_lang, created_at;
+    phone, telegram, email, address, status, source_lang,
+    main_category_id, sub_category_id, created_at;
 
 -- name: GetVacancyByID :one
 SELECT id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
-    phone, telegram, email, address, status, source_lang, created_at
+    phone, telegram, email, address, status, source_lang,
+    main_category_id, sub_category_id, created_at
 FROM vacancies
 WHERE id = $1;
 
 -- name: ListVacancies :many
 SELECT id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
-    phone, telegram, email, address, status, source_lang, created_at
+    phone, telegram, email, address, status, source_lang,
+    main_category_id, sub_category_id, created_at
 FROM vacancies
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2;
@@ -30,7 +35,8 @@ LIMIT $1 OFFSET $2;
 -- name: ListVacanciesByHR :many
 SELECT id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
-    phone, telegram, email, address, status, source_lang, created_at
+    phone, telegram, email, address, status, source_lang,
+    main_category_id, sub_category_id, created_at
 FROM vacancies
 WHERE hr_id = $1
 ORDER BY created_at DESC
@@ -56,16 +62,20 @@ SET salary_min = CASE WHEN sqlc.arg(salary_min)::INT = 0 THEN salary_min ELSE sq
     email = COALESCE(NULLIF(sqlc.arg(email), ''), email),
     address = COALESCE(NULLIF(sqlc.arg(address), ''), address),
     status = COALESCE(NULLIF(sqlc.arg(status), ''), status),
-    country_id = COALESCE(sqlc.arg(country_id), country_id)
+    country_id = COALESCE(sqlc.arg(country_id), country_id),
+    main_category_id = COALESCE(sqlc.arg(main_category_id), main_category_id),
+    sub_category_id = COALESCE(sqlc.arg(sub_category_id), sub_category_id)
 WHERE id = sqlc.arg(id)
 RETURNING id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
-    phone, telegram, email, address, status, source_lang, created_at;
+    phone, telegram, email, address, status, source_lang,
+    main_category_id, sub_category_id, created_at;
 
 -- name: SearchVacancies :many
 SELECT DISTINCT v.id, v.hr_id, v.company_data, v.country_id, v.salary_min, v.salary_max, v.salary_currency,
     v.experience_min, v.experience_max, v.format, v.schedule,
-    v.phone, v.telegram, v.email, v.address, v.status, v.source_lang, v.created_at
+    v.phone, v.telegram, v.email, v.address, v.status, v.source_lang,
+    v.main_category_id, v.sub_category_id, v.created_at
 FROM vacancies v
 JOIN vacancy_texts vt ON vt.vacancy_id = v.id
 WHERE vt.lang = sqlc.arg(lang)

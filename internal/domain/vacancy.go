@@ -33,6 +33,8 @@ type Vacancy struct {
 	Address        string
 	Status         string
 	SourceLang     string
+	MainCategoryID uuid.UUID
+	SubCategoryID  uuid.UUID
 	CreatedAt      time.Time
 }
 

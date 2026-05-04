@@ -45,11 +45,13 @@ func (r *UserRepository) Create(ctx context.Context, user *domain.User) (*domain
 		Specializations: user.Specializations,
 		Language:        user.Language,
 		ProfileScore:    user.ProfileScore,
+		MainCategoryID:  uuidToPgtype(user.MainCategoryID),
+		SubCategoryID:   uuidToPgtype(user.SubCategoryID),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("create user: %w", err)
 	}
-	return userToDomain(row), nil
+	return userFromCreateRow(row), nil
 }
 
 func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
@@ -60,7 +62,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Use
 		}
 		return nil, fmt.Errorf("get user by id: %w", err)
 	}
-	return userToDomain(row), nil
+	return userFromGetByIDRow(row), nil
 }
 
 func (r *UserRepository) List(ctx context.Context, limit, offset int32) ([]domain.User, error) {
@@ -73,7 +75,7 @@ func (r *UserRepository) List(ctx context.Context, limit, offset int32) ([]domai
 	}
 	users := make([]domain.User, 0, len(rows))
 	for _, row := range rows {
-		users = append(users, *userToDomain(row))
+		users = append(users, *userFromListRow(row))
 	}
 	return users, nil
 }
@@ -107,6 +109,8 @@ func (r *UserRepository) Update(ctx context.Context, user *domain.User) (*domain
 		ActivityType:    user.ActivityType,
 		Specializations: user.Specializations,
 		Language:        user.Language,
+		MainCategoryID:  uuidToPgtype(user.MainCategoryID),
+		SubCategoryID:   uuidToPgtype(user.SubCategoryID),
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -114,7 +118,7 @@ func (r *UserRepository) Update(ctx context.Context, user *domain.User) (*domain
 		}
 		return nil, fmt.Errorf("update user: %w", err)
 	}
-	return userToDomain(row), nil
+	return userFromUpdateRow(row), nil
 }
 
 func (r *UserRepository) Delete(ctx context.Context, id uuid.UUID) error {
@@ -133,7 +137,7 @@ func (r *UserRepository) GetByPhone(ctx context.Context, phone string) (*domain.
 		}
 		return nil, fmt.Errorf("get user by phone: %w", err)
 	}
-	return userToDomain(row), nil
+	return userFromGetByPhoneRow(row), nil
 }
 
 func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
@@ -144,7 +148,7 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*domain.
 		}
 		return nil, fmt.Errorf("get user by email: %w", err)
 	}
-	return userToDomain(row), nil
+	return userFromGetByEmailRow(row), nil
 }
 
 func (r *UserRepository) GetByTelegramID(ctx context.Context, telegramID string) (*domain.User, error) {
@@ -155,7 +159,11 @@ func (r *UserRepository) GetByTelegramID(ctx context.Context, telegramID string)
 		}
 		return nil, fmt.Errorf("get user by telegram id: %w", err)
 	}
-	return userToDomain(row), nil
+	return userFromGetByTelegramIDRow(row), nil
+}
+
+func (r *UserRepository) CountMatchingUsers(ctx context.Context, mainCatID, subCatID uuid.UUID) (int64, error) {
+	return r.q.CountMatchingUsers(ctx, uuidToPgtype(mainCatID), uuidToPgtype(subCatID))
 }
 
 func (r *UserRepository) SetPassword(ctx context.Context, id uuid.UUID, hash string) error {
@@ -193,17 +201,81 @@ func (r *UserRepository) SetEstimatedSalary(ctx context.Context, id uuid.UUID, m
 	return nil
 }
 
-func userToDomain(row usersdb.User) *domain.User {
+func userFromCreateRow(row usersdb.CreateUserRow) *domain.User {
 	return &domain.User{
-		ID:              pgtypeToUUID(row.ID),
-		FirstName:       row.FirstName,
-		LastName:        row.LastName,
-		Patronymic:      pgtypeToString(row.Patronymic),
-		Phone:           pgtypeToString(row.Phone),
-		Telegram:        pgtypeToString(row.Telegram),
-		TelegramID:      pgtypeToString(row.TelegramID),
-		Email:           pgtypeToString(row.Email),
-		Gender:          pgtypeToString(row.Gender),
+		ID:                      pgtypeToUUID(row.ID),
+		FirstName:               row.FirstName,
+		LastName:                row.LastName,
+		Patronymic:              pgtypeToString(row.Patronymic),
+		Phone:                   pgtypeToString(row.Phone),
+		Telegram:                pgtypeToString(row.Telegram),
+		TelegramID:              pgtypeToString(row.TelegramID),
+		Email:                   pgtypeToString(row.Email),
+		Gender:                  pgtypeToString(row.Gender),
+		Country:                 pgtypeToString(row.Country),
+		Region:                  pgtypeToString(row.Region),
+		Nationality:             pgtypeToString(row.Nationality),
+		ProfilePicURL:           pgtypeToString(row.ProfilePicUrl),
+		Status:                  row.Status,
+		TariffType:              row.TariffType,
+		JobStatus:               pgtypeToString(row.JobStatus),
+		ActivityType:            pgtypeToString(row.ActivityType),
+		Specializations:         row.Specializations,
+		PasswordHash:            pgtypeToString(row.PasswordHash),
+		Language:                row.Language,
+		ProfileScore:            row.ProfileScore,
+		EstimatedSalaryMin:      row.EstimatedSalaryMin,
+		EstimatedSalaryMax:      row.EstimatedSalaryMax,
+		EstimatedSalaryCurrency: row.EstimatedSalaryCurrency,
+		MainCategoryID:          pgtypeToUUID(row.MainCategoryID),
+		SubCategoryID:           pgtypeToUUID(row.SubCategoryID),
+		CreatedAt:               row.CreatedAt.Time,
+	}
+}
+
+func userFromGetByIDRow(row usersdb.GetUserByIDRow) *domain.User {
+	return &domain.User{
+		ID:                      pgtypeToUUID(row.ID),
+		FirstName:               row.FirstName,
+		LastName:                row.LastName,
+		Patronymic:              pgtypeToString(row.Patronymic),
+		Phone:                   pgtypeToString(row.Phone),
+		Telegram:                pgtypeToString(row.Telegram),
+		TelegramID:              pgtypeToString(row.TelegramID),
+		Email:                   pgtypeToString(row.Email),
+		Gender:                  pgtypeToString(row.Gender),
+		Country:                 pgtypeToString(row.Country),
+		Region:                  pgtypeToString(row.Region),
+		Nationality:             pgtypeToString(row.Nationality),
+		ProfilePicURL:           pgtypeToString(row.ProfilePicUrl),
+		Status:                  row.Status,
+		TariffType:              row.TariffType,
+		JobStatus:               pgtypeToString(row.JobStatus),
+		ActivityType:            pgtypeToString(row.ActivityType),
+		Specializations:         row.Specializations,
+		PasswordHash:            pgtypeToString(row.PasswordHash),
+		Language:                row.Language,
+		ProfileScore:            row.ProfileScore,
+		EstimatedSalaryMin:      row.EstimatedSalaryMin,
+		EstimatedSalaryMax:      row.EstimatedSalaryMax,
+		EstimatedSalaryCurrency: row.EstimatedSalaryCurrency,
+		MainCategoryID:          pgtypeToUUID(row.MainCategoryID),
+		SubCategoryID:           pgtypeToUUID(row.SubCategoryID),
+		CreatedAt:               row.CreatedAt.Time,
+	}
+}
+
+func userFromListRow(row usersdb.ListUsersRow) *domain.User {
+	return &domain.User{
+		ID:                      pgtypeToUUID(row.ID),
+		FirstName:               row.FirstName,
+		LastName:                row.LastName,
+		Patronymic:              pgtypeToString(row.Patronymic),
+		Phone:                   pgtypeToString(row.Phone),
+		Telegram:                pgtypeToString(row.Telegram),
+		TelegramID:              pgtypeToString(row.TelegramID),
+		Email:                   pgtypeToString(row.Email),
+		Gender:                  pgtypeToString(row.Gender),
 		Country:         pgtypeToString(row.Country),
 		Region:          pgtypeToString(row.Region),
 		Nationality:     pgtypeToString(row.Nationality),
@@ -219,6 +291,168 @@ func userToDomain(row usersdb.User) *domain.User {
 		EstimatedSalaryMin:      row.EstimatedSalaryMin,
 		EstimatedSalaryMax:      row.EstimatedSalaryMax,
 		EstimatedSalaryCurrency: row.EstimatedSalaryCurrency,
+		MainCategoryID:          pgtypeToUUID(row.MainCategoryID),
+		SubCategoryID:           pgtypeToUUID(row.SubCategoryID),
+		CreatedAt:               row.CreatedAt.Time,
+	}
+}
+
+func userFromUpdateRow(row usersdb.UpdateUserRow) *domain.User {
+	return &domain.User{
+		ID:                      pgtypeToUUID(row.ID),
+		FirstName:               row.FirstName,
+		LastName:                row.LastName,
+		Patronymic:              pgtypeToString(row.Patronymic),
+		Phone:                   pgtypeToString(row.Phone),
+		Telegram:                pgtypeToString(row.Telegram),
+		TelegramID:              pgtypeToString(row.TelegramID),
+		Email:                   pgtypeToString(row.Email),
+		Gender:                  pgtypeToString(row.Gender),
+		Country:                 pgtypeToString(row.Country),
+		Region:                  pgtypeToString(row.Region),
+		Nationality:             pgtypeToString(row.Nationality),
+		ProfilePicURL:           pgtypeToString(row.ProfilePicUrl),
+		Status:                  row.Status,
+		TariffType:              row.TariffType,
+		JobStatus:               pgtypeToString(row.JobStatus),
+		ActivityType:            pgtypeToString(row.ActivityType),
+		Specializations:         row.Specializations,
+		PasswordHash:            pgtypeToString(row.PasswordHash),
+		Language:                row.Language,
+		ProfileScore:            row.ProfileScore,
+		EstimatedSalaryMin:      row.EstimatedSalaryMin,
+		EstimatedSalaryMax:      row.EstimatedSalaryMax,
+		EstimatedSalaryCurrency: row.EstimatedSalaryCurrency,
+		MainCategoryID:          pgtypeToUUID(row.MainCategoryID),
+		SubCategoryID:           pgtypeToUUID(row.SubCategoryID),
+		CreatedAt:               row.CreatedAt.Time,
+	}
+}
+
+func userFromGetByPhoneRow(row usersdb.GetUserByPhoneRow) *domain.User {
+	return &domain.User{
+		ID:                      pgtypeToUUID(row.ID),
+		FirstName:               row.FirstName,
+		LastName:                row.LastName,
+		Patronymic:              pgtypeToString(row.Patronymic),
+		Phone:                   pgtypeToString(row.Phone),
+		Telegram:                pgtypeToString(row.Telegram),
+		TelegramID:              pgtypeToString(row.TelegramID),
+		Email:                   pgtypeToString(row.Email),
+		Gender:                  pgtypeToString(row.Gender),
+		Country:                 pgtypeToString(row.Country),
+		Region:                  pgtypeToString(row.Region),
+		Nationality:             pgtypeToString(row.Nationality),
+		ProfilePicURL:           pgtypeToString(row.ProfilePicUrl),
+		Status:                  row.Status,
+		TariffType:              row.TariffType,
+		JobStatus:               pgtypeToString(row.JobStatus),
+		ActivityType:            pgtypeToString(row.ActivityType),
+		Specializations:         row.Specializations,
+		PasswordHash:            pgtypeToString(row.PasswordHash),
+		Language:                row.Language,
+		ProfileScore:            row.ProfileScore,
+		EstimatedSalaryMin:      row.EstimatedSalaryMin,
+		EstimatedSalaryMax:      row.EstimatedSalaryMax,
+		EstimatedSalaryCurrency: row.EstimatedSalaryCurrency,
+		MainCategoryID:          pgtypeToUUID(row.MainCategoryID),
+		SubCategoryID:           pgtypeToUUID(row.SubCategoryID),
+		CreatedAt:               row.CreatedAt.Time,
+	}
+}
+
+func userFromGetByEmailRow(row usersdb.GetUserByEmailRow) *domain.User {
+	return &domain.User{
+		ID:                      pgtypeToUUID(row.ID),
+		FirstName:               row.FirstName,
+		LastName:                row.LastName,
+		Patronymic:              pgtypeToString(row.Patronymic),
+		Phone:                   pgtypeToString(row.Phone),
+		Telegram:                pgtypeToString(row.Telegram),
+		TelegramID:              pgtypeToString(row.TelegramID),
+		Email:                   pgtypeToString(row.Email),
+		Gender:                  pgtypeToString(row.Gender),
+		Country:                 pgtypeToString(row.Country),
+		Region:                  pgtypeToString(row.Region),
+		Nationality:             pgtypeToString(row.Nationality),
+		ProfilePicURL:           pgtypeToString(row.ProfilePicUrl),
+		Status:                  row.Status,
+		TariffType:              row.TariffType,
+		JobStatus:               pgtypeToString(row.JobStatus),
+		ActivityType:            pgtypeToString(row.ActivityType),
+		Specializations:         row.Specializations,
+		PasswordHash:            pgtypeToString(row.PasswordHash),
+		Language:                row.Language,
+		ProfileScore:            row.ProfileScore,
+		EstimatedSalaryMin:      row.EstimatedSalaryMin,
+		EstimatedSalaryMax:      row.EstimatedSalaryMax,
+		EstimatedSalaryCurrency: row.EstimatedSalaryCurrency,
+		MainCategoryID:          pgtypeToUUID(row.MainCategoryID),
+		SubCategoryID:           pgtypeToUUID(row.SubCategoryID),
+		CreatedAt:               row.CreatedAt.Time,
+	}
+}
+
+func userFromGetByTelegramIDRow(row usersdb.GetUserByTelegramIDRow) *domain.User {
+	return &domain.User{
+		ID:                      pgtypeToUUID(row.ID),
+		FirstName:               row.FirstName,
+		LastName:                row.LastName,
+		Patronymic:              pgtypeToString(row.Patronymic),
+		Phone:                   pgtypeToString(row.Phone),
+		Telegram:                pgtypeToString(row.Telegram),
+		TelegramID:              pgtypeToString(row.TelegramID),
+		Email:                   pgtypeToString(row.Email),
+		Gender:                  pgtypeToString(row.Gender),
+		Country:                 pgtypeToString(row.Country),
+		Region:                  pgtypeToString(row.Region),
+		Nationality:             pgtypeToString(row.Nationality),
+		ProfilePicURL:           pgtypeToString(row.ProfilePicUrl),
+		Status:                  row.Status,
+		TariffType:              row.TariffType,
+		JobStatus:               pgtypeToString(row.JobStatus),
+		ActivityType:            pgtypeToString(row.ActivityType),
+		Specializations:         row.Specializations,
+		PasswordHash:            pgtypeToString(row.PasswordHash),
+		Language:                row.Language,
+		ProfileScore:            row.ProfileScore,
+		EstimatedSalaryMin:      row.EstimatedSalaryMin,
+		EstimatedSalaryMax:      row.EstimatedSalaryMax,
+		EstimatedSalaryCurrency: row.EstimatedSalaryCurrency,
+		MainCategoryID:          pgtypeToUUID(row.MainCategoryID),
+		SubCategoryID:           pgtypeToUUID(row.SubCategoryID),
+		CreatedAt:               row.CreatedAt.Time,
+	}
+}
+
+func userToDomain(row usersdb.User) *domain.User {
+	return &domain.User{
+		ID:                      pgtypeToUUID(row.ID),
+		FirstName:               row.FirstName,
+		LastName:                row.LastName,
+		Patronymic:              pgtypeToString(row.Patronymic),
+		Phone:                   pgtypeToString(row.Phone),
+		Telegram:                pgtypeToString(row.Telegram),
+		TelegramID:              pgtypeToString(row.TelegramID),
+		Email:                   pgtypeToString(row.Email),
+		Gender:                  pgtypeToString(row.Gender),
+		Country:                 pgtypeToString(row.Country),
+		Region:                  pgtypeToString(row.Region),
+		Nationality:             pgtypeToString(row.Nationality),
+		ProfilePicURL:           pgtypeToString(row.ProfilePicUrl),
+		Status:                  row.Status,
+		TariffType:              row.TariffType,
+		JobStatus:               pgtypeToString(row.JobStatus),
+		ActivityType:            pgtypeToString(row.ActivityType),
+		Specializations:         row.Specializations,
+		PasswordHash:            pgtypeToString(row.PasswordHash),
+		Language:                row.Language,
+		ProfileScore:            row.ProfileScore,
+		EstimatedSalaryMin:      row.EstimatedSalaryMin,
+		EstimatedSalaryMax:      row.EstimatedSalaryMax,
+		EstimatedSalaryCurrency: row.EstimatedSalaryCurrency,
+		MainCategoryID:          pgtypeToUUID(row.MainCategoryID),
+		SubCategoryID:           pgtypeToUUID(row.SubCategoryID),
 		CreatedAt:               row.CreatedAt.Time,
 	}
 }

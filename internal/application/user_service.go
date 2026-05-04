@@ -84,6 +84,10 @@ func (s *UserService) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	return s.repo.Delete(ctx, id)
 }
 
+func (s *UserService) CountMatchingUsers(ctx context.Context, mainCatID, subCatID uuid.UUID) (int64, error) {
+	return s.repo.CountMatchingUsers(ctx, mainCatID, subCatID)
+}
+
 func (s *UserService) SetProfileScore(ctx context.Context, id uuid.UUID, score int32) error {
 	return s.repo.SetProfileScore(ctx, id, score)
 }

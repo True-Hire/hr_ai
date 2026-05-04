@@ -47,6 +47,8 @@ func (r *VacancyRepository) Create(ctx context.Context, v *domain.Vacancy) (*dom
 		Address:        textToPgtype(v.Address),
 		Status:         v.Status,
 		SourceLang:     v.SourceLang,
+		MainCategoryID: uuidToPgtype(v.MainCategoryID),
+		SubCategoryID:  uuidToPgtype(v.SubCategoryID),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("create vacancy: %w", err)
@@ -180,7 +182,8 @@ func (r *VacancyRepository) ListFiltered(ctx context.Context, filter domain.Vaca
 	query, args := buildVacancyFilterQuery(
 		`SELECT id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
 		    experience_min, experience_max, format, schedule,
-		    phone, telegram, email, address, status, source_lang, created_at
+		    phone, telegram, email, address, status, source_lang, 
+		    main_category_id, sub_category_id, created_at
 		FROM vacancies`,
 		filter, limit, offset,
 	)
@@ -194,7 +197,7 @@ func (r *VacancyRepository) ListFiltered(ctx context.Context, filter domain.Vaca
 	var result []domain.Vacancy
 	for rows.Next() {
 		var v domain.Vacancy
-		var id, hrID, countryID pgtype.UUID
+		var id, hrID, countryID, mainCatID, subCatID pgtype.UUID
 		var salaryMin, salaryMax, expMin, expMax pgtype.Int4
 		var phone, telegram, email, address pgtype.Text
 		var companyData []byte
@@ -205,7 +208,8 @@ func (r *VacancyRepository) ListFiltered(ctx context.Context, filter domain.Vaca
 			&salaryMin, &salaryMax, &v.SalaryCurrency,
 			&expMin, &expMax, &v.Format, &v.Schedule,
 			&phone, &telegram, &email, &address,
-			&v.Status, &v.SourceLang, &createdAt,
+			&v.Status, &v.SourceLang, 
+			&mainCatID, &subCatID, &createdAt,
 		); err != nil {
 			return nil, fmt.Errorf("scan filtered vacancy: %w", err)
 		}
@@ -221,6 +225,8 @@ func (r *VacancyRepository) ListFiltered(ctx context.Context, filter domain.Vaca
 		v.Telegram = pgtypeToString(telegram)
 		v.Email = pgtypeToString(email)
 		v.Address = pgtypeToString(address)
+		v.MainCategoryID = pgtypeToUUID(mainCatID)
+		v.SubCategoryID = pgtypeToUUID(subCatID)
 		v.CreatedAt = createdAt.Time
 
 		cd, err := unmarshalCompanyData(companyData)
@@ -296,6 +302,8 @@ func (r *VacancyRepository) Update(ctx context.Context, v *domain.Vacancy) (*dom
 		Address:        v.Address,
 		Status:         v.Status,
 		CountryID:      uuidToPgtypeNullable(v.CountryID),
+		MainCategoryID: uuidToPgtype(v.MainCategoryID),
+		SubCategoryID:  uuidToPgtype(v.SubCategoryID),
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -367,6 +375,8 @@ func vacancyFromCreateRow(row vacanciesdb.CreateVacancyRow) (*domain.Vacancy, er
 		Address:        pgtypeToString(row.Address),
 		Status:         row.Status,
 		SourceLang:     row.SourceLang,
+		MainCategoryID: pgtypeToUUID(row.MainCategoryID),
+		SubCategoryID:  pgtypeToUUID(row.SubCategoryID),
 		CreatedAt:      row.CreatedAt.Time,
 	}, nil
 }
@@ -394,6 +404,8 @@ func vacancyFromGetRow(row vacanciesdb.GetVacancyByIDRow) (*domain.Vacancy, erro
 		Address:        pgtypeToString(row.Address),
 		Status:         row.Status,
 		SourceLang:     row.SourceLang,
+		MainCategoryID: pgtypeToUUID(row.MainCategoryID),
+		SubCategoryID:  pgtypeToUUID(row.SubCategoryID),
 		CreatedAt:      row.CreatedAt.Time,
 	}, nil
 }
@@ -421,6 +433,8 @@ func vacancyFromListRow(row vacanciesdb.ListVacanciesRow) (*domain.Vacancy, erro
 		Address:        pgtypeToString(row.Address),
 		Status:         row.Status,
 		SourceLang:     row.SourceLang,
+		MainCategoryID: pgtypeToUUID(row.MainCategoryID),
+		SubCategoryID:  pgtypeToUUID(row.SubCategoryID),
 		CreatedAt:      row.CreatedAt.Time,
 	}, nil
 }
@@ -448,6 +462,8 @@ func vacancyFromListByHRRow(row vacanciesdb.ListVacanciesByHRRow) (*domain.Vacan
 		Address:        pgtypeToString(row.Address),
 		Status:         row.Status,
 		SourceLang:     row.SourceLang,
+		MainCategoryID: pgtypeToUUID(row.MainCategoryID),
+		SubCategoryID:  pgtypeToUUID(row.SubCategoryID),
 		CreatedAt:      row.CreatedAt.Time,
 	}, nil
 }
@@ -475,6 +491,8 @@ func vacancyFromSearchRow(row vacanciesdb.SearchVacanciesRow) (*domain.Vacancy, 
 		Address:        pgtypeToString(row.Address),
 		Status:         row.Status,
 		SourceLang:     row.SourceLang,
+		MainCategoryID: pgtypeToUUID(row.MainCategoryID),
+		SubCategoryID:  pgtypeToUUID(row.SubCategoryID),
 		CreatedAt:      row.CreatedAt.Time,
 	}, nil
 }
@@ -502,6 +520,8 @@ func vacancyFromUpdateRow(row vacanciesdb.UpdateVacancyRow) (*domain.Vacancy, er
 		Address:        pgtypeToString(row.Address),
 		Status:         row.Status,
 		SourceLang:     row.SourceLang,
+		MainCategoryID: pgtypeToUUID(row.MainCategoryID),
+		SubCategoryID:  pgtypeToUUID(row.SubCategoryID),
 		CreatedAt:      row.CreatedAt.Time,
 	}, nil
 }

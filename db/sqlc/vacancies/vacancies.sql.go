@@ -56,15 +56,18 @@ const createVacancy = `-- name: CreateVacancy :one
 INSERT INTO vacancies (
     id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
-    phone, telegram, email, address, status, source_lang, created_at
+    phone, telegram, email, address, status, source_lang,
+    main_category_id, sub_category_id, created_at
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7,
     $8, $9, $10, $11,
-    $12, $13, $14, $15, $16, $17, now()
+    $12, $13, $14, $15, $16, $17,
+    $18, $19, now()
 )
 RETURNING id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
-    phone, telegram, email, address, status, source_lang, created_at
+    phone, telegram, email, address, status, source_lang,
+    main_category_id, sub_category_id, created_at
 `
 
 type CreateVacancyParams struct {
@@ -85,6 +88,8 @@ type CreateVacancyParams struct {
 	Address        pgtype.Text
 	Status         string
 	SourceLang     string
+	MainCategoryID pgtype.UUID
+	SubCategoryID  pgtype.UUID
 }
 
 type CreateVacancyRow struct {
@@ -105,6 +110,8 @@ type CreateVacancyRow struct {
 	Address        pgtype.Text
 	Status         string
 	SourceLang     string
+	MainCategoryID pgtype.UUID
+	SubCategoryID  pgtype.UUID
 	CreatedAt      pgtype.Timestamp
 }
 
@@ -127,6 +134,8 @@ func (q *Queries) CreateVacancy(ctx context.Context, arg CreateVacancyParams) (C
 		arg.Address,
 		arg.Status,
 		arg.SourceLang,
+		arg.MainCategoryID,
+		arg.SubCategoryID,
 	)
 	var i CreateVacancyRow
 	err := row.Scan(
@@ -147,6 +156,8 @@ func (q *Queries) CreateVacancy(ctx context.Context, arg CreateVacancyParams) (C
 		&i.Address,
 		&i.Status,
 		&i.SourceLang,
+		&i.MainCategoryID,
+		&i.SubCategoryID,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -164,7 +175,8 @@ func (q *Queries) DeleteVacancy(ctx context.Context, id pgtype.UUID) error {
 const getVacancyByID = `-- name: GetVacancyByID :one
 SELECT id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
-    phone, telegram, email, address, status, source_lang, created_at
+    phone, telegram, email, address, status, source_lang,
+    main_category_id, sub_category_id, created_at
 FROM vacancies
 WHERE id = $1
 `
@@ -187,6 +199,8 @@ type GetVacancyByIDRow struct {
 	Address        pgtype.Text
 	Status         string
 	SourceLang     string
+	MainCategoryID pgtype.UUID
+	SubCategoryID  pgtype.UUID
 	CreatedAt      pgtype.Timestamp
 }
 
@@ -211,6 +225,8 @@ func (q *Queries) GetVacancyByID(ctx context.Context, id pgtype.UUID) (GetVacanc
 		&i.Address,
 		&i.Status,
 		&i.SourceLang,
+		&i.MainCategoryID,
+		&i.SubCategoryID,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -219,7 +235,8 @@ func (q *Queries) GetVacancyByID(ctx context.Context, id pgtype.UUID) (GetVacanc
 const listVacancies = `-- name: ListVacancies :many
 SELECT id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
-    phone, telegram, email, address, status, source_lang, created_at
+    phone, telegram, email, address, status, source_lang,
+    main_category_id, sub_category_id, created_at
 FROM vacancies
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2
@@ -248,6 +265,8 @@ type ListVacanciesRow struct {
 	Address        pgtype.Text
 	Status         string
 	SourceLang     string
+	MainCategoryID pgtype.UUID
+	SubCategoryID  pgtype.UUID
 	CreatedAt      pgtype.Timestamp
 }
 
@@ -278,6 +297,8 @@ func (q *Queries) ListVacancies(ctx context.Context, arg ListVacanciesParams) ([
 			&i.Address,
 			&i.Status,
 			&i.SourceLang,
+			&i.MainCategoryID,
+			&i.SubCategoryID,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -293,7 +314,8 @@ func (q *Queries) ListVacancies(ctx context.Context, arg ListVacanciesParams) ([
 const listVacanciesByHR = `-- name: ListVacanciesByHR :many
 SELECT id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
-    phone, telegram, email, address, status, source_lang, created_at
+    phone, telegram, email, address, status, source_lang,
+    main_category_id, sub_category_id, created_at
 FROM vacancies
 WHERE hr_id = $1
 ORDER BY created_at DESC
@@ -324,6 +346,8 @@ type ListVacanciesByHRRow struct {
 	Address        pgtype.Text
 	Status         string
 	SourceLang     string
+	MainCategoryID pgtype.UUID
+	SubCategoryID  pgtype.UUID
 	CreatedAt      pgtype.Timestamp
 }
 
@@ -354,6 +378,8 @@ func (q *Queries) ListVacanciesByHR(ctx context.Context, arg ListVacanciesByHRPa
 			&i.Address,
 			&i.Status,
 			&i.SourceLang,
+			&i.MainCategoryID,
+			&i.SubCategoryID,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -402,7 +428,8 @@ func (q *Queries) NullifyVacancyHRID(ctx context.Context, hrID pgtype.UUID) erro
 const searchVacancies = `-- name: SearchVacancies :many
 SELECT DISTINCT v.id, v.hr_id, v.company_data, v.country_id, v.salary_min, v.salary_max, v.salary_currency,
     v.experience_min, v.experience_max, v.format, v.schedule,
-    v.phone, v.telegram, v.email, v.address, v.status, v.source_lang, v.created_at
+    v.phone, v.telegram, v.email, v.address, v.status, v.source_lang,
+    v.main_category_id, v.sub_category_id, v.created_at
 FROM vacancies v
 JOIN vacancy_texts vt ON vt.vacancy_id = v.id
 WHERE vt.lang = $1
@@ -436,6 +463,8 @@ type SearchVacanciesRow struct {
 	Address        pgtype.Text
 	Status         string
 	SourceLang     string
+	MainCategoryID pgtype.UUID
+	SubCategoryID  pgtype.UUID
 	CreatedAt      pgtype.Timestamp
 }
 
@@ -471,6 +500,8 @@ func (q *Queries) SearchVacancies(ctx context.Context, arg SearchVacanciesParams
 			&i.Address,
 			&i.Status,
 			&i.SourceLang,
+			&i.MainCategoryID,
+			&i.SubCategoryID,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -497,11 +528,14 @@ SET salary_min = CASE WHEN $1::INT = 0 THEN salary_min ELSE $1 END,
     email = COALESCE(NULLIF($10, ''), email),
     address = COALESCE(NULLIF($11, ''), address),
     status = COALESCE(NULLIF($12, ''), status),
-    country_id = COALESCE($13, country_id)
-WHERE id = $14
+    country_id = COALESCE($13, country_id),
+    main_category_id = COALESCE($14, main_category_id),
+    sub_category_id = COALESCE($15, sub_category_id)
+WHERE id = $16
 RETURNING id, hr_id, company_data, country_id, salary_min, salary_max, salary_currency,
     experience_min, experience_max, format, schedule,
-    phone, telegram, email, address, status, source_lang, created_at
+    phone, telegram, email, address, status, source_lang,
+    main_category_id, sub_category_id, created_at
 `
 
 type UpdateVacancyParams struct {
@@ -518,6 +552,8 @@ type UpdateVacancyParams struct {
 	Address        interface{}
 	Status         interface{}
 	CountryID      pgtype.UUID
+	MainCategoryID pgtype.UUID
+	SubCategoryID  pgtype.UUID
 	ID             pgtype.UUID
 }
 
@@ -539,6 +575,8 @@ type UpdateVacancyRow struct {
 	Address        pgtype.Text
 	Status         string
 	SourceLang     string
+	MainCategoryID pgtype.UUID
+	SubCategoryID  pgtype.UUID
 	CreatedAt      pgtype.Timestamp
 }
 
@@ -557,6 +595,8 @@ func (q *Queries) UpdateVacancy(ctx context.Context, arg UpdateVacancyParams) (U
 		arg.Address,
 		arg.Status,
 		arg.CountryID,
+		arg.MainCategoryID,
+		arg.SubCategoryID,
 		arg.ID,
 	)
 	var i UpdateVacancyRow
@@ -578,6 +618,8 @@ func (q *Queries) UpdateVacancy(ctx context.Context, arg UpdateVacancyParams) (U
 		&i.Address,
 		&i.Status,
 		&i.SourceLang,
+		&i.MainCategoryID,
+		&i.SubCategoryID,
 		&i.CreatedAt,
 	)
 	return i, err

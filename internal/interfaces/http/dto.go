@@ -71,6 +71,13 @@ func (r *CreateUserRequest) ToDomain() *domain.User {
 }
 
 func (r *UpdateUserRequest) ToDomain(id uuid.UUID) *domain.User {
+	var mainCatID, subCatID uuid.UUID
+	if r.MainCategoryID != "" {
+		mainCatID, _ = uuid.Parse(r.MainCategoryID)
+	}
+	if r.SubCategoryID != "" {
+		subCatID, _ = uuid.Parse(r.SubCategoryID)
+	}
 	return &domain.User{
 		ID:              id,
 		FirstName:       r.FirstName,
@@ -89,6 +96,8 @@ func (r *UpdateUserRequest) ToDomain(id uuid.UUID) *domain.User {
 		JobStatus:       r.JobStatus,
 		ActivityType:    r.ActivityType,
 		Specializations: r.Specializations,
+		MainCategoryID:  mainCatID,
+		SubCategoryID:   subCatID,
 	}
 }
 
@@ -185,6 +194,15 @@ func toUserResponseWithProfile(u *domain.User, profile *UserProfileResponse) Use
 	if specs == nil {
 		specs = []string{}
 	}
+
+	var mainCatID, subCatID string
+	if u.MainCategoryID != uuid.Nil {
+		mainCatID = u.MainCategoryID.String()
+	}
+	if u.SubCategoryID != uuid.Nil {
+		subCatID = u.SubCategoryID.String()
+	}
+
 	return UserResponse{
 		ID:              u.ID.String(),
 		FirstName:       u.FirstName,
@@ -208,6 +226,8 @@ func toUserResponseWithProfile(u *domain.User, profile *UserProfileResponse) Use
 		EstimatedSalaryMin:      u.EstimatedSalaryMin,
 		EstimatedSalaryMax:      u.EstimatedSalaryMax,
 		EstimatedSalaryCurrency: u.EstimatedSalaryCurrency,
+		MainCategoryID:          mainCatID,
+		SubCategoryID:           subCatID,
 		CreatedAt:               u.CreatedAt.Format(time.RFC3339),
 		Profile:         profile,
 	}

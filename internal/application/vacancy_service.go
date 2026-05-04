@@ -28,6 +28,8 @@ type CreateVacancyInput struct {
 	HRID             uuid.UUID
 	CompanyData      *domain.CompanyData
 	CountryID        uuid.UUID
+	MainCategoryID   uuid.UUID
+	SubCategoryID    uuid.UUID
 	SalaryMin        int32
 	SalaryMax        int32
 	SalaryCurrency   string
@@ -83,6 +85,8 @@ func (s *VacancyService) CreateVacancy(ctx context.Context, input *CreateVacancy
 		HRID:           input.HRID,
 		CompanyData:    input.CompanyData,
 		CountryID:      input.CountryID,
+		MainCategoryID: input.MainCategoryID,
+		SubCategoryID:  input.SubCategoryID,
 		SalaryMin:      input.SalaryMin,
 		SalaryMax:      input.SalaryMax,
 		SalaryCurrency: input.SalaryCurrency,
@@ -445,6 +449,8 @@ func (s *VacancyService) ListVacanciesFiltered(ctx context.Context, filter domai
 type UpdateVacancyInput struct {
 	ID               uuid.UUID
 	CountryID        uuid.UUID
+	MainCategoryID   uuid.UUID
+	SubCategoryID    uuid.UUID
 	SalaryMin        int32
 	SalaryMax        int32
 	SalaryCurrency   string
@@ -469,6 +475,8 @@ func (s *VacancyService) UpdateVacancy(ctx context.Context, input *UpdateVacancy
 	vacancy := &domain.Vacancy{
 		ID:             input.ID,
 		CountryID:      input.CountryID,
+		MainCategoryID: input.MainCategoryID,
+		SubCategoryID:  input.SubCategoryID,
 		SalaryMin:      input.SalaryMin,
 		SalaryMax:      input.SalaryMax,
 		SalaryCurrency: input.SalaryCurrency,

@@ -340,9 +340,20 @@ func (h *VacancyHandler) Update(c *gin.Context) {
 		}
 	}
 
+	var mainCatID uuid.UUID
+	if req.MainCategoryID != "" {
+		mainCatID, _ = uuid.Parse(req.MainCategoryID)
+	}
+	var subCatID uuid.UUID
+	if req.SubCategoryID != "" {
+		subCatID, _ = uuid.Parse(req.SubCategoryID)
+	}
+
 	input := &application.UpdateVacancyInput{
 		ID:               id,
 		CountryID:        countryID,
+		MainCategoryID:   mainCatID,
+		SubCategoryID:    subCatID,
 		SalaryMin:        req.SalaryMin,
 		SalaryMax:        req.SalaryMax,
 		SalaryCurrency:   req.SalaryCurrency,

@@ -210,6 +210,8 @@ type Vacancy struct {
 	CreatedAt      pgtype.Timestamp
 	CountryID      pgtype.UUID
 	CompanyData    []byte
+	MainCategoryID pgtype.UUID
+	SubCategoryID  pgtype.UUID
 }
 
 type VacancyApplication struct {
