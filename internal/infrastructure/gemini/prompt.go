@@ -170,19 +170,23 @@ Structure:
   "experience_max": 0,
   "format": "remote/office/hybrid",
   "schedule": "full-time/part-time",
-  "skills": {"en": ["skill1", "skill2"]}
+  "skills": {"uz": ["..."], "ru": ["..."], "en": ["..."]}
 }
 Input: %s`, userInput)
 }
 
 func buildVacancyMergePrompt(existingJSON, additionalInfo string) string {
 	return fmt.Sprintf(`Update the existing vacancy JSON with the additional information provided.
+Maintain the localized structure for all fields and skills (uz, ru, en).
+Example skills structure: "skills": {"uz": ["..."], "ru": ["..."], "en": ["..."]}
 Existing JSON: %s
 Additional Info: %s`, existingJSON, additionalInfo)
 }
 
 func buildVacancyEnhancePrompt(draftJSON string) string {
 	return fmt.Sprintf(`Enhance the professional tone and clarity of this vacancy description.
+Maintain the localized structure for all fields and skills (uz, ru, en).
+Example skills structure: "skills": {"uz": ["..."], "ru": ["..."], "en": ["..."]}
 Draft JSON: %s`, draftJSON)
 }
 

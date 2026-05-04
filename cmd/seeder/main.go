@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	EnableSeeder     = false
-	DeleteBeforeSeed = true
+	EnableSeeder     = true
+	DeleteBeforeSeed = false
 )
 
 func generateID(name string) uuid.UUID {
@@ -48,7 +48,8 @@ func main() {
 	}
 
 	if EnableSeeder {
-		RunSeeder(ctx, pool)
+		// RunSeeder(ctx, pool)
+		SeedFakeUsers(ctx, pool)
 	} else {
 		log.Println("Seeding is currently DISABLED via EnableSeeder=false flag.")
 	}
