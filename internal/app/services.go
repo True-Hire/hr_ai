@@ -99,6 +99,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, anthropicAPIKey, jwtSecret, d
 
 	vacancyRepo := repository.NewVacancyRepository(pool)
 	vacancyTextRepo := repository.NewVacancyTextRepository(pool)
+	vacancyWorkerRepo := repository.NewVacancyWorkerRepository(pool)
 	vacancyAppRepo := repository.NewVacancyApplicationRepository(pool)
 
 	qdrantClient := qdrant.NewClient(qdrantURL, qdrantAPIKey)
@@ -121,7 +122,7 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, anthropicAPIKey, jwtSecret, d
 	vacancyAIRepo := repository.NewVacancyAIRepository(pool)
 	profileParseSvc := application.NewProfileParseService(geminiClient, pfSvc, pftSvc, expSvc, eduSvc, itSvc, skillSvc, userSvc, vectorIndexSvc, vacancyAIRepo)
 
-	vacancySvc := application.NewVacancyService(vacancyRepo, vacancyTextRepo, skillSvc, geminiClient, vectorIndexSvc)
+	vacancySvc := application.NewVacancyService(vacancyRepo, vacancyTextRepo, vacancyWorkerRepo, skillSvc, geminiClient, vectorIndexSvc)
 	vacancySearchSvc := application.NewVacancySearchService(qdrantClient, geminiClient, vacancySvc, pfSvc, pftSvc, skillSvc)
 	searchSvc := application.NewSearchService(qdrantClient, geminiClient, userSvc, vacancySvc, expSvc, skillSvc)
 	vacancyAppSvc := application.NewVacancyApplicationService(vacancyAppRepo)
@@ -164,6 +165,9 @@ func NewServices(pool *pgxpool.Pool, geminiAPIKey, anthropicAPIKey, jwtSecret, d
 	candidateIndexingSvc.SetNormalizationService(normRuleSvc)
 	candidateSearchSvc.SetVectorSearchService(searchSvc)
 	profileParseSvc.SetCandidateIndexingService(candidateIndexingSvc)
+
+	// Set candidate search service into vacancy service to trigger matches on creation
+	vacancySvc.SetCandidateSearchService(candidateSearchSvc)
 
 	vacancyAISvc := application.NewVacancyAIService(geminiClient, vacancyAIRepo)
 	hrBotSvc := application.NewHRBotService(companyHRSvc, vacancySvc, vacancyAppSvc, botStateSvc, searchSvc, userSvc, geminiClient)

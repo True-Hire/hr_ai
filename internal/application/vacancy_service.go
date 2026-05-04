@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -13,15 +14,28 @@ import (
 )
 
 type VacancyService struct {
-	repo           domain.VacancyRepository
-	textRepo       domain.VacancyTextRepository
-	skillSvc       *SkillService
-	geminiClient   *gemini.Client
-	vectorIndexSvc *VectorIndexService
+	repo             domain.VacancyRepository
+	textRepo         domain.VacancyTextRepository
+	workerRepo       domain.VacancyWorkerRepository
+	skillSvc         *SkillService
+	geminiClient     *gemini.Client
+	vectorIndexSvc   *VectorIndexService
+	candidateSearchSvc *CandidateSearchService
 }
 
-func NewVacancyService(repo domain.VacancyRepository, textRepo domain.VacancyTextRepository, skillSvc *SkillService, geminiClient *gemini.Client, vectorIndexSvc *VectorIndexService) *VacancyService {
-	return &VacancyService{repo: repo, textRepo: textRepo, skillSvc: skillSvc, geminiClient: geminiClient, vectorIndexSvc: vectorIndexSvc}
+func NewVacancyService(repo domain.VacancyRepository, textRepo domain.VacancyTextRepository, workerRepo domain.VacancyWorkerRepository, skillSvc *SkillService, geminiClient *gemini.Client, vectorIndexSvc *VectorIndexService) *VacancyService {
+	return &VacancyService{
+		repo:           repo,
+		textRepo:       textRepo,
+		workerRepo:     workerRepo,
+		skillSvc:       skillSvc,
+		geminiClient:   geminiClient,
+		vectorIndexSvc: vectorIndexSvc,
+	}
+}
+
+func (s *VacancyService) SetCandidateSearchService(svc *CandidateSearchService) {
+	s.candidateSearchSvc = svc
 }
 
 type CreateVacancyInput struct {
@@ -138,6 +152,13 @@ func (s *VacancyService) CreateVacancy(ctx context.Context, input *CreateVacancy
 		}()
 	}
 
+	// Trigger automated matching
+	go func() {
+		if err := s.CalculateAndSaveMatches(context.Background(), created.ID, created.HRID); err != nil {
+			log.Printf("failed to calculate matches for vacancy %s: %v", created.ID, err)
+		}
+	}()
+
 	return &VacancyWithDetails{Vacancy: created, Texts: texts, Skills: skills}, nil
 }
 
@@ -209,6 +230,13 @@ func (s *VacancyService) ParseVacancy(ctx context.Context, hrID uuid.UUID, compa
 		}()
 	}
 
+	// Trigger automated matching
+	go func() {
+		if err := s.CalculateAndSaveMatches(context.Background(), created.ID, created.HRID); err != nil {
+			log.Printf("failed to calculate matches for vacancy %s: %v", created.ID, err)
+		}
+	}()
+
 	return &VacancyWithDetails{Vacancy: created, Texts: texts, Skills: skills}, nil
 }
 
@@ -274,6 +302,13 @@ func (s *VacancyService) CreateVacancyFromParsed(ctx context.Context, hrID uuid.
 			}
 		}()
 	}
+
+	// Trigger automated matching
+	go func() {
+		if err := s.CalculateAndSaveMatches(context.Background(), created.ID, created.HRID); err != nil {
+			log.Printf("failed to calculate matches for vacancy %s: %v", created.ID, err)
+		}
+	}()
 
 	return &VacancyWithDetails{Vacancy: created, Texts: texts, Skills: skills}, nil
 }
@@ -555,6 +590,13 @@ func (s *VacancyService) UpdateVacancy(ctx context.Context, input *UpdateVacancy
 		}()
 	}
 
+	// Refresh automated matching
+	go func() {
+		if err := s.CalculateAndSaveMatches(context.Background(), updated.ID, updated.HRID); err != nil {
+			log.Printf("failed to refresh matches for vacancy %s: %v", updated.ID, err)
+		}
+	}()
+
 	return &VacancyWithDetails{Vacancy: updated, Texts: texts, Skills: skills}, nil
 }
 
@@ -636,6 +678,13 @@ func (s *VacancyService) UpdateVacancyFromParsed(ctx context.Context, vacancyID 
 		}()
 	}
 
+	// Refresh automated matching
+	go func() {
+		if err := s.CalculateAndSaveMatches(context.Background(), updated.ID, updated.HRID); err != nil {
+			log.Printf("failed to refresh matches for vacancy %s: %v", updated.ID, err)
+		}
+	}()
+
 	return &VacancyWithDetails{Vacancy: updated, Texts: texts, Skills: skills}, nil
 }
 
@@ -657,4 +706,43 @@ func (s *VacancyService) DeleteVacancy(ctx context.Context, id uuid.UUID) error 
 		return fmt.Errorf("delete vacancy texts: %w", err)
 	}
 	return s.repo.Delete(ctx, id)
+}
+
+func (s *VacancyService) ListVacancyMatches(ctx context.Context, vacancyID uuid.UUID) ([]domain.VacancyWorker, error) {
+	return s.workerRepo.ListByVacancy(ctx, vacancyID)
+}
+
+func (s *VacancyService) CalculateAndSaveMatches(ctx context.Context, vacancyID, hrID uuid.UUID) error {
+	if s.candidateSearchSvc == nil {
+		return fmt.Errorf("candidate search service not initialized")
+	}
+
+	// Find top 20 candidates
+	page, err := s.candidateSearchSvc.SearchByVacancy(ctx, vacancyID, hrID, 20)
+	if err != nil {
+		return fmt.Errorf("search by vacancy: %w", err)
+	}
+
+	workers := make([]domain.VacancyWorker, 0, len(page.Items))
+	for i, item := range page.Items {
+		workers = append(workers, domain.VacancyWorker{
+			ID:              uuid.New(),
+			VacancyID:       vacancyID,
+			UserID:          item.UserID,
+			MatchPercentage: item.MatchPercentage,
+			MatchScore:      item.FinalScore,
+			Rank:            i + 1,
+			CreatedAt:       time.Now(),
+			UpdatedAt:       time.Now(),
+		})
+	}
+
+	// Delete old matches if any (e.g. on re-calculation)
+	_ = s.workerRepo.DeleteByVacancy(ctx, vacancyID)
+
+	if err := s.workerRepo.BulkCreate(ctx, workers); err != nil {
+		return fmt.Errorf("bulk create vacancy workers: %w", err)
+	}
+
+	return nil
 }

@@ -19,10 +19,18 @@ type VacancyHandler struct {
 	vacancySearchSvc *application.VacancySearchService
 	vacancyAppSvc    *application.VacancyApplicationService
 	candidateSearch  *application.CandidateSearchService
+	userHandler      *UserHandler
 }
 
-func NewVacancyHandler(service *application.VacancyService, companyHRSvc *application.CompanyHRService, vacancySearchSvc *application.VacancySearchService, vacancyAppSvc *application.VacancyApplicationService, candidateSearch *application.CandidateSearchService) *VacancyHandler {
-	return &VacancyHandler{service: service, companyHRSvc: companyHRSvc, vacancySearchSvc: vacancySearchSvc, vacancyAppSvc: vacancyAppSvc, candidateSearch: candidateSearch}
+func NewVacancyHandler(service *application.VacancyService, companyHRSvc *application.CompanyHRService, vacancySearchSvc *application.VacancySearchService, vacancyAppSvc *application.VacancyApplicationService, candidateSearch *application.CandidateSearchService, userHandler *UserHandler) *VacancyHandler {
+	return &VacancyHandler{
+		service:          service,
+		companyHRSvc:     companyHRSvc,
+		vacancySearchSvc: vacancySearchSvc,
+		vacancyAppSvc:    vacancyAppSvc,
+		candidateSearch:  candidateSearch,
+		userHandler:      userHandler,
+	}
 }
 
 // Create godoc
@@ -413,4 +421,60 @@ func (h *VacancyHandler) Delete(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+// GetMatches godoc
+// @Summary Get pre-calculated top matches for a vacancy
+// @Tags vacancies
+// @Produce json
+// @Param id path string true "Vacancy ID (UUID)"
+// @Param lang query string false "Language code" default(en)
+// @Success 200 {array} CandidateSearchResponseItem
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /vacancies/{id}/matches [get]
+func (h *VacancyHandler) GetMatches(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "invalid vacancy id"})
+		return
+	}
+
+	matches, err := h.service.ListVacancyMatches(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to list matches"})
+		return
+	}
+
+	lang := c.DefaultQuery("lang", "en")
+	resp := make([]CandidateSearchResponseItem, 0, len(matches))
+
+	for _, m := range matches {
+		user, err := h.userHandler.service.GetUser(c.Request.Context(), m.UserID)
+		if err != nil {
+			continue
+		}
+		profile := h.userHandler.buildUserProfile(c, user.ID, lang)
+		userResp := toUserResponseWithProfile(user, profile)
+		
+		pct := m.MatchPercentage
+		userResp.MatchPercentage = &pct
+
+		// Retrieve total experience from search profile for extra detail
+		if h.candidateSearch != nil {
+			if cp, err := h.candidateSearch.GetCandidateProfile(c.Request.Context(), user.ID); err == nil && cp != nil {
+				exp := float64(cp.TotalExperienceMonths) / 12.0
+				userResp.TotalExperienceYears = &exp
+			}
+		}
+
+		resp = append(resp, CandidateSearchResponseItem{
+			User:            userResp,
+			FinalScore:      m.MatchScore,
+			MatchPercentage: m.MatchPercentage,
+		})
+	}
+
+	c.JSON(http.StatusOK, resp)
 }

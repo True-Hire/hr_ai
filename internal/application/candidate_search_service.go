@@ -480,6 +480,10 @@ func (s *CandidateSearchService) SearchByVacancy(ctx context.Context, vacancyID 
 	return s.Search(ctx, hrID, parsedQuery, filters, pageSize)
 }
 
+func (s *CandidateSearchService) GetCandidateProfile(ctx context.Context, userID uuid.UUID) (*domain.CandidateSearchProfile, error) {
+	return s.searchProfileRepo.GetByUserID(ctx, userID)
+}
+
 // CountMatchingByVacancy returns a quick count of candidates matching a vacancy.
 func (s *CandidateSearchService) CountMatchingByVacancy(ctx context.Context, vacancyID uuid.UUID) int {
 	vacancy, err := s.vacancySvc.GetVacancy(ctx, vacancyID)
